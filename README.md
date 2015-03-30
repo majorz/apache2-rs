@@ -1,2 +1,1 @@
-# apache-rs
-Nginx module development with Rust
+# Apache module development with Rust
