@@ -158,28 +158,42 @@ use http_config::{command_rec};
 use http_protocol::{ap_rwrite};
 
 
-const NAME: &'static [u8] = b"mod_aprust\0";
-const NAME_PTR: *const &'static [u8] = &NAME;
-const NAME_CHAR_PTR: *const c_char = NAME_PTR as *const c_char;
+macro_rules! module_def {
+   ($module:ident, $handler:ident, $cname:expr) => {
+      const CNAME: &'static [u8] = $cname;
+      const CNAME_PTR: *const &'static [u8] = &CNAME;
+      const CNAME_CHAR_PTR: *const c_char = CNAME_PTR as *const c_char;
 
-#[no_mangle]
-pub static mut aprust_module: http_config::module = http_config::module {
-   version: ap_mmn::MODULE_MAGIC_NUMBER_MAJOR,
-   minor_version: ap_mmn::MODULE_MAGIC_NUMBER_MINOR,
-   module_index: -1,
-   name: NAME_CHAR_PTR,
-   dynamic_load_handle: 0 as *mut c_void,
-   next: 0 as *mut http_config::module,
-   magic: ap_mmn::MODULE_MAGIC_COOKIE,
-   rewrite_args: None,
-   create_dir_config: None,
-   merge_dir_config: None,
-   create_server_config: None,
-   merge_server_config: None,
-   cmds: 0 as *const command_rec,
-   register_hooks: Some(aprust_hooks),
-};
+      #[no_mangle]
+      pub static mut $module: http_config::module = http_config::module {
+         version: ap_mmn::MODULE_MAGIC_NUMBER_MAJOR,
+         minor_version: ap_mmn::MODULE_MAGIC_NUMBER_MINOR,
+         module_index: -1,
+         name: CNAME_CHAR_PTR,
+         dynamic_load_handle: 0 as *mut c_void,
+         next: 0 as *mut http_config::module,
+         magic: ap_mmn::MODULE_MAGIC_COOKIE,
+         rewrite_args: None,
+         create_dir_config: None,
+         merge_dir_config: None,
+         create_server_config: None,
+         merge_server_config: None,
+         cmds: 0 as *const command_rec,
+         register_hooks: Some(module_hooks),
+      };
 
+      extern "C" fn module_hooks(_: *mut apr_pool_t) {
+         unsafe {
+            ap_hook_handler(
+               Some($handler), ptr::null(), ptr::null(), APR_HOOK_MIDDLE
+            );
+         }
+      }
+
+   }
+}
+
+module_def!(aprust_module, aprust_handler, b"mod_aprust\0");
 
 #[no_mangle]
 pub extern "C" fn aprust_handler(r: *mut request_rec) -> c_int {
@@ -191,13 +205,4 @@ pub extern "C" fn aprust_handler(r: *mut request_rec) -> c_int {
    }
 
    OK
-}
-
-#[no_mangle]
-pub extern "C" fn aprust_hooks(_: *mut apr_pool_t) {
-   unsafe {
-      ap_hook_handler(
-         Some(aprust_handler), ptr::null(), ptr::null(), APR_HOOK_MIDDLE
-      );
-   }
 }
