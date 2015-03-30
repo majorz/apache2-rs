@@ -1,4 +1,5 @@
 #![feature(libc)]
+#![feature(convert)]
 
 extern crate libc;
 
@@ -195,14 +196,18 @@ macro_rules! module_def {
 
 module_def!(aprust_module, aprust_handler, b"mod_aprust\0");
 
-#[no_mangle]
-pub extern "C" fn aprust_handler(r: *mut request_rec) -> c_int {
-   let html = CString::new("<html><head><meta charset=\"utf-8\"></head><body>Здравейте!</body></html>").unwrap();
-   let len = html.to_bytes().len();
+fn rwrite<T: Into<Vec<u8>>>(t: T, r: *mut request_rec) {
+   let s = CString::new(t).unwrap();
+   let len = s.to_bytes().len();
 
    unsafe {
-      ap_rwrite(html.as_ptr() as *mut c_void, len as i32, r);
+      ap_rwrite(s.as_ptr() as *mut c_void, len as i32, r);
    }
+}
+
+#[no_mangle]
+pub extern "C" fn aprust_handler(r: *mut request_rec) -> c_int {
+   rwrite("<html><head><meta charset=\"utf-8\"></head><body>Здравейте!</body></html>", r);
 
    OK
 }
