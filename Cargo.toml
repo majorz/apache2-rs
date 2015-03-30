@@ -1,0 +1,8 @@
+[package]
+
+name = "apache-rs"
+version = "0.0.1"
+
+[lib]
+name = "apache_rs"
+crate-type = ["dylib"]
