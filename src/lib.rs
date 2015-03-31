@@ -17,8 +17,7 @@ pub mod http_protocol;
 use libc::{c_void, c_char, c_int};
 
 use std::ptr;
-use std::str;
-use std::ffi::{CString, CStr};
+use std::ffi::CString;
 
 use apr::raw::{apr_pool_t, APR_HOOK_MIDDLE};
 
@@ -74,57 +73,50 @@ fn rwrite<T: Into<Vec<u8>>>(t: T, r: *mut request_rec) {
    }
 }
 
-fn dump_str<T: Into<Vec<u8>>>(r: *mut request_rec, name: T, p: *const c_char) {
+fn dump_str<T: Into<Vec<u8>>>(r: *mut request_rec, name: T, optional: Option<&str>) {
    rwrite("<p>", r);
    rwrite(name, r);
    rwrite(": ", r);
 
-   if p.is_null() {
-      rwrite("NULL", r);
-   } else {
-      let data =  unsafe { CStr::from_ptr(p) };
-      let bytes = data.to_bytes();
-
-      let slice = str::from_utf8(bytes).unwrap();
-
-      let html = format!("{:?}", slice);
-
-      rwrite(html, r);
-   }
+   match optional {
+      None => {
+         rwrite("NULL", r);
+      },
+      Some(slice) => {
+         let html = format!("{:?}", slice);
+         rwrite(html, r);
+      }
+   };
 
    rwrite("</p>", r);
 }
 
 #[no_mangle]
 pub extern "C" fn aprust_handler(r: *mut request_rec) -> c_int {
-   let w = httpd::Request::from_raw(r).unwrap();
-
-   let req: &request_rec = unsafe { &*r };
+   let req = httpd::Request::from_raw_ptr(r).unwrap();
 
    rwrite("<html><head><meta charset=\"utf-8\"></head><body>", r);
 
-   rwrite(w.the_request().unwrap(), r);
-
-   dump_str(r, "the_request", req.the_request);
-   dump_str(r, "protocol", req.protocol);
-   dump_str(r, "hostname", req.hostname);
-   dump_str(r, "status_line", req.status_line);
-   dump_str(r, "method", req.method);
-   dump_str(r, "range", req.range);
-   dump_str(r, "content_type", req.content_type);
-   dump_str(r, "handler", req.handler);
-   dump_str(r, "content_encoding", req.content_encoding);
-   dump_str(r, "vlist_validator", req.vlist_validator);
-   dump_str(r, "user", req.user);
-   dump_str(r, "ap_auth_type", req.ap_auth_type);
-   dump_str(r, "unparsed_uri", req.unparsed_uri);
-   dump_str(r, "uri", req.uri);
-   dump_str(r, "filename", req.filename);
-   dump_str(r, "canonical_filename", req.canonical_filename);
-   dump_str(r, "path_info", req.path_info);
-   dump_str(r, "args", req.args);
-   dump_str(r, "log_id", req.log_id);
-   dump_str(r, "useragent_ip", req.useragent_ip);
+   dump_str(r, "the_request", req.the_request());
+   dump_str(r, "protocol", req.protocol());
+   dump_str(r, "hostname", req.hostname());
+   dump_str(r, "status_line", req.status_line());
+   dump_str(r, "method", req.method());
+   dump_str(r, "range", req.range());
+   dump_str(r, "content_type", req.content_type());
+   dump_str(r, "handler", req.handler());
+   dump_str(r, "content_encoding", req.content_encoding());
+   dump_str(r, "vlist_validator", req.vlist_validator());
+   dump_str(r, "user", req.user());
+   dump_str(r, "ap_auth_type", req.ap_auth_type());
+   dump_str(r, "unparsed_uri", req.unparsed_uri());
+   dump_str(r, "uri", req.uri());
+   dump_str(r, "filename", req.filename());
+   dump_str(r, "canonical_filename", req.canonical_filename());
+   dump_str(r, "path_info", req.path_info());
+   dump_str(r, "args", req.args());
+   dump_str(r, "log_id", req.log_id());
+   dump_str(r, "useragent_ip", req.useragent_ip());
 
    rwrite("</body></html>", r);
 

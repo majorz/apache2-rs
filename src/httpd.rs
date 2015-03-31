@@ -119,7 +119,7 @@ struct Wrapper<'a, T: 'a> {
 }
 
 impl<'a, T> Wrapper<'a, T> {
-   pub fn from_raw(ptr: *mut T) -> Option<Self> {
+   pub fn from_raw_ptr(ptr: *mut T) -> Option<Self> {
       if ptr.is_null() {
          None
       } else {
@@ -138,17 +138,42 @@ pub type Request<'a> = Wrapper<'a, raw::request_rec>;
 use std::str;
 use std::ffi::CStr;
 
-impl<'a> Request<'a> {
-   pub fn the_request(&self) -> Option<&'a str> {
-      let ptr = self.raw.the_request;
-      if ptr.is_null() {
-         return None
-      }
+macro_rules! str_getter {
+   ( $field:ident ) => {
+      pub fn $field(&self) -> Option<&'a str> {
+         let ptr = self.raw.$field;
+         if ptr.is_null() {
+            return None
+         }
 
-      let data = unsafe { CStr::from_ptr(ptr) }.to_bytes();
-      match str::from_utf8(data) {
-         Ok(s) => Some(s),
-         Err(_) => None
+         let data = unsafe { CStr::from_ptr(ptr) }.to_bytes();
+         match str::from_utf8(data) {
+            Ok(s) => Some(s),
+            Err(_) => None
+         }
       }
    }
+}
+
+impl<'a> Request<'a> {
+   str_getter!(the_request);
+   str_getter!(protocol);
+   str_getter!(hostname);
+   str_getter!(status_line);
+   str_getter!(method);
+   str_getter!(range);
+   str_getter!(content_type);
+   str_getter!(handler);
+   str_getter!(content_encoding);
+   str_getter!(vlist_validator);
+   str_getter!(user);
+   str_getter!(ap_auth_type);
+   str_getter!(unparsed_uri);
+   str_getter!(uri);
+   str_getter!(filename);
+   str_getter!(canonical_filename);
+   str_getter!(path_info);
+   str_getter!(args);
+   str_getter!(log_id);
+   str_getter!(useragent_ip);
 }
