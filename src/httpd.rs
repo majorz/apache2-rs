@@ -113,3 +113,42 @@ pub mod raw {
    pub struct server_rec;
 
 }
+
+struct Wrapper<'a, T: 'a> {
+   raw: &'a mut T
+}
+
+impl<'a, T> Wrapper<'a, T> {
+   pub fn from_raw(ptr: *mut T) -> Option<Self> {
+      if ptr.is_null() {
+         None
+      } else {
+         let raw: &mut T = unsafe { &mut *ptr };
+         Some(
+            Wrapper::<T> {
+               raw: raw
+            }
+         )
+      }
+   }
+}
+
+pub type Request<'a> = Wrapper<'a, raw::request_rec>;
+
+use std::str;
+use std::ffi::CStr;
+
+impl<'a> Request<'a> {
+   pub fn the_request(&self) -> Option<&'a str> {
+      let ptr = self.raw.the_request;
+      if ptr.is_null() {
+         return None
+      }
+
+      let data = unsafe { CStr::from_ptr(ptr) }.to_bytes();
+      match str::from_utf8(data) {
+         Ok(s) => Some(s),
+         Err(_) => None
+      }
+   }
+}

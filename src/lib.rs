@@ -97,9 +97,13 @@ fn dump_str<T: Into<Vec<u8>>>(r: *mut request_rec, name: T, p: *const c_char) {
 
 #[no_mangle]
 pub extern "C" fn aprust_handler(r: *mut request_rec) -> c_int {
+   let w = httpd::Request::from_raw(r).unwrap();
+
    let req: &request_rec = unsafe { &*r };
 
    rwrite("<html><head><meta charset=\"utf-8\"></head><body>", r);
+
+   rwrite(w.the_request().unwrap(), r);
 
    dump_str(r, "the_request", req.the_request);
    dump_str(r, "protocol", req.protocol);
