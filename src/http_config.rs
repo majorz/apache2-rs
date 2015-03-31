@@ -35,31 +35,18 @@ pub mod raw {
    #[repr(C)]
    pub struct module_struct {
       pub version: c_int,
-
       pub minor_version: c_int,
-
       pub module_index: c_int,
-
       pub name: *const c_char,
-
       pub dynamic_load_handle: *mut c_void,
-
       pub next: *mut module_struct,
-
       pub magic: c_ulong,
-
       pub rewrite_args: Option<rewrite_args_fn>,
-
       pub create_dir_config: Option<create_dir_config_fn>,
-
       pub merge_dir_config: Option<merge_config_fn>,
-
       pub create_server_config: Option<create_server_config_fn>,
-
       pub merge_server_config: Option<merge_config_fn>,
-
       pub cmds: *const command_rec,
-
       pub register_hooks: ::std::option::Option<register_hooks_fn>
    }
 }
