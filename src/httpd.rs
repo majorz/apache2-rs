@@ -114,7 +114,9 @@ pub mod raw {
 }
 
 
-use wrapper::{Wrapper, c_str_value};
+use wrapper::{Wrapper, c_str_value, wrap_ptr};
+
+use apr::AprTable;
 
 
 pub type Request<'a> = Wrapper<'a, raw::request_rec>;
@@ -143,6 +145,26 @@ impl<'a> Request<'a> {
 
    pub fn range(&self) -> Option<&'a str> {
       c_str_value(self.raw.range)
+   }
+
+   pub fn headers_in(&self) -> Option<AprTable> {
+      wrap_ptr(self.raw.headers_in)
+   }
+
+   pub fn headers_out(&self) -> Option<AprTable> {
+      wrap_ptr(self.raw.headers_out)
+   }
+
+   pub fn err_headers_out(&self) -> Option<AprTable> {
+      wrap_ptr(self.raw.err_headers_out)
+   }
+
+   pub fn subprocess_env(&self) -> Option<AprTable> {
+      wrap_ptr(self.raw.subprocess_env)
+   }
+
+   pub fn notes(&self) -> Option<AprTable> {
+      wrap_ptr(self.raw.notes)
    }
 
    pub fn content_type(&self) -> Option<&'a str> {

@@ -1,7 +1,7 @@
 pub mod raw {
    #![allow(non_camel_case_types)]
 
-   use libc::{c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong};
+   use libc::{c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong};
 
    // run this hook first, before ANYTHING
    pub const APR_HOOK_REALLY_FIRST:  c_int = -10;
@@ -13,6 +13,11 @@ pub mod raw {
    pub const APR_HOOK_LAST:          c_int = 20;
    // run this hook last, after EVERYTHING
    pub const APR_HOOK_REALLY_LAST:   c_int = 30;
+
+   extern "C" {
+      pub fn apr_table_get(t: *const apr_table_t, key: *const c_char) -> *const c_char;
+      pub fn apr_table_set(t: *mut apr_table_t, key: *const c_char, val: *const c_char) -> ();
+   }
 
    #[repr(C)]
    pub struct apr_array_header_t;
@@ -54,4 +59,32 @@ pub mod raw {
    pub type apr_status_t = c_int;
    pub type apr_signum_t = c_int;
    pub type apr_time_t = apr_int64_t;
+}
+
+use std::ffi::CString;
+
+use wrapper::{Wrapper, c_str_value};
+
+
+pub type AprTable<'a> = Wrapper<'a, raw::apr_table_t>;
+
+
+impl<'a> AprTable<'a> {
+   pub fn get(&self, key: &'static str) -> Option<&'a str> {
+      let p: *const raw::apr_table_t = self.raw;
+      c_str_value(
+         unsafe { raw::apr_table_get(p, CString::new(key).unwrap().as_ptr()) }
+      )
+   }
+
+   pub fn set(&mut self, key: &'static str, val: &'static str) {
+      let p: *mut raw::apr_table_t = self.raw;
+      unsafe {
+         raw::apr_table_set(
+            p,
+            CString::new(key).unwrap().as_ptr(),
+            CString::new(val).unwrap().as_ptr()
+         )
+      };
+   }
 }

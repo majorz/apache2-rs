@@ -97,7 +97,13 @@ fn dump_str<T: Into<Vec<u8>>>(r: *mut request_rec, name: T, optional: Option<&st
 pub extern "C" fn aprust_handler(r: *mut request_rec) -> c_int {
    let req = httpd::Request::from_raw_ptr(r).unwrap();
 
+   let mut headers_out = req.headers_out().unwrap();
+   headers_out.set("Test-Key", "Hello");
+
+   let headers_in = req.headers_in().unwrap();
    rwrite("<html><head><meta charset=\"utf-8\"></head><body>", r);
+
+   dump_str(r, "Cookie", headers_in.get("Cookie"));
 
    dump_str(r, "the_request", req.the_request());
    dump_str(r, "protocol", req.protocol());

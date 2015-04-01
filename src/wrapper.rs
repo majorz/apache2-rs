@@ -35,3 +35,12 @@ pub fn c_str_value<'a>(ptr: *const c_char) -> Option<&'a str> {
       Err(_) => None
    }
 }
+
+#[inline]
+pub fn wrap_ptr<'a, T>(ptr: *mut T) -> Option<Wrapper<'a, T>> {
+   if ptr.is_null() {
+      return None
+   }
+
+   Wrapper::<'a, T>::from_raw_ptr(ptr)
+}
