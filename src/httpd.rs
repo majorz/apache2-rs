@@ -114,10 +114,33 @@ pub mod raw {
 }
 
 
+use libc::c_int;
+
 use wrapper::{Wrapper, c_str_value, wrap_ptr};
 
 use apr::AprTable;
 
+
+pub enum Status {
+   // non-HTTP status codes returned by hooks
+   OK,            // Module has handled this stage.
+   DECLINED,      // Module declines to handle
+   DONE,          // Module has served the response completely
+                  // - it's safe to die() with no more output
+   SUSPENDED,     // Module will handle the remainder of the request.
+                  // The core will never invoke the request again,
+}
+
+impl Into<c_int> for Status {
+   fn into(self) -> c_int {
+      match self {
+         Status::OK => raw::OK,
+         Status::DECLINED => raw::DECLINED,
+         Status::DONE => raw::DONE,
+         Status::SUSPENDED => raw::SUSPENDED,
+      }
+   }
+}
 
 pub type Request<'a> = Wrapper<'a, raw::request_rec>;
 

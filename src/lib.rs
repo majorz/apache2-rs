@@ -23,7 +23,8 @@ use std::ffi::CString;
 
 use apr::raw::{apr_pool_t, APR_HOOK_MIDDLE};
 
-use httpd::raw::{OK, request_rec};
+use httpd::raw::{request_rec};
+use httpd::Status;
 use ap_exports::raw::{ap_hook_handler};
 use http_config::raw::{command_rec};
 use http_protocol::raw::{ap_rwrite};
@@ -128,5 +129,7 @@ pub extern "C" fn aprust_handler(r: *mut request_rec) -> c_int {
 
    rwrite("</body></html>", r);
 
-   OK
+   let status = Status::OK;
+
+   status.into()
 }
