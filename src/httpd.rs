@@ -114,6 +114,12 @@ pub mod raw {
 
 }
 
+
+use std::str;
+use std::ffi::CStr;
+use libc::c_char;
+
+
 struct Wrapper<'a, T: 'a> {
    raw: &'a mut T
 }
@@ -131,49 +137,102 @@ impl<'a, T> Wrapper<'a, T> {
          )
       }
    }
-}
 
-pub type Request<'a> = Wrapper<'a, raw::request_rec>;
+   #[inline]
+   fn string_value(&self, ptr: *const c_char) -> Option<&'a str> {
+      if ptr.is_null() {
+         return None
+      }
 
-use std::str;
-use std::ffi::CStr;
-
-macro_rules! str_getter {
-   ( $field:ident ) => {
-      pub fn $field(&self) -> Option<&'a str> {
-         let ptr = self.raw.$field;
-         if ptr.is_null() {
-            return None
-         }
-
-         let data = unsafe { CStr::from_ptr(ptr) }.to_bytes();
-         match str::from_utf8(data) {
-            Ok(s) => Some(s),
-            Err(_) => None
-         }
+      let data = unsafe { CStr::from_ptr(ptr) }.to_bytes();
+      match str::from_utf8(data) {
+         Ok(s) => Some(s),
+         Err(_) => None
       }
    }
 }
 
+pub type Request<'a> = Wrapper<'a, raw::request_rec>;
+
+
 impl<'a> Request<'a> {
-   str_getter!(the_request);
-   str_getter!(protocol);
-   str_getter!(hostname);
-   str_getter!(status_line);
-   str_getter!(method);
-   str_getter!(range);
-   str_getter!(content_type);
-   str_getter!(handler);
-   str_getter!(content_encoding);
-   str_getter!(vlist_validator);
-   str_getter!(user);
-   str_getter!(ap_auth_type);
-   str_getter!(unparsed_uri);
-   str_getter!(uri);
-   str_getter!(filename);
-   str_getter!(canonical_filename);
-   str_getter!(path_info);
-   str_getter!(args);
-   str_getter!(log_id);
-   str_getter!(useragent_ip);
+   pub fn the_request(&self) -> Option<&'a str> {
+      self.string_value(self.raw.the_request)
+   }
+
+   pub fn protocol(&self) -> Option<&'a str> {
+      self.string_value(self.raw.protocol)
+   }
+
+   pub fn hostname(&self) -> Option<&'a str> {
+      self.string_value(self.raw.hostname)
+   }
+
+   pub fn status_line(&self) -> Option<&'a str> {
+      self.string_value(self.raw.status_line)
+   }
+
+   pub fn method(&self) -> Option<&'a str> {
+      self.string_value(self.raw.method)
+   }
+
+   pub fn range(&self) -> Option<&'a str> {
+      self.string_value(self.raw.range)
+   }
+
+   pub fn content_type(&self) -> Option<&'a str> {
+      self.string_value(self.raw.content_type)
+   }
+
+   pub fn handler(&self) -> Option<&'a str> {
+      self.string_value(self.raw.handler)
+   }
+
+   pub fn content_encoding(&self) -> Option<&'a str> {
+      self.string_value(self.raw.content_encoding)
+   }
+
+   pub fn vlist_validator(&self) -> Option<&'a str> {
+      self.string_value(self.raw.vlist_validator)
+   }
+
+   pub fn user(&self) -> Option<&'a str> {
+      self.string_value(self.raw.user)
+   }
+
+   pub fn ap_auth_type(&self) -> Option<&'a str> {
+      self.string_value(self.raw.ap_auth_type)
+   }
+
+   pub fn unparsed_uri(&self) -> Option<&'a str> {
+      self.string_value(self.raw.unparsed_uri)
+   }
+
+   pub fn uri(&self) -> Option<&'a str> {
+      self.string_value(self.raw.uri)
+   }
+
+   pub fn filename(&self) -> Option<&'a str> {
+      self.string_value(self.raw.filename)
+   }
+
+   pub fn canonical_filename(&self) -> Option<&'a str> {
+      self.string_value(self.raw.canonical_filename)
+   }
+
+   pub fn path_info(&self) -> Option<&'a str> {
+      self.string_value(self.raw.path_info)
+   }
+
+   pub fn args(&self) -> Option<&'a str> {
+      self.string_value(self.raw.args)
+   }
+
+   pub fn log_id(&self) -> Option<&'a str> {
+      self.string_value(self.raw.log_id)
+   }
+
+   pub fn useragent_ip(&self) -> Option<&'a str> {
+      self.string_value(self.raw.useragent_ip)
+   }
 }
