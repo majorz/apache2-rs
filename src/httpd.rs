@@ -1,4 +1,3 @@
-
 pub mod raw {
    use libc::{c_int, c_char, c_uint};
 
@@ -115,124 +114,90 @@ pub mod raw {
 }
 
 
-use std::str;
-use std::ffi::CStr;
-use libc::c_char;
+use wrapper::{Wrapper, c_str_value};
 
-
-struct Wrapper<'a, T: 'a> {
-   raw: &'a mut T
-}
-
-impl<'a, T> Wrapper<'a, T> {
-   pub fn from_raw_ptr(ptr: *mut T) -> Option<Self> {
-      if ptr.is_null() {
-         None
-      } else {
-         let raw: &mut T = unsafe { &mut *ptr };
-         Some(
-            Wrapper::<T> {
-               raw: raw
-            }
-         )
-      }
-   }
-
-   #[inline]
-   fn string_value(&self, ptr: *const c_char) -> Option<&'a str> {
-      if ptr.is_null() {
-         return None
-      }
-
-      let data = unsafe { CStr::from_ptr(ptr) }.to_bytes();
-      match str::from_utf8(data) {
-         Ok(s) => Some(s),
-         Err(_) => None
-      }
-   }
-}
 
 pub type Request<'a> = Wrapper<'a, raw::request_rec>;
 
 
 impl<'a> Request<'a> {
    pub fn the_request(&self) -> Option<&'a str> {
-      self.string_value(self.raw.the_request)
+      c_str_value(self.raw.the_request)
    }
 
    pub fn protocol(&self) -> Option<&'a str> {
-      self.string_value(self.raw.protocol)
+      c_str_value(self.raw.protocol)
    }
 
    pub fn hostname(&self) -> Option<&'a str> {
-      self.string_value(self.raw.hostname)
+      c_str_value(self.raw.hostname)
    }
 
    pub fn status_line(&self) -> Option<&'a str> {
-      self.string_value(self.raw.status_line)
+      c_str_value(self.raw.status_line)
    }
 
    pub fn method(&self) -> Option<&'a str> {
-      self.string_value(self.raw.method)
+      c_str_value(self.raw.method)
    }
 
    pub fn range(&self) -> Option<&'a str> {
-      self.string_value(self.raw.range)
+      c_str_value(self.raw.range)
    }
 
    pub fn content_type(&self) -> Option<&'a str> {
-      self.string_value(self.raw.content_type)
+      c_str_value(self.raw.content_type)
    }
 
    pub fn handler(&self) -> Option<&'a str> {
-      self.string_value(self.raw.handler)
+      c_str_value(self.raw.handler)
    }
 
    pub fn content_encoding(&self) -> Option<&'a str> {
-      self.string_value(self.raw.content_encoding)
+      c_str_value(self.raw.content_encoding)
    }
 
    pub fn vlist_validator(&self) -> Option<&'a str> {
-      self.string_value(self.raw.vlist_validator)
+      c_str_value(self.raw.vlist_validator)
    }
 
    pub fn user(&self) -> Option<&'a str> {
-      self.string_value(self.raw.user)
+      c_str_value(self.raw.user)
    }
 
    pub fn ap_auth_type(&self) -> Option<&'a str> {
-      self.string_value(self.raw.ap_auth_type)
+      c_str_value(self.raw.ap_auth_type)
    }
 
    pub fn unparsed_uri(&self) -> Option<&'a str> {
-      self.string_value(self.raw.unparsed_uri)
+      c_str_value(self.raw.unparsed_uri)
    }
 
    pub fn uri(&self) -> Option<&'a str> {
-      self.string_value(self.raw.uri)
+      c_str_value(self.raw.uri)
    }
 
    pub fn filename(&self) -> Option<&'a str> {
-      self.string_value(self.raw.filename)
+      c_str_value(self.raw.filename)
    }
 
    pub fn canonical_filename(&self) -> Option<&'a str> {
-      self.string_value(self.raw.canonical_filename)
+      c_str_value(self.raw.canonical_filename)
    }
 
    pub fn path_info(&self) -> Option<&'a str> {
-      self.string_value(self.raw.path_info)
+      c_str_value(self.raw.path_info)
    }
 
    pub fn args(&self) -> Option<&'a str> {
-      self.string_value(self.raw.args)
+      c_str_value(self.raw.args)
    }
 
    pub fn log_id(&self) -> Option<&'a str> {
-      self.string_value(self.raw.log_id)
+      c_str_value(self.raw.log_id)
    }
 
    pub fn useragent_ip(&self) -> Option<&'a str> {
-      self.string_value(self.raw.useragent_ip)
+      c_str_value(self.raw.useragent_ip)
    }
 }

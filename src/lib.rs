@@ -14,6 +14,8 @@ pub mod http_config;
 
 pub mod http_protocol;
 
+pub mod wrapper;
+
 use libc::{c_void, c_char, c_int};
 
 use std::ptr;
