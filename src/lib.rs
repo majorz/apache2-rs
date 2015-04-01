@@ -30,17 +30,17 @@ use http_protocol::raw::{ap_rwrite};
 
 
 macro_rules! module_def {
-   ($module:ident, $handler:ident, $cname:expr) => {
-      const CNAME: &'static [u8] = $cname;
-      const CNAME_PTR: *const &'static [u8] = &CNAME;
-      const CNAME_CHAR_PTR: *const c_char = CNAME_PTR as *const c_char;
+   ($module:ident, $handler:ident, $c_name:expr) => {
+      const C_NAME: &'static [u8] = $c_name;
+      const C_NAME_PTR: *const &'static [u8] = &C_NAME;
+      const C_NAME_CHAR_PTR: *const c_char = C_NAME_PTR as *const c_char;
 
       #[no_mangle]
       pub static mut $module: http_config::raw::module = http_config::raw::module {
          version: ap_mmn::raw::MODULE_MAGIC_NUMBER_MAJOR,
          minor_version: ap_mmn::raw::MODULE_MAGIC_NUMBER_MINOR,
          module_index: -1,
-         name: CNAME_CHAR_PTR,
+         name: C_NAME_CHAR_PTR,
          dynamic_load_handle: 0 as *mut c_void,
          next: 0 as *mut http_config::raw::module,
          magic: ap_mmn::raw::MODULE_MAGIC_COOKIE,
