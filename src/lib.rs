@@ -75,17 +75,12 @@ fn dump_str<T: Into<Vec<u8>>>(req: &httpd::Request, name: T, optional: Option<&s
    req.write("<p>");
    req.write(name);
    req.write(": ");
-
-   match optional {
-      None => {
-         req.write("NULL");
-      },
-      Some(slice) => {
-         let html = format!("{:?}", slice);
-         req.write(html);
+   req.write(
+      match optional {
+         None => "NULL",
+         Some(slice) => slice
       }
-   };
-
+   );
    req.write("</p>");
 }
 
