@@ -1,8 +1,4 @@
 [package]
 
-name = "apache-rs"
-version = "0.0.1"
-
-[lib]
-name = "aprs"
-crate-type = ["dylib"]
+name = "apache2"
+version = "0.0.2"

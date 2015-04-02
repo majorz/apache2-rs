@@ -1,0 +1,11 @@
+[package]
+
+name = "mod_hellorust"
+version = "0.0.2"
+
+[lib]
+name = "mod_hellorust"
+crate-type = ["dylib"]
+
+[dependencies.apache2]
+path = "../.."
