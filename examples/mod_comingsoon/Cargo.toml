@@ -1,0 +1,11 @@
+[package]
+
+name = "mod_comingsoon"
+version = "0.0.2"
+
+[lib]
+name = "mod_comingsoon"
+crate-type = ["dylib"]
+
+[dependencies.apache2]
+path = "../.."
