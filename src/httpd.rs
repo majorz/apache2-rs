@@ -121,7 +121,6 @@ use std::ffi::CString;
 use wrapper::{Wrapper, c_str_value, wrap_ptr};
 
 use apr::AprTable;
-use http_protocol::raw::ap_rwrite;
 
 
 pub enum Status {
@@ -197,6 +196,17 @@ impl<'a> Request<'a> {
       c_str_value(self.raw.content_type)
    }
 
+   pub fn set_content_type<T: Into<Vec<u8>>>(&self, ct: T) {
+      let s = CString::new(ct).unwrap();
+
+      unsafe {
+         ::http_protocol::raw::ap_set_content_type(
+            self.raw,
+            s.as_ptr()
+         );
+      }
+   }
+
    pub fn handler(&self) -> Option<&'a str> {
       c_str_value(self.raw.handler)
    }
@@ -253,7 +263,7 @@ impl<'a> Request<'a> {
       let s = CString::new(data).unwrap();
 
       unsafe {
-         ap_rwrite(
+         ::http_protocol::raw::ap_rwrite(
             s.as_ptr() as *mut c_void,
             s.to_bytes().len() as i32,
             self.raw
