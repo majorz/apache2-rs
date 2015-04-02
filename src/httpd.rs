@@ -114,11 +114,14 @@ pub mod raw {
 }
 
 
-use libc::c_int;
+use libc::{c_void, c_int};
+
+use std::ffi::CString;
 
 use wrapper::{Wrapper, c_str_value, wrap_ptr};
 
 use apr::AprTable;
+use http_protocol::raw::ap_rwrite;
 
 
 pub enum Status {
@@ -244,5 +247,17 @@ impl<'a> Request<'a> {
 
    pub fn useragent_ip(&self) -> Option<&'a str> {
       c_str_value(self.raw.useragent_ip)
+   }
+
+   pub fn write<T: Into<Vec<u8>>>(&self, data: T) {
+      let s = CString::new(data).unwrap();
+
+      unsafe {
+         ap_rwrite(
+            s.as_ptr() as *mut c_void,
+            s.to_bytes().len() as i32,
+            self.raw
+         );
+      }
    }
 }

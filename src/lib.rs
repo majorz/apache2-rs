@@ -19,14 +19,12 @@ pub mod wrapper;
 use libc::{c_void, c_char, c_int};
 
 use std::ptr;
-use std::ffi::CString;
 
 use apr::raw::{apr_pool_t, APR_HOOK_MIDDLE};
 
 use httpd::raw::{request_rec};
 use ap_exports::raw::{ap_hook_handler};
 use http_config::raw::{command_rec};
-use http_protocol::raw::{ap_rwrite};
 
 
 macro_rules! module_def {
@@ -73,31 +71,22 @@ macro_rules! module_def {
 
 module_def!(aprust_module, aprust_handler, b"mod_aprust\0");
 
-fn rwrite<T: Into<Vec<u8>>>(t: T, req: &httpd::Request) {
-   let s = CString::new(t).unwrap();
-   let len = s.to_bytes().len();
-
-   unsafe {
-      ap_rwrite(s.as_ptr() as *mut c_void, len as i32, req.raw);
-   }
-}
-
 fn dump_str<T: Into<Vec<u8>>>(req: &httpd::Request, name: T, optional: Option<&str>) {
-   rwrite("<p>", req);
-   rwrite(name, req);
-   rwrite(": ", req);
+   req.write("<p>");
+   req.write(name);
+   req.write(": ");
 
    match optional {
       None => {
-         rwrite("NULL", req);
+         req.write("NULL");
       },
       Some(slice) => {
          let html = format!("{:?}", slice);
-         rwrite(html, req);
+         req.write(html);
       }
    };
 
-   rwrite("</p>", req);
+   req.write("</p>");
 }
 
 fn aprust_handler(req: &httpd::Request) -> httpd::Status {
@@ -105,7 +94,7 @@ fn aprust_handler(req: &httpd::Request) -> httpd::Status {
    headers_out.set("Test-Key", "Hello");
 
    let headers_in = req.headers_in().unwrap();
-   rwrite("<html><head><meta charset=\"utf-8\"></head><body>", req);
+   req.write("<html><head><meta charset=\"utf-8\"></head><body>");
 
    dump_str(req, "Cookie", headers_in.get("Cookie"));
 
@@ -130,7 +119,7 @@ fn aprust_handler(req: &httpd::Request) -> httpd::Status {
    dump_str(req, "log_id", req.log_id());
    dump_str(req, "useragent_ip", req.useragent_ip());
 
-   rwrite("</body></html>", req);
+   req.write("</body></html>");
 
    httpd::Status::OK
 }
