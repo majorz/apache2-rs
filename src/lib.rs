@@ -24,7 +24,6 @@ use std::ffi::CString;
 use apr::raw::{apr_pool_t, APR_HOOK_MIDDLE};
 
 use httpd::raw::{request_rec};
-use httpd::Status;
 use ap_exports::raw::{ap_hook_handler};
 use http_config::raw::{command_rec};
 use http_protocol::raw::{ap_rwrite};
@@ -51,85 +50,87 @@ macro_rules! module_def {
          create_server_config: None,
          merge_server_config: None,
          cmds: 0 as *const command_rec,
-         register_hooks: Some(module_hooks),
+         register_hooks: Some(c_module_hooks),
       };
 
-      extern "C" fn module_hooks(_: *mut apr_pool_t) {
+      extern "C" fn c_module_hooks(_: *mut apr_pool_t) {
          unsafe {
             ap_hook_handler(
-               Some($handler), ptr::null(), ptr::null(), APR_HOOK_MIDDLE
+               Some(c_module_handler), ptr::null(), ptr::null(), APR_HOOK_MIDDLE
             );
          }
       }
 
+      #[no_mangle]
+      pub extern "C" fn c_module_handler(r: *mut request_rec) -> c_int {
+         match httpd::Request::from_raw_ptr(r) {
+            None => httpd::Status::DECLINED.into(),
+            Some(request) => $handler(&request).into()
+         }
+      }
    }
 }
 
 module_def!(aprust_module, aprust_handler, b"mod_aprust\0");
 
-fn rwrite<T: Into<Vec<u8>>>(t: T, r: *mut request_rec) {
+fn rwrite<T: Into<Vec<u8>>>(t: T, req: &httpd::Request) {
    let s = CString::new(t).unwrap();
    let len = s.to_bytes().len();
 
    unsafe {
-      ap_rwrite(s.as_ptr() as *mut c_void, len as i32, r);
+      ap_rwrite(s.as_ptr() as *mut c_void, len as i32, req.raw);
    }
 }
 
-fn dump_str<T: Into<Vec<u8>>>(r: *mut request_rec, name: T, optional: Option<&str>) {
-   rwrite("<p>", r);
-   rwrite(name, r);
-   rwrite(": ", r);
+fn dump_str<T: Into<Vec<u8>>>(req: &httpd::Request, name: T, optional: Option<&str>) {
+   rwrite("<p>", req);
+   rwrite(name, req);
+   rwrite(": ", req);
 
    match optional {
       None => {
-         rwrite("NULL", r);
+         rwrite("NULL", req);
       },
       Some(slice) => {
          let html = format!("{:?}", slice);
-         rwrite(html, r);
+         rwrite(html, req);
       }
    };
 
-   rwrite("</p>", r);
+   rwrite("</p>", req);
 }
 
-#[no_mangle]
-pub extern "C" fn aprust_handler(r: *mut request_rec) -> c_int {
-   let req = httpd::Request::from_raw_ptr(r).unwrap();
-
+fn aprust_handler(req: &httpd::Request) -> httpd::Status {
    let mut headers_out = req.headers_out().unwrap();
    headers_out.set("Test-Key", "Hello");
 
    let headers_in = req.headers_in().unwrap();
-   rwrite("<html><head><meta charset=\"utf-8\"></head><body>", r);
+   rwrite("<html><head><meta charset=\"utf-8\"></head><body>", req);
 
-   dump_str(r, "Cookie", headers_in.get("Cookie"));
+   dump_str(req, "Cookie", headers_in.get("Cookie"));
 
-   dump_str(r, "the_request", req.the_request());
-   dump_str(r, "protocol", req.protocol());
-   dump_str(r, "hostname", req.hostname());
-   dump_str(r, "status_line", req.status_line());
-   dump_str(r, "method", req.method());
-   dump_str(r, "range", req.range());
-   dump_str(r, "content_type", req.content_type());
-   dump_str(r, "handler", req.handler());
-   dump_str(r, "content_encoding", req.content_encoding());
-   dump_str(r, "vlist_validator", req.vlist_validator());
-   dump_str(r, "user", req.user());
-   dump_str(r, "ap_auth_type", req.ap_auth_type());
-   dump_str(r, "unparsed_uri", req.unparsed_uri());
-   dump_str(r, "uri", req.uri());
-   dump_str(r, "filename", req.filename());
-   dump_str(r, "canonical_filename", req.canonical_filename());
-   dump_str(r, "path_info", req.path_info());
-   dump_str(r, "args", req.args());
-   dump_str(r, "log_id", req.log_id());
-   dump_str(r, "useragent_ip", req.useragent_ip());
+   dump_str(req, "the_request", req.the_request());
+   dump_str(req, "protocol", req.protocol());
+   dump_str(req, "hostname", req.hostname());
+   dump_str(req, "status_line", req.status_line());
+   dump_str(req, "method", req.method());
+   dump_str(req, "range", req.range());
+   dump_str(req, "content_type", req.content_type());
+   dump_str(req, "handler", req.handler());
+   dump_str(req, "content_encoding", req.content_encoding());
+   dump_str(req, "vlist_validator", req.vlist_validator());
+   dump_str(req, "user", req.user());
+   dump_str(req, "ap_auth_type", req.ap_auth_type());
+   dump_str(req, "unparsed_uri", req.unparsed_uri());
+   dump_str(req, "uri", req.uri());
+   dump_str(req, "filename", req.filename());
+   dump_str(req, "canonical_filename", req.canonical_filename());
+   dump_str(req, "path_info", req.path_info());
+   dump_str(req, "args", req.args());
+   dump_str(req, "log_id", req.log_id());
+   dump_str(req, "useragent_ip", req.useragent_ip());
 
-   rwrite("</body></html>", r);
+   rwrite("</body></html>", req);
 
-   let status = Status::OK;
-
-   status.into()
+   httpd::Status::OK
 }
