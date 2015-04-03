@@ -1,8 +1,9 @@
 pub mod raw {
-   use libc::{c_int, c_char, c_uint};
+   use libc::{c_char, c_int, c_uint, c_long, c_void};
 
    use apr::raw::{apr_pool_t, apr_time_t, apr_array_header_t, apr_off_t, apr_thread_mutex_t,
-      apr_int64_t, apr_table_t, apr_bucket_brigade, apr_uri_t, apr_finfo_t, apr_sockaddr_t};
+      apr_int64_t, apr_table_t, apr_bucket_brigade, apr_uri_t, apr_finfo_t, apr_sockaddr_t,
+      apr_thread_t, apr_bucket_alloc_t};
 
    use util_filter::raw::{ap_filter_t};
 
@@ -88,10 +89,45 @@ pub mod raw {
    }
 
    #[repr(C)]
+   pub struct conn_rec {
+       pub pool: *mut apr_pool_t,
+       pub base_server: *mut server_rec,
+       pub vhost_lookup_data: *mut c_void,
+       pub local_addr: *mut apr_sockaddr_t,
+       pub client_addr: *mut apr_sockaddr_t,
+       pub client_ip: *mut c_char,
+       pub remote_host: *mut c_char,
+       pub remote_logname: *mut c_char,
+       pub local_ip: *mut c_char,
+       pub local_host: *mut c_char,
+       pub id: c_long,
+       pub conn_config: *mut ap_conf_vector_t,
+       pub notes: *mut apr_table_t,
+       pub input_filters: *mut ap_filter_t,
+       pub output_filters: *mut ap_filter_t,
+       pub sbh: *mut c_void,
+       pub bucket_alloc: *mut apr_bucket_alloc_t,
+       pub cs: *mut conn_state_t,
+       pub data_in_input_filters: c_int,
+       pub data_in_output_filters: c_int,
+       pub _bindgen_bitfield_1_: c_uint,
+       pub _bindgen_bitfield_2_: c_int,
+       pub aborted: c_uint,
+       pub keepalive: ap_conn_keepalive_e,
+       pub keepalives: c_int,
+       pub log: *const ap_logconf,
+       pub log_id: *const c_char,
+       pub current_thread: *mut apr_thread_t,
+   }
+
+   #[repr(C)]
    pub struct ap_logconf {
        pub module_levels: *mut c_char,
        pub level: c_int,
    }
+
+   #[repr(C)]
+   pub struct ap_conn_keepalive_e;
 
    #[repr(C)]
    pub struct ap_conf_vector_t;
@@ -100,7 +136,7 @@ pub mod raw {
    pub struct ap_method_list_t;
 
    #[repr(C)]
-   pub struct conn_rec;
+   pub struct conn_state_t;
 
    #[repr(C)]
    pub struct htaccess_result;
@@ -151,6 +187,10 @@ pub type Request<'a> = Wrapper<'a, raw::request_rec>;
 
 
 impl<'a> Request<'a> {
+   pub fn connection(&self) -> Option<Conn> {
+      wrap_ptr(self.raw.connection)
+   }
+
    pub fn the_request(&self) -> Option<&'a str> {
       c_str_value(self.raw.the_request)
    }
@@ -274,6 +314,36 @@ impl<'a> Request<'a> {
       }
    }
 }
+
+pub type Conn<'a> = Wrapper<'a, raw::conn_rec>;
+
+
+impl<'a> Conn<'a> {
+   pub fn client_ip(&self) -> Option<&'a str> {
+      c_str_value(self.raw.client_ip)
+   }
+
+   pub fn remote_host(&self) -> Option<&'a str> {
+      c_str_value(self.raw.remote_host)
+   }
+
+   pub fn remote_logname(&self) -> Option<&'a str> {
+      c_str_value(self.raw.remote_logname)
+   }
+
+   pub fn local_ip(&self) -> Option<&'a str> {
+      c_str_value(self.raw.local_ip)
+   }
+
+   pub fn local_host(&self) -> Option<&'a str> {
+      c_str_value(self.raw.local_host)
+   }
+
+   pub fn log_id(&self) -> Option<&'a str> {
+      c_str_value(self.raw.log_id)
+   }
+}
+
 
 pub fn get_server_description<'a>() -> Option<&'a str> {
    c_str_value(

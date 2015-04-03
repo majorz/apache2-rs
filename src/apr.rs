@@ -23,6 +23,9 @@ pub mod raw {
    pub struct apr_array_header_t;
 
    #[repr(C)]
+   pub struct apr_bucket_alloc_t;
+
+   #[repr(C)]
    pub struct apr_bucket_brigade;
 
    #[repr(C)]
@@ -39,6 +42,9 @@ pub mod raw {
 
    #[repr(C)]
    pub struct apr_thread_mutex_t;
+
+   #[repr(C)]
+   pub struct apr_thread_t;
 
    #[repr(C)]
    pub struct apr_uri_t;
