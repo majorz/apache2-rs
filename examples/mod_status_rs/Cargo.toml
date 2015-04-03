@@ -1,0 +1,11 @@
+[package]
+
+name = "mod_status_rs"
+version = "0.0.2"
+
+[lib]
+name = "mod_status_rs"
+crate-type = ["dylib"]
+
+[dependencies.apache2]
+path = "../.."
