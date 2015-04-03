@@ -1,10 +1,10 @@
 [package]
 
-name = "mod_comingsoon"
+name = "mod_coming_soon"
 version = "0.0.2"
 
 [lib]
-name = "mod_comingsoon"
+name = "mod_coming_soon"
 crate-type = ["dylib"]
 
 [dependencies.apache2]

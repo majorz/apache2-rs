@@ -7,11 +7,11 @@ extern crate apache2;
 
 use apache2::{Request, Status};
 
-apache2_module!(comingsoon_module, comingsoon_handler, b"mod_comingsoon\0");
+apache2_module!(coming_soon_module, coming_soon_handler, b"mod_coming_soon\0");
 
 
-fn comingsoon_handler(r: &Request) -> Status {
-   if r.handler().unwrap() != "comingsoon" || r.uri().unwrap() != "/" {
+fn coming_soon_handler(r: &Request) -> Status {
+   if r.handler().unwrap() != "coming_soon" || r.uri().unwrap() != "/" {
       return Status::DECLINED
    }
 
