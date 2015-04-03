@@ -16,7 +16,7 @@ pub mod http_protocol;
 pub mod wrapper;
 
 
-pub use httpd::{Request, Status};
+pub use httpd::{Request, Status, get_server_description};
 
 
 #[macro_export]

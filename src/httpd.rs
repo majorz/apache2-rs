@@ -111,6 +111,9 @@ pub mod raw {
    #[repr(C)]
    pub struct server_rec;
 
+   extern "C" {
+      pub fn ap_get_server_description() -> *const c_char;
+   }
 }
 
 
@@ -270,4 +273,10 @@ impl<'a> Request<'a> {
          );
       }
    }
+}
+
+pub fn get_server_description<'a>() -> Option<&'a str> {
+   c_str_value(
+      unsafe { raw::ap_get_server_description() }
+   )
 }
