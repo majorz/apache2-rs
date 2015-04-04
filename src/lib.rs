@@ -21,7 +21,7 @@ pub use httpd::{Request, Status, get_server_description};
 
 #[macro_export]
 macro_rules! apache2_module {
-   ($module:ident, $handler:ident, $c_name:expr) => {
+   ($module:ident, $handler:ident, $c_handler:ident, $c_name:expr) => {
       const C_NAME: &'static [u8] = $c_name;
       const C_NAME_PTR: *const &'static [u8] = &C_NAME;
       const C_NAME_CHAR_PTR: *const libc::c_char = C_NAME_PTR as *const libc::c_char;
@@ -47,7 +47,7 @@ macro_rules! apache2_module {
       extern "C" fn c_module_hooks(_: *mut $crate::apr::raw::apr_pool_t) {
          unsafe {
             $crate::ap_exports::raw::ap_hook_handler(
-               Some(c_module_handler),
+               Some($c_handler),
                std::ptr::null(),
                std::ptr::null(),
                $crate::apr::raw::APR_HOOK_MIDDLE
@@ -56,7 +56,7 @@ macro_rules! apache2_module {
       }
 
       #[no_mangle]
-      pub extern "C" fn c_module_handler(r: *mut $crate::httpd::raw::request_rec) -> libc::c_int {
+      pub extern "C" fn $c_handler(r: *mut $crate::httpd::raw::request_rec) -> libc::c_int {
          match $crate::httpd::Request::from_raw_ptr(r) {
             None => $crate::httpd::Status::DECLINED.into(),
             Some(request) => $handler(&request).into()

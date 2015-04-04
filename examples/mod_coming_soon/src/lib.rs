@@ -7,7 +7,7 @@ extern crate apache2;
 
 use apache2::{Request, Status};
 
-apache2_module!(coming_soon_module, coming_soon_handler, b"mod_coming_soon\0");
+apache2_module!(coming_soon_module, coming_soon_handler, c_coming_soon_handler, b"mod_coming_soon\0");
 
 
 fn coming_soon_handler(r: &Request) -> Status {

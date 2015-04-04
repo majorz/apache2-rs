@@ -7,7 +7,7 @@ extern crate apache2;
 
 use apache2::{Request, Status, get_server_description};
 
-apache2_module!(status_rs_module, status_rs_handler, b"mod_status_rs\0");
+apache2_module!(status_rs_module, status_rs_handler, c_status_rs_handler, b"mod_status_rs\0");
 
 
 fn status_rs_handler(r: &Request) -> Status {
