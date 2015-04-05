@@ -149,6 +149,8 @@ pub mod raw {
 
    extern "C" {
       pub fn ap_get_server_description() -> *const c_char;
+
+      pub fn ap_escape_html2(p: *mut apr_pool_t, s: *const c_char, toasc: c_int) -> *mut c_char;
    }
 }
 
@@ -240,12 +242,12 @@ impl<'a> Request<'a> {
    }
 
    pub fn set_content_type<T: Into<Vec<u8>>>(&self, ct: T) {
-      let s = CString::new(ct).unwrap();
+      let cstr = CString::new(ct).unwrap();
 
       unsafe {
          ::http_protocol::raw::ap_set_content_type(
             self.raw,
-            s.as_ptr()
+            cstr.as_ptr()
          );
       }
    }
@@ -303,15 +305,29 @@ impl<'a> Request<'a> {
    }
 
    pub fn write<T: Into<Vec<u8>>>(&self, data: T) {
-      let s = CString::new(data).unwrap();
+      let cstr = CString::new(data).unwrap();
 
       unsafe {
          ::http_protocol::raw::ap_rwrite(
-            s.as_ptr() as *mut c_void,
-            s.to_bytes().len() as i32,
+            cstr.as_ptr() as *mut c_void,
+            cstr.to_bytes().len() as i32,
             self.raw
          );
       }
+   }
+
+   pub fn escape_html<T: Into<Vec<u8>>>(&self, s: T) -> Option<&'a str> {
+      let cstr = CString::new(s).unwrap();
+
+      let escaped = unsafe {
+         raw::ap_escape_html2(
+            self.raw.pool,
+            cstr.as_ptr(),
+            0
+         )
+      };
+
+      c_str_value(escaped)
    }
 }
 
