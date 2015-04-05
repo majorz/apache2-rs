@@ -49,4 +49,16 @@ pub mod raw {
       pub cmds: *const command_rec,
       pub register_hooks: ::std::option::Option<register_hooks_fn>
    }
+
+   extern "C" {
+      pub fn ap_show_mpm() -> *const c_char;
+   }
+}
+
+use wrapper::c_str_value;
+
+pub fn show_mpm<'a>() -> Option<&'a str> {
+   c_str_value(
+      unsafe { raw::ap_show_mpm() }
+   )
 }

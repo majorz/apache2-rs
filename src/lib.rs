@@ -18,6 +18,7 @@ pub mod wrapper;
 
 
 pub use httpd::{Request, Status, get_server_description};
+pub use http_config::{show_mpm};
 
 
 #[macro_export]
