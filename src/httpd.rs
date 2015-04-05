@@ -150,6 +150,8 @@ pub mod raw {
    extern "C" {
       pub fn ap_get_server_description() -> *const c_char;
 
+      pub fn ap_get_server_built() -> *const c_char;
+
       pub fn ap_escape_html2(p: *mut apr_pool_t, s: *const c_char, toasc: c_int) -> *mut c_char;
    }
 }
@@ -370,5 +372,11 @@ impl<'a> Conn<'a> {
 pub fn get_server_description<'a>() -> Option<&'a str> {
    c_str_value(
       unsafe { raw::ap_get_server_description() }
+   )
+}
+
+pub fn get_server_built<'a>() -> Option<&'a str> {
+   c_str_value(
+      unsafe { raw::ap_get_server_built() }
    )
 }

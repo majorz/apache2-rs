@@ -5,7 +5,7 @@ extern crate libc;
 #[macro_use]
 extern crate apache2;
 
-use apache2::{Request, Status, get_server_description, show_mpm};
+use apache2::{Request, Status, get_server_description, get_server_built, show_mpm};
 
 apache2_module!(status_rs_module, status_rs_handler, c_status_rs_handler, b"mod_status_rs\0");
 
@@ -16,6 +16,7 @@ fn status_rs_handler(r: &Request) -> Status {
    }
 
    let server_description = get_server_description().unwrap();
+   let server_built = get_server_built().unwrap();
 
    let conn = r.connection().unwrap();
    let client_ip = conn.client_ip().unwrap();
@@ -36,6 +37,7 @@ fn status_rs_handler(r: &Request) -> Status {
          <h1>Apache Server Status for {} (via {})</h1>
          <p>Server Version: {}</p>
          <p>Server MPM: {}</p>
+         <p>Server Built: {}</p>
          <p>Client IP: {}</p>
       </body>
       </html>",
@@ -43,6 +45,7 @@ fn status_rs_handler(r: &Request) -> Status {
       local_ip,
       server_description,
       mmp,
+      server_built,
       client_ip,
    ));
 
