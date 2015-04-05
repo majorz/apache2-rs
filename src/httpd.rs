@@ -329,6 +329,12 @@ impl<'a> Request<'a> {
 
       c_str_value(escaped)
    }
+
+   pub fn server_name(&self) -> Option<&'a str> {
+      c_str_value(
+         unsafe { ::http_core::raw::ap_get_server_name(self.raw) }
+      )
+   }
 }
 
 pub type Conn<'a> = Wrapper<'a, raw::conn_rec>;

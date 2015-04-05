@@ -19,6 +19,8 @@ fn status_rs_handler(r: &Request) -> Status {
 
    let conn = r.connection().unwrap();
    let client_ip = conn.client_ip().unwrap();
+   let local_ip = conn.local_ip().unwrap();
+   let server_name = r.escape_html(r.server_name().unwrap()).unwrap();
 
    r.set_content_type("text/html");
 
@@ -30,11 +32,13 @@ fn status_rs_handler(r: &Request) -> Status {
          <title>Apache Status</title>
       </head>
       <body>
-         <h1>Apache Server Status</h1>
+         <h1>Apache Server Status for {} (via {})</h1>
          <p>Server Version: {}</p>
          <p>Client IP: {}</p>
       </body>
       </html>",
+      server_name,
+      local_ip,
       server_description,
       client_ip,
    ));

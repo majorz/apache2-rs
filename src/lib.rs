@@ -11,6 +11,7 @@ pub mod httpd;
 pub mod ap_mmn;
 pub mod http_config;
 
+pub mod http_core;
 pub mod http_protocol;
 
 pub mod wrapper;
