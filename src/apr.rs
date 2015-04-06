@@ -17,6 +17,7 @@ pub mod raw {
    extern "C" {
       pub fn apr_table_get(t: *const apr_table_t, key: *const c_char) -> *const c_char;
       pub fn apr_table_set(t: *mut apr_table_t, key: *const c_char, val: *const c_char) -> ();
+      pub fn apr_pstrmemdup(p: *mut apr_pool_t, s: *const c_char, n: apr_size_t) -> *mut c_char;
    }
 
    #[repr(C)]

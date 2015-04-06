@@ -90,34 +90,34 @@ pub mod raw {
 
    #[repr(C)]
    pub struct conn_rec {
-       pub pool: *mut apr_pool_t,
-       pub base_server: *mut server_rec,
-       pub vhost_lookup_data: *mut c_void,
-       pub local_addr: *mut apr_sockaddr_t,
-       pub client_addr: *mut apr_sockaddr_t,
-       pub client_ip: *mut c_char,
-       pub remote_host: *mut c_char,
-       pub remote_logname: *mut c_char,
-       pub local_ip: *mut c_char,
-       pub local_host: *mut c_char,
-       pub id: c_long,
-       pub conn_config: *mut ap_conf_vector_t,
-       pub notes: *mut apr_table_t,
-       pub input_filters: *mut ap_filter_t,
-       pub output_filters: *mut ap_filter_t,
-       pub sbh: *mut c_void,
-       pub bucket_alloc: *mut apr_bucket_alloc_t,
-       pub cs: *mut conn_state_t,
-       pub data_in_input_filters: c_int,
-       pub data_in_output_filters: c_int,
-       pub _bindgen_bitfield_1_: c_uint,
-       pub _bindgen_bitfield_2_: c_int,
-       pub aborted: c_uint,
-       pub keepalive: ap_conn_keepalive_e,
-       pub keepalives: c_int,
-       pub log: *const ap_logconf,
-       pub log_id: *const c_char,
-       pub current_thread: *mut apr_thread_t,
+      pub pool: *mut apr_pool_t,
+      pub base_server: *mut server_rec,
+      pub vhost_lookup_data: *mut c_void,
+      pub local_addr: *mut apr_sockaddr_t,
+      pub client_addr: *mut apr_sockaddr_t,
+      pub client_ip: *mut c_char,
+      pub remote_host: *mut c_char,
+      pub remote_logname: *mut c_char,
+      pub local_ip: *mut c_char,
+      pub local_host: *mut c_char,
+      pub id: c_long,
+      pub conn_config: *mut ap_conf_vector_t,
+      pub notes: *mut apr_table_t,
+      pub input_filters: *mut ap_filter_t,
+      pub output_filters: *mut ap_filter_t,
+      pub sbh: *mut c_void,
+      pub bucket_alloc: *mut apr_bucket_alloc_t,
+      pub cs: *mut conn_state_t,
+      pub data_in_input_filters: c_int,
+      pub data_in_output_filters: c_int,
+      pub _bindgen_bitfield_1_: c_uint,
+      pub _bindgen_bitfield_2_: c_int,
+      pub aborted: c_uint,
+      pub keepalive: ap_conn_keepalive_e,
+      pub keepalives: c_int,
+      pub log: *const ap_logconf,
+      pub log_id: *const c_char,
+      pub current_thread: *mut apr_thread_t,
    }
 
    #[repr(C)]
@@ -244,14 +244,21 @@ impl<'a> Request<'a> {
    }
 
    pub fn set_content_type<T: Into<Vec<u8>>>(&self, ct: T) {
-      let cstr = CString::new(ct).unwrap();
+      let bytes = ct.into();
+      let cstr: *const u8 = bytes.as_ptr();
 
       unsafe {
+         let s = ::apr::raw::apr_pstrmemdup(
+            self.raw.pool,
+            cstr as *const i8,
+            bytes.len() as u64
+         );
+
          ::http_protocol::raw::ap_set_content_type(
             self.raw,
-            cstr.as_ptr()
+            s
          );
-      }
+      };
    }
 
    pub fn handler(&self) -> Option<&'a str> {
