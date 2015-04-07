@@ -45,6 +45,12 @@ fn info_rs_handler(r: &Request) -> Status {
    let client_ip = conn.client_ip().unwrap();
    r.write(format!("<p>Client IP: {}</p>", client_ip));
 
+   let args = match r.args() {
+      Some(args) => args,
+      None => "None"
+   };
+   r.write(format!("<p>Request Args: {}</p>", args));
+
    r.write("</body></html>");
 
    Status::OK
