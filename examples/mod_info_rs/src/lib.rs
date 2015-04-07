@@ -8,6 +8,12 @@ use apache2::{Request, Status, server_banner, server_description, server_built, 
 
 apache2_module!(info_rs_module, info_rs_handler, c_info_rs_handler, b"mod_info_rs\0");
 
+fn unwrap_str<'a>(option: Option<&'a str>) -> &'a str {
+   match option {
+      Some(val) => val,
+      None => "--"
+   }
+}
 
 fn info_rs_handler(r: &Request) -> Status {
    if r.handler().unwrap() != "server-info-rs" {
@@ -22,39 +28,40 @@ fn info_rs_handler(r: &Request) -> Status {
 
    r.write("<h1>Apache Server Information</h1>");
 
-   let server_name = r.escape_html(r.server_name().unwrap()).unwrap();
+   let server_name = unwrap_str(
+      r.escape_html(
+         unwrap_str(r.server_name())
+      )
+   );
    let server_port = r.server_port();
-   let local_ip = conn.local_ip().unwrap();
+   let local_ip = unwrap_str(conn.local_ip());
    r.write(format!("<p>Server: {}:{} (via {})</p>", server_name, server_port, local_ip));
 
-   let description = server_description().unwrap();
-   let banner = server_banner().unwrap();
+   let description = unwrap_str(server_description());
+   let banner = unwrap_str(server_banner());
    r.write(format!("<p>Server Description/Banner: {} / {}</p>", description, banner));
 
-   let mmp = show_mpm().unwrap();
+   let mmp = unwrap_str(show_mpm());
    r.write(format!("<p>Server MPM: {}</p>", mmp));
 
-   let built = server_built().unwrap();
+   let built = unwrap_str(server_built());
    r.write(format!("<p>Server Built: {}</p>", built));
 
-   let apr_version = apr_version_string().unwrap();
+   let apr_version = unwrap_str(apr_version_string());
    r.write(format!("<p>Server loaded APR Version: {}</p>", apr_version));
 
-   let apu_version = apu_version_string().unwrap();
+   let apu_version = unwrap_str(apu_version_string());
    r.write(format!("<p>Server loaded APU Version: {}</p>", apu_version));
 
-   let document_root = r.document_root().unwrap();
+   let document_root = unwrap_str(r.document_root());
    r.write(format!("<p>Document Root: {}</p>", document_root));
 
    r.write("<hr />");
 
-   let client_ip = conn.client_ip().unwrap();
+   let client_ip = unwrap_str(conn.client_ip());
    r.write(format!("<p>Client IP: {}</p>", client_ip));
 
-   let args = match r.args() {
-      Some(args) => args,
-      None => "None"
-   };
+   let args = unwrap_str(r.args());
    r.write(format!("<p>Request Args: {}</p>", args));
 
    r.write("</body></html>");
