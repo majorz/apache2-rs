@@ -343,6 +343,12 @@ impl<'a> Request<'a> {
    pub fn server_port(&self) -> u16 {
       unsafe { ::http_core::raw::ap_get_server_port(self.raw) }
    }
+
+   pub fn document_root(&self) -> Option<&'a str> {
+      c_str_value(
+         unsafe { ::http_core::raw::ap_document_root(self.raw) }
+      )
+   }
 }
 
 pub type Conn<'a> = Wrapper<'a, raw::conn_rec>;

@@ -43,6 +43,9 @@ fn info_rs_handler(r: &Request) -> Status {
    let apu_version = apu_version_string().unwrap();
    r.write(format!("<p>Server loaded APU Version: {}</p>", apu_version));
 
+   let document_root = r.document_root().unwrap();
+   r.write(format!("<p>Document Root: {}</p>", document_root));
+
    r.write("<hr />");
 
    let client_ip = conn.client_ip().unwrap();
