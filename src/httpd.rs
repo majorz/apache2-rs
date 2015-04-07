@@ -244,19 +244,12 @@ impl<'a> Request<'a> {
    }
 
    pub fn set_content_type<T: Into<Vec<u8>>>(&self, ct: T) {
-      let bytes = ct.into();
-      let cstr: *const u8 = bytes.as_ptr();
+      let c_str = ::apr::raw::dup_c_str(self.raw.pool, ct);
 
       unsafe {
-         let s = ::apr::raw::apr_pstrmemdup(
-            self.raw.pool,
-            cstr as *const i8,
-            bytes.len() as u64
-         );
-
          ::http_protocol::raw::ap_set_content_type(
             self.raw,
-            s
+            c_str
          );
       };
    }

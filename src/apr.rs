@@ -20,6 +20,18 @@ pub mod raw {
       pub fn apr_pstrmemdup(p: *mut apr_pool_t, s: *const c_char, n: apr_size_t) -> *mut c_char;
    }
 
+   pub fn dup_c_str<T: Into<Vec<u8>>>(pool: *mut apr_pool_t, data: T) -> *mut c_char {
+      let bytes = data.into();
+
+      unsafe {
+         apr_pstrmemdup(
+            pool,
+            bytes.as_ptr() as *const c_char,
+            bytes.len() as apr_size_t
+         )
+      }
+   }
+
    #[repr(C)]
    pub struct apr_array_header_t;
 
