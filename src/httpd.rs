@@ -375,19 +375,19 @@ impl<'a> Conn<'a> {
 }
 
 
-pub fn get_server_banner<'a>() -> Option<&'a str> {
+pub fn server_banner<'a>() -> Option<&'a str> {
    c_str_value(
       unsafe { raw::ap_get_server_banner() }
    )
 }
 
-pub fn get_server_description<'a>() -> Option<&'a str> {
+pub fn server_description<'a>() -> Option<&'a str> {
    c_str_value(
       unsafe { raw::ap_get_server_description() }
    )
 }
 
-pub fn get_server_built<'a>() -> Option<&'a str> {
+pub fn server_built<'a>() -> Option<&'a str> {
    c_str_value(
       unsafe { raw::ap_get_server_built() }
    )
