@@ -337,6 +337,10 @@ impl<'a> Request<'a> {
          unsafe { ::http_core::raw::ap_get_server_name(self.raw) }
       )
    }
+
+   pub fn server_port(&self) -> u16 {
+      unsafe { ::http_core::raw::ap_get_server_port(self.raw) }
+   }
 }
 
 pub type Conn<'a> = Wrapper<'a, raw::conn_rec>;

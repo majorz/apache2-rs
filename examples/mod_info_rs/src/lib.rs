@@ -23,8 +23,9 @@ fn info_rs_handler(r: &Request) -> Status {
    r.write("<h1>Apache Server Information</h1>");
 
    let server_name = r.escape_html(r.server_name().unwrap()).unwrap();
+   let server_port = r.server_port();
    let local_ip = conn.local_ip().unwrap();
-   r.write(format!("<p>Server: {} (via {})</p>", server_name, local_ip));
+   r.write(format!("<p>Server: {}:{} (via {})</p>", server_name, server_port, local_ip));
 
    let server_description = get_server_description().unwrap();
    r.write(format!("<p>Server Version: {}</p>", server_description));

@@ -80,6 +80,7 @@ pub mod raw {
    pub type apr_status_t = c_int;
    pub type apr_signum_t = c_int;
    pub type apr_time_t = apr_int64_t;
+   pub type apr_port_t = apr_uint16_t;
 }
 
 use std::ffi::CString;
