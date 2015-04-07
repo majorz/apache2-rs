@@ -18,6 +18,7 @@ pub mod raw {
       pub fn apr_table_get(t: *const apr_table_t, key: *const c_char) -> *const c_char;
       pub fn apr_table_set(t: *mut apr_table_t, key: *const c_char, val: *const c_char) -> ();
       pub fn apr_pstrmemdup(p: *mut apr_pool_t, s: *const c_char, n: apr_size_t) -> *mut c_char;
+      pub fn apr_version_string() -> *const c_char;
    }
 
    pub fn dup_c_str<T: Into<Vec<u8>>>(pool: *mut apr_pool_t, data: T) -> *mut c_char {
@@ -106,4 +107,10 @@ impl<'a> AprTable<'a> {
          )
       };
    }
+}
+
+pub fn apr_version_string<'a>() -> Option<&'a str> {
+   c_str_value(
+      unsafe { raw::apr_version_string() }
+   )
 }

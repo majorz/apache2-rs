@@ -3,7 +3,8 @@ extern crate libc;
 #[macro_use]
 extern crate apache2;
 
-use apache2::{Request, Status, get_server_description, get_server_built, show_mpm};
+use apache2::{Request, Status, get_server_description, get_server_built, show_mpm,
+   apr_version_string};
 
 apache2_module!(info_rs_module, info_rs_handler, c_info_rs_handler, b"mod_info_rs\0");
 
@@ -29,10 +30,13 @@ fn info_rs_handler(r: &Request) -> Status {
    r.write(format!("<p>Server Version: {}</p>", server_description));
 
    let mmp = show_mpm().unwrap();
-   r.write(format!("<p>Server MPM: {}</p>", mmp));
+   r.write(format!("<p>Server MPM (Multi-Processing Module): {}</p>", mmp));
 
    let server_built = get_server_built().unwrap();
    r.write(format!("<p>Server Built: {}</p>", server_built));
+
+   let apr_version = apr_version_string().unwrap();
+   r.write(format!("<p>Server loaded APR (Apache Portable Runtime) Version: {}</p>", apr_version));
 
    let client_ip = conn.client_ip().unwrap();
    r.write(format!("<p>Client IP: {}</p>", client_ip));
