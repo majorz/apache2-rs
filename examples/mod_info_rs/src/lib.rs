@@ -5,11 +5,11 @@ extern crate apache2;
 
 use apache2::{Request, Status, get_server_description, get_server_built, show_mpm};
 
-apache2_module!(status_rs_module, status_rs_handler, c_status_rs_handler, b"mod_status_rs\0");
+apache2_module!(info_rs_module, info_rs_handler, c_info_rs_handler, b"mod_info_rs\0");
 
 
-fn status_rs_handler(r: &Request) -> Status {
-   if r.handler().unwrap() != "server-status-rs" {
+fn info_rs_handler(r: &Request) -> Status {
+   if r.handler().unwrap() != "server-info-rs" {
       return Status::DECLINED
    }
 
@@ -17,11 +17,13 @@ fn status_rs_handler(r: &Request) -> Status {
 
    r.set_content_type("text/html");
 
-   r.write("<!doctype html><html><head><meta charset=\"utf-8\"><title>Apache Status</title></head><body>");
+   r.write("<!doctype html><html><head><meta charset=\"utf-8\"><title>Apache Info</title></head><body>");
+
+   r.write("<h1>Apache Server Information</h1>");
 
    let server_name = r.escape_html(r.server_name().unwrap()).unwrap();
    let local_ip = conn.local_ip().unwrap();
-   r.write(format!("<h1>Apache Server Status for {} (via {})</h1>", server_name, local_ip));
+   r.write(format!("<p>Server: {} (via {})</p>", server_name, local_ip));
 
    let server_description = get_server_description().unwrap();
    r.write(format!("<p>Server Version: {}</p>", server_description));
