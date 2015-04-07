@@ -15,7 +15,7 @@ pub mod http_protocol;
 pub mod wrapper;
 
 
-pub use httpd::{Request, Status, get_server_description, get_server_built};
+pub use httpd::{Request, Status, get_server_banner, get_server_description, get_server_built};
 pub use http_config::{show_mpm};
 pub use apr::{apr_version_string, apu_version_string};
 

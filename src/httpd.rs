@@ -148,6 +148,8 @@ pub mod raw {
    pub struct server_rec;
 
    extern "C" {
+      pub fn ap_get_server_banner() -> *const c_char;
+
       pub fn ap_get_server_description() -> *const c_char;
 
       pub fn ap_get_server_built() -> *const c_char;
@@ -372,6 +374,12 @@ impl<'a> Conn<'a> {
    }
 }
 
+
+pub fn get_server_banner<'a>() -> Option<&'a str> {
+   c_str_value(
+      unsafe { raw::ap_get_server_banner() }
+   )
+}
 
 pub fn get_server_description<'a>() -> Option<&'a str> {
    c_str_value(
