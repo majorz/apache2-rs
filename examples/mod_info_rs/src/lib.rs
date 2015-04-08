@@ -66,6 +66,9 @@ fn info_rs_handler(r: &Request) -> Status {
    let args = unwrap_str(r.args());
    r.write(format!("<p>Request Args: {}</p>", args));
 
+   let auth_type = unwrap_str(r.auth_type());
+   r.write(format!("<p>Auth Type: {}</p>", auth_type));
+
    r.write("</body></html>");
 
    Status::OK

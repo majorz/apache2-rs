@@ -276,7 +276,7 @@ impl<'a> Request<'a> {
       c_str_value(self.raw.user)
    }
 
-   pub fn ap_auth_type(&self) -> Option<&'a str> {
+   pub fn auth_type(&self) -> Option<&'a str> {
       c_str_value(self.raw.ap_auth_type)
    }
 
