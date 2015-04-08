@@ -58,17 +58,48 @@ fn info_rs_handler(r: &Request) -> Status {
 
    r.write("<hr />");
 
+   r.write("<h2>Current Request Information</h2>");
+
    let client_ip = unwrap_str(conn.client_ip());
    r.write(format!("<p>Client IP: {}</p>", client_ip));
+
+   let hostname = unwrap_str(r.hostname());
+   r.write(format!("<p>Hostname: {}</p>", hostname));
+
+   let protocol = unwrap_str(r.protocol());
+   r.write(format!("<p>Protocol: {}</p>", protocol));
+
+   r.write(format!("<p>HTTP/0.9: {:?}</p>", r.http09()));
+
+   let method = unwrap_str(r.method());
+   r.write(format!("<p>Method: {}</p>", method));
 
    let args = unwrap_str(r.args());
    r.write(format!("<p>Request Args: {}</p>", args));
 
+   let content_type = unwrap_str(r.content_type());
+   r.write(format!("<p>Content Type: {}</p>", content_type));
+
    let content_encoding = unwrap_str(r.content_encoding());
    r.write(format!("<p>Content Encoding: {}</p>", content_encoding));
 
+   let range = unwrap_str(r.range());
+   r.write(format!("<p>Range: {}</p>", range));
+
+   let handler = unwrap_str(r.handler());
+   r.write(format!("<p>Handler: {}</p>", handler));
+
+   let path_info = unwrap_str(r.path_info());
+   r.write(format!("<p>Path Info: {}</p>", path_info));
+
+   let filename = unwrap_str(r.filename());
+   r.write(format!("<p>Filename: {}</p>", filename));
+
    let canonical_filename = unwrap_str(r.canonical_filename());
    r.write(format!("<p>Canonical Filename: {}</p>", canonical_filename));
+
+   let log_id = unwrap_str(r.log_id());
+   r.write(format!("<p>Log ID: {}</p>", log_id));
 
    let auth_type = unwrap_str(r.auth_type());
    r.write(format!("<p>Auth Type: {}</p>", auth_type));
@@ -78,8 +109,6 @@ fn info_rs_handler(r: &Request) -> Status {
 
    let basic_auth_pw = unwrap_str(r.basic_auth_pw());
    r.write(format!("<p>Basic Auth PW: {}</p>", basic_auth_pw));
-
-   r.write(format!("<p>HTTP/0.9: {:?}</p>", r.http09()));
 
    r.write("</body></html>");
 
