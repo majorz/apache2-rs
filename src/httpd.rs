@@ -353,6 +353,13 @@ impl<'a> Request<'a> {
          unsafe { ::http_core::raw::ap_document_root(self.raw) }
       )
    }
+
+   pub fn auth_name(&self) -> Option<&'a str> {
+      c_str_value(
+         unsafe { ::http_core::raw::ap_auth_name(self.raw) }
+      )
+   }
+
 }
 
 pub type Conn<'a> = Wrapper<'a, raw::conn_rec>;

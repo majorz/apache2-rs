@@ -8,5 +8,6 @@ pub mod raw {
       pub fn ap_document_root(r: *mut request_rec) -> *const c_char;
       pub fn ap_get_server_name(r: *mut request_rec) -> *const c_char;
       pub fn ap_get_server_port(r: *mut request_rec) -> apr_port_t;
+      pub fn ap_auth_name(r: *mut request_rec) -> *const c_char;
    }
 }
