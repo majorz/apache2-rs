@@ -63,8 +63,14 @@ fn info_rs_handler(r: &Request) -> Status {
    let client_ip = unwrap_str(conn.client_ip());
    r.write(format!("<p>Client IP: {}</p>", client_ip));
 
+   let useragent_ip = unwrap_str(r.useragent_ip());
+   r.write(format!("<p>Useragent IP: {}</p>", useragent_ip));
+
    let hostname = unwrap_str(r.hostname());
    r.write(format!("<p>Hostname: {}</p>", hostname));
+
+   let the_request = unwrap_str(r.the_request());
+   r.write(format!("<p>Request: {}</p>", the_request));
 
    let protocol = unwrap_str(r.protocol());
    r.write(format!("<p>Protocol: {}</p>", protocol));
@@ -73,6 +79,12 @@ fn info_rs_handler(r: &Request) -> Status {
 
    let method = unwrap_str(r.method());
    r.write(format!("<p>Method: {}</p>", method));
+
+   let unparsed_uri = unwrap_str(r.unparsed_uri());
+   r.write(format!("<p>Unparsed URI: {}</p>", unparsed_uri));
+
+   let uri = unwrap_str(r.uri());
+   r.write(format!("<p>URI: {}</p>", uri));
 
    let args = unwrap_str(r.args());
    r.write(format!("<p>Request Args: {}</p>", args));
@@ -100,6 +112,9 @@ fn info_rs_handler(r: &Request) -> Status {
 
    let log_id = unwrap_str(r.log_id());
    r.write(format!("<p>Log ID: {}</p>", log_id));
+
+   let user = unwrap_str(r.user());
+   r.write(format!("<p>User: {}</p>", user));
 
    let auth_type = unwrap_str(r.auth_type());
    r.write(format!("<p>Auth Type: {}</p>", auth_type));
