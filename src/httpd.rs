@@ -201,6 +201,10 @@ impl<'a> Request<'a> {
       c_str_value(self.raw.the_request)
    }
 
+   pub fn http09(&self) -> bool {
+      self.raw.assbackwards != 0
+   }
+
    pub fn protocol(&self) -> Option<&'a str> {
       c_str_value(self.raw.protocol)
    }

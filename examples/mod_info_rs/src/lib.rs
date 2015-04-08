@@ -61,6 +61,8 @@ fn info_rs_handler(r: &Request) -> Status {
    let client_ip = unwrap_str(conn.client_ip());
    r.write(format!("<p>Client IP: {}</p>", client_ip));
 
+   r.write(format!("<p>HTTP/0.9: {:?}</p>", r.http09()));
+
    let args = unwrap_str(r.args());
    r.write(format!("<p>Request Args: {}</p>", args));
 
