@@ -72,6 +72,10 @@ fn info_rs_handler(r: &Request) -> Status {
    let auth_name = unwrap_str(r.auth_name());
    r.write(format!("<p>Auth Name: {}</p>", auth_name));
 
+   let basic_auth_pw = unwrap_str(r.basic_auth_pw());
+   r.write(format!("<p>Basic Auth PW: {}</p>", basic_auth_pw));
+
+
    r.write("</body></html>");
 
    Status::OK

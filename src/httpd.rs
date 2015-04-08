@@ -159,7 +159,7 @@ pub mod raw {
 }
 
 
-use libc::{c_void, c_int};
+use libc::{c_void, c_int, c_char};
 
 use std::ffi::CString;
 
@@ -360,6 +360,20 @@ impl<'a> Request<'a> {
       )
    }
 
+   pub fn basic_auth_pw(&self) -> Option<&'a str> {
+      unsafe {
+         let pw: *mut *const c_char = ::std::ptr::null_mut();
+
+         ::http_protocol::raw::ap_get_basic_auth_pw(self.raw, pw);
+
+         if pw.is_null() {
+            return None
+         }
+
+         c_str_value(*pw)
+      }
+
+   }
 }
 
 pub type Conn<'a> = Wrapper<'a, raw::conn_rec>;
