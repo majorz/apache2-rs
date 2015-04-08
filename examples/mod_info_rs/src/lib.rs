@@ -61,10 +61,11 @@ fn info_rs_handler(r: &Request) -> Status {
    let client_ip = unwrap_str(conn.client_ip());
    r.write(format!("<p>Client IP: {}</p>", client_ip));
 
-   r.write(format!("<p>HTTP/0.9: {:?}</p>", r.http09()));
-
    let args = unwrap_str(r.args());
    r.write(format!("<p>Request Args: {}</p>", args));
+
+   let content_encoding = unwrap_str(r.content_encoding());
+   r.write(format!("<p>Content Encoding: {}</p>", content_encoding));
 
    let canonical_filename = unwrap_str(r.canonical_filename());
    r.write(format!("<p>Canonical Filename: {}</p>", canonical_filename));
@@ -78,6 +79,7 @@ fn info_rs_handler(r: &Request) -> Status {
    let basic_auth_pw = unwrap_str(r.basic_auth_pw());
    r.write(format!("<p>Basic Auth PW: {}</p>", basic_auth_pw));
 
+   r.write(format!("<p>HTTP/0.9: {:?}</p>", r.http09()));
 
    r.write("</body></html>");
 
