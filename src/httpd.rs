@@ -163,6 +163,8 @@ pub mod raw {
       pub fn ap_run_http_scheme(r: *mut request_rec) -> *const c_char;
 
       pub fn ap_run_default_port(r: *mut request_rec) -> apr_port_t;
+
+      pub fn ap_is_initial_req(r: *mut request_rec) -> c_int;
    }
 }
 
@@ -403,6 +405,10 @@ impl<'a> Request<'a> {
 
    pub fn default_port(&self) -> u16 {
       unsafe { raw::ap_run_default_port(self.raw) }
+   }
+
+   pub fn is_initial_req(&self) -> bool {
+      unsafe { raw::ap_is_initial_req(self.raw) == 1 }
    }
 }
 
