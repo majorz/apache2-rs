@@ -170,6 +170,8 @@ pub mod raw {
       pub fn ap_run_default_port(r: *mut request_rec) -> apr_port_t;
 
       pub fn ap_is_initial_req(r: *mut request_rec) -> c_int;
+
+      pub fn ap_some_auth_required(r: *mut request_rec) -> c_int;
    }
 }
 
@@ -456,6 +458,10 @@ impl<'a> Request<'a> {
 
    pub fn is_initial_req(&self) -> bool {
       unsafe { raw::ap_is_initial_req(self.raw) == 1 }
+   }
+
+   pub fn some_auth_required(&self) -> bool {
+      unsafe { raw::ap_some_auth_required(self.raw) == 1 }
    }
 }
 
