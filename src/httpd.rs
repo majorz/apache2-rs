@@ -3,7 +3,7 @@ pub mod raw {
 
    use apr::raw::{apr_pool_t, apr_time_t, apr_array_header_t, apr_off_t, apr_thread_mutex_t,
       apr_int64_t, apr_table_t, apr_bucket_brigade, apr_uri_t, apr_finfo_t, apr_sockaddr_t,
-      apr_thread_t, apr_bucket_alloc_t};
+      apr_thread_t, apr_bucket_alloc_t, apr_port_t};
 
    use util_filter::raw::{ap_filter_t};
 
@@ -159,6 +159,10 @@ pub mod raw {
       pub fn ap_context_document_root(r: *mut request_rec) -> *const c_char;
 
       pub fn ap_context_prefix(r: *mut request_rec) -> *const c_char;
+
+      pub fn ap_run_http_scheme(r: *mut request_rec) -> *const c_char;
+
+      pub fn ap_run_default_port(r: *mut request_rec) -> apr_port_t;
    }
 }
 
@@ -389,6 +393,16 @@ impl<'a> Request<'a> {
       c_str_value(
          unsafe { raw::ap_context_prefix(self.raw) }
       )
+   }
+
+   pub fn http_scheme(&self) -> Option<&'a str> {
+      c_str_value(
+         unsafe { raw::ap_run_http_scheme(self.raw) }
+      )
+   }
+
+   pub fn default_port(&self) -> u16 {
+      unsafe { raw::ap_run_default_port(self.raw) }
    }
 }
 

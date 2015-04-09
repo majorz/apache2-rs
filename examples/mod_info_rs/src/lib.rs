@@ -75,6 +75,9 @@ fn info_rs_handler(r: &Request) -> Status {
    let protocol = unwrap_str(r.protocol());
    r.write(format!("<p>Protocol: {}</p>", protocol));
 
+   let http_scheme = unwrap_str(r.http_scheme());
+   r.write(format!("<p>HTTP Scheme: {}</p>", http_scheme));
+
    r.write(format!("<p>HTTP/0.9: {:?}</p>", r.http09()));
 
    let method = unwrap_str(r.method());
@@ -130,6 +133,8 @@ fn info_rs_handler(r: &Request) -> Status {
 
    let basic_auth_pw = unwrap_str(r.basic_auth_pw());
    r.write(format!("<p>Basic Auth PW: {}</p>", basic_auth_pw));
+
+   r.write(format!("<p>Default Port: {}</p>", r.default_port()));
 
    r.write("<h3>Request Headers</h3>");
 
