@@ -17,6 +17,7 @@ pub mod raw {
    extern "C" {
       pub fn apr_table_get(t: *const apr_table_t, key: *const c_char) -> *const c_char;
       pub fn apr_table_set(t: *mut apr_table_t, key: *const c_char, val: *const c_char) -> ();
+      pub fn apr_table_elts(t: *const apr_table_t) -> *const apr_array_header_t;
       pub fn apr_pstrmemdup(p: *mut apr_pool_t, s: *const c_char, n: apr_size_t) -> *mut c_char;
       pub fn apr_version_string() -> *const c_char;
       pub fn apu_version_string() -> *const c_char;
@@ -33,9 +34,6 @@ pub mod raw {
          )
       }
    }
-
-   #[repr(C)]
-   pub struct apr_array_header_t;
 
    #[repr(C)]
    pub struct apr_bucket_alloc_t;
@@ -81,6 +79,22 @@ pub mod raw {
    pub type apr_signum_t = c_int;
    pub type apr_time_t = apr_int64_t;
    pub type apr_port_t = apr_uint16_t;
+
+   #[repr(C)]
+   pub struct apr_array_header_t {
+      pub pool: *mut apr_pool_t,
+      pub elt_size: c_int,
+      pub nelts: c_int,
+      pub nalloc: c_int,
+      pub elts: *mut c_char,
+   }
+
+   #[repr(C)]
+   pub struct apr_table_entry_t {
+      pub key: *mut c_char,
+      pub val: *mut c_char,
+      pub key_checksum: apr_uint32_t,
+   }
 }
 
 use std::ffi::CString;
@@ -108,6 +122,46 @@ impl<'a> AprTable<'a> {
             CString::new(val).unwrap().as_ptr()
          )
       };
+   }
+
+   pub fn iter(&self) -> AprTableIter {
+      let ptr = unsafe { raw::apr_table_elts(self.raw) };
+      let raw: &raw::apr_array_header_t = unsafe { &*ptr };
+
+      AprTableIter {
+         array_header: raw,
+         next_idx: 0
+      }
+   }
+}
+
+pub struct AprTableIter<'a> {
+   array_header: &'a raw::apr_array_header_t,
+   next_idx: usize,
+}
+
+impl<'a> Iterator for AprTableIter<'a> {
+   type Item = (&'a str, &'a str);
+
+   fn next(&mut self) -> Option<(&'a str, &'a str)> {
+      if self.next_idx != self.array_header.nelts as usize {
+         let mut elts = self.array_header.elts as *const raw::apr_table_entry_t;
+
+         elts = unsafe { elts.offset(self.next_idx as isize) };
+         self.next_idx += 1;
+
+         let key = c_str_value(unsafe { (*elts).key }).unwrap();
+         let val = c_str_value(unsafe { (*elts).val }).unwrap();
+
+         Some((key, val))
+      } else {
+         None
+      }
+   }
+
+   fn size_hint(&self) -> (usize, Option<usize>) {
+      let rem = self.array_header.nelts as usize - self.next_idx;
+      (rem, Some(rem))
    }
 }
 

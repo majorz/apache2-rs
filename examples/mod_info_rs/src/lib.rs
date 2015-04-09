@@ -125,6 +125,14 @@ fn info_rs_handler(r: &Request) -> Status {
    let basic_auth_pw = unwrap_str(r.basic_auth_pw());
    r.write(format!("<p>Basic Auth PW: {}</p>", basic_auth_pw));
 
+   r.write("<h3>Request Headers</h3>");
+
+   let headers_in = r.headers_in().unwrap();
+
+   for (key, val) in headers_in.iter() {
+      r.write(format!("<p>{}: {}</p>", key, val));
+   }
+
    r.write("</body></html>");
 
    Status::OK
