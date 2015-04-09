@@ -150,6 +150,38 @@ fn info_rs_handler(r: &Request) -> Status {
       r.write(format!("<p>{}: {}</p>", key, val));
    }
 
+   r.write("<h3>Headers Out</h3>");
+
+   let headers_out = r.headers_out().unwrap();
+
+   for (key, val) in headers_out.iter() {
+      r.write(format!("<p>{}: {}</p>", key, val));
+   }
+
+   r.write("<h3>Err Headers Out</h3>");
+
+   let err_headers_out = r.err_headers_out().unwrap();
+
+   for (key, val) in err_headers_out.iter() {
+      r.write(format!("<p>{}: {}</p>", key, val));
+   }
+
+   r.write("<h3>Notes</h3>");
+
+   let notes = r.notes().unwrap();
+
+   for (key, val) in notes.iter() {
+      r.write(format!("<p>{}: {}</p>", key, val));
+   }
+
+   r.write("<h3>Subprocess Environment</h3>");
+
+   let subprocess_env = r.subprocess_env().unwrap();
+
+   for (key, val) in subprocess_env.iter() {
+      r.write(format!("<p>{}: {}</p>", key, val));
+   }
+
    r.write("</body></html>");
 
    Status::OK
