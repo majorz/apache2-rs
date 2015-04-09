@@ -278,6 +278,10 @@ impl<'a> Request<'a> {
       c_str_value(self.raw.range)
    }
 
+   pub fn clength(&self) -> i64 {
+      return self.raw.clength
+   }
+
    pub fn headers_in(&self) -> Option<AprTable> {
       wrap_ptr(self.raw.headers_in)
    }
