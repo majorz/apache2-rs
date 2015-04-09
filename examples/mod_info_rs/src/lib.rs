@@ -138,6 +138,8 @@ fn info_rs_handler(r: &Request) -> Status {
 
    r.write(format!("<p>Default Port: {}</p>", r.default_port()));
 
+   r.write(format!("<p>ProxyReq: {}</p>", r.proxyreq()));
+
    r.write("<h3>Request Headers</h3>");
 
    let headers_in = r.headers_in().unwrap();

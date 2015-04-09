@@ -12,6 +12,11 @@ pub mod raw {
    pub const DONE:      c_int = -2;
    pub const SUSPENDED: c_int = -3;
 
+   pub const  PROXYREQ_NONE:     c_int = 0;
+   pub const  PROXYREQ_PROXY:    c_int = 1;
+   pub const  PROXYREQ_REVERSE:  c_int = 2;
+   pub const  PROXYREQ_RESPONSE: c_int = 3;
+
    #[repr(C)]
    pub struct request_rec {
       pub pool: *mut apr_pool_t,
@@ -172,6 +177,7 @@ pub mod raw {
 use libc::{c_void, c_int, c_char};
 
 use std::ffi::CString;
+use std::fmt;
 
 use wrapper::{Wrapper, c_str_value, wrap_ptr};
 
@@ -199,6 +205,39 @@ impl Into<c_int> for Status {
    }
 }
 
+pub enum ProxyReq {
+   NONE,     // No proxy
+   PROXY,    // Standard proxy
+   REVERSE,  // Reverse proxy
+   RESPONSE, // Origin response
+}
+
+impl Into<ProxyReq> for c_int {
+   fn into(self) -> ProxyReq {
+      match self {
+         raw::PROXYREQ_NONE => ProxyReq::NONE,
+         raw::PROXYREQ_PROXY => ProxyReq::PROXY,
+         raw::PROXYREQ_REVERSE => ProxyReq::REVERSE,
+         raw::PROXYREQ_RESPONSE => ProxyReq::RESPONSE,
+         _ => panic!("Unknown ProxyReq type")
+      }
+   }
+}
+
+impl fmt::Display for ProxyReq {
+   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+      let display = match *self {
+         ProxyReq::NONE => "No proxy",
+         ProxyReq::PROXY => "Standard proxy",
+         ProxyReq::REVERSE => "Reverse proxy",
+         ProxyReq::RESPONSE => "Origin response"
+      };
+
+      write!(f, "{}", display)
+   }
+}
+
+
 pub type Request<'a> = Wrapper<'a, raw::request_rec>;
 
 
@@ -213,6 +252,10 @@ impl<'a> Request<'a> {
 
    pub fn http09(&self) -> bool {
       self.raw.assbackwards != 0
+   }
+
+   pub fn proxyreq(&self) -> ProxyReq {
+      self.raw.proxyreq.into()
    }
 
    pub fn protocol(&self) -> Option<&'a str> {
