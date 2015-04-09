@@ -107,17 +107,15 @@ pub type AprTable<'a> = Wrapper<'a, raw::apr_table_t>;
 
 impl<'a> AprTable<'a> {
    pub fn get(&self, key: &'static str) -> Option<&'a str> {
-      let p: *const raw::apr_table_t = self.raw;
       c_str_value(
-         unsafe { raw::apr_table_get(p, CString::new(key).unwrap().as_ptr()) }
+         unsafe { raw::apr_table_get(self.raw, CString::new(key).unwrap().as_ptr()) }
       )
    }
 
    pub fn set(&mut self, key: &'static str, val: &'static str) {
-      let p: *mut raw::apr_table_t = self.raw;
       unsafe {
          raw::apr_table_set(
-            p,
+            self.raw,
             CString::new(key).unwrap().as_ptr(),
             CString::new(val).unwrap().as_ptr()
          )
