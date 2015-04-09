@@ -155,6 +155,10 @@ pub mod raw {
       pub fn ap_get_server_built() -> *const c_char;
 
       pub fn ap_escape_html2(p: *mut apr_pool_t, s: *const c_char, toasc: c_int) -> *mut c_char;
+
+      pub fn ap_context_document_root(r: *mut request_rec) -> *const c_char;
+
+      pub fn ap_context_prefix(r: *mut request_rec) -> *const c_char;
    }
 }
 
@@ -373,6 +377,18 @@ impl<'a> Request<'a> {
          c_str_value(*pw)
       }
 
+   }
+
+   pub fn context_document_root(&self) -> Option<&'a str> {
+      c_str_value(
+         unsafe { raw::ap_context_document_root(self.raw) }
+      )
+   }
+
+   pub fn context_prefix(&self) -> Option<&'a str> {
+      c_str_value(
+         unsafe { raw::ap_context_prefix(self.raw) }
+      )
    }
 }
 

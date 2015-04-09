@@ -95,6 +95,12 @@ fn info_rs_handler(r: &Request) -> Status {
    let content_encoding = unwrap_str(r.content_encoding());
    r.write(format!("<p>Content Encoding: {}</p>", content_encoding));
 
+   let context_document_root = unwrap_str(r.context_document_root());
+   r.write(format!("<p>Context Document Root: {}</p>", context_document_root));
+
+   let context_prefix = unwrap_str(r.context_prefix());
+   r.write(format!("<p>Context Prefix: {}</p>", context_prefix));
+
    let range = unwrap_str(r.range());
    r.write(format!("<p>Range: {}</p>", range));
 
