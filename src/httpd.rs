@@ -374,24 +374,24 @@ impl<'a> Request<'a> {
    }
 
    pub fn write<T: Into<Vec<u8>>>(&self, data: T) {
-      let cstr = CString::new(data).unwrap();
+      let c_str_buf = CString::new(data).unwrap();
 
       unsafe {
          ::http_protocol::raw::ap_rwrite(
-            cstr.as_ptr() as *mut c_void,
-            cstr.to_bytes().len() as i32,
+            c_str_buf.as_ptr() as *mut c_void,
+            c_str_buf.to_bytes().len() as i32,
             self.raw
          );
       }
    }
 
    pub fn escape_html<T: Into<Vec<u8>>>(&self, s: T) -> Option<&'a str> {
-      let cstr = CString::new(s).unwrap();
+      let c_str = CString::new(s).unwrap();
 
       let escaped = unsafe {
          raw::ap_escape_html2(
             self.raw.pool,
-            cstr.as_ptr(),
+            c_str.as_ptr(),
             0
          )
       };
