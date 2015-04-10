@@ -3,7 +3,7 @@ pub mod raw {
 
    use apr::raw::{apr_pool_t, apr_time_t, apr_array_header_t, apr_off_t, apr_thread_mutex_t,
       apr_int64_t, apr_table_t, apr_bucket_brigade, apr_uri_t, apr_finfo_t, apr_sockaddr_t,
-      apr_thread_t, apr_bucket_alloc_t, apr_port_t};
+      apr_thread_t, apr_bucket_alloc_t, apr_port_t, apr_status_t};
 
    use util_filter::raw::{ap_filter_t};
 
@@ -172,6 +172,8 @@ pub mod raw {
       pub fn ap_is_initial_req(r: *mut request_rec) -> c_int;
 
       pub fn ap_some_auth_required(r: *mut request_rec) -> c_int;
+
+      pub fn ap_cookie_read(r: *mut request_rec, name: *const c_char, val: *mut *mut c_char, remove: c_int ) -> apr_status_t;
    }
 }
 
@@ -462,6 +464,17 @@ impl<'a> Request<'a> {
 
    pub fn some_auth_required(&self) -> bool {
       unsafe { raw::ap_some_auth_required(self.raw) == 1 }
+   }
+
+   pub fn cookie<T: Into<Vec<u8>>>(&self, name: T) -> Option<&'a str> {
+      let c_str_name = CString::new(name).unwrap();
+      let mut val: *mut c_char = ::std::ptr::null_mut();
+
+      unsafe {
+         raw::ap_cookie_read(self.raw, c_str_name.as_ptr(), &mut val, 0);
+      }
+
+      c_str_value(val)
    }
 }
 

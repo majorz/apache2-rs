@@ -144,6 +144,9 @@ fn info_rs_handler(r: &Request) -> Status {
 
    r.write(format!("<p>ProxyReq: {}</p>", r.proxyreq()));
 
+   let csrftoken = unwrap_str(r.cookie("csrftoken"));
+   r.write(format!("<p>CSRF Token: {}</p>", csrftoken));
+
    r.write("<h3>Request Headers</h3>");
 
    let headers_in = r.headers_in().unwrap();
