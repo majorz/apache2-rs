@@ -422,17 +422,13 @@ impl<'a> Request<'a> {
    }
 
    pub fn basic_auth_pw(&self) -> Option<&'a str> {
+      let mut pw: *const c_char = ::std::ptr::null_mut();
+
       unsafe {
-         let pw: *mut *const c_char = ::std::ptr::null_mut();
-
-         ::http_protocol::raw::ap_get_basic_auth_pw(self.raw, pw);
-
-         if pw.is_null() {
-            return None
-         }
-
-         c_str_value(*pw)
+         ::http_protocol::raw::ap_get_basic_auth_pw(self.raw, &mut pw);
       }
+
+      c_str_value(pw)
 
    }
 
