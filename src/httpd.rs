@@ -161,19 +161,23 @@ pub mod raw {
 
       pub fn ap_escape_html2(p: *mut apr_pool_t, s: *const c_char, toasc: c_int) -> *mut c_char;
 
-      pub fn ap_context_document_root(r: *mut request_rec) -> *const c_char;
+      pub fn ap_context_document_root(r: *const request_rec) -> *const c_char;
 
-      pub fn ap_context_prefix(r: *mut request_rec) -> *const c_char;
+      pub fn ap_context_prefix(r: *const request_rec) -> *const c_char;
 
-      pub fn ap_run_http_scheme(r: *mut request_rec) -> *const c_char;
+      pub fn ap_run_http_scheme(r: *const request_rec) -> *const c_char;
 
-      pub fn ap_run_default_port(r: *mut request_rec) -> apr_port_t;
+      pub fn ap_run_default_port(r: *const request_rec) -> apr_port_t;
 
-      pub fn ap_is_initial_req(r: *mut request_rec) -> c_int;
+      pub fn ap_is_initial_req(r: *const request_rec) -> c_int;
 
-      pub fn ap_some_auth_required(r: *mut request_rec) -> c_int;
+      pub fn ap_some_auth_required(r: *const request_rec) -> c_int;
 
-      pub fn ap_cookie_read(r: *mut request_rec, name: *const c_char, val: *mut *const c_char, remove: c_int ) -> apr_status_t;
+      pub fn ap_cookie_read(r: *const request_rec, name: *const c_char, val: *mut *const c_char,
+         remove: c_int) -> apr_status_t;
+
+      pub fn ap_cookie_write(r: *const request_rec, name: *const c_char, val: *const c_char,
+         attrs: *const c_char, maxage: c_int, ...) -> apr_status_t;
    }
 }
 
@@ -463,11 +467,11 @@ impl<'a> Request<'a> {
    }
 
    pub fn cookie<T: Into<Vec<u8>>>(&self, name: T) -> Option<&'a str> {
-      let c_str_name = CString::new(name).unwrap();
+      let c_str_name = ::apr::raw::dup_c_str(self.raw.pool, name);
       let mut val: *const c_char = ::std::ptr::null_mut();
 
       unsafe {
-         raw::ap_cookie_read(self.raw, c_str_name.as_ptr(), &mut val, 0);
+         raw::ap_cookie_read(self.raw, c_str_name, &mut val, 0);
       }
 
       c_str_value(val)

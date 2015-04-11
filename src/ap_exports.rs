@@ -6,7 +6,7 @@ pub mod raw {
    use httpd::raw::{request_rec};
 
    pub type hook_handler_fn = extern "C" fn(
-      r: *mut request_rec
+      r: *const request_rec
    ) -> c_int;
 
    extern "C" {
