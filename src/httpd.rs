@@ -476,6 +476,25 @@ impl<'a> Request<'a> {
 
       c_str_value(val)
    }
+
+   pub fn set_cookie<T: Into<Vec<u8>>>(&self, name: T, val: T, maxage: i32) {
+      let c_str_name = ::apr::raw::dup_c_str(self.raw.pool, name);
+      let c_str_val = ::apr::raw::dup_c_str(self.raw.pool, val);
+
+      let args = if self.http_scheme().unwrap() == "https" {
+         "Secure;HttpOnly"
+      } else {
+         "HttpOnly"
+      };
+      let c_str_args = ::apr::raw::dup_c_str(self.raw.pool, args);
+
+      let null: *const ::apr::raw::apr_table_t = ::std::ptr::null();
+
+      unsafe {
+         raw::ap_cookie_write(self.raw, c_str_name, c_str_val, c_str_args, maxage,
+            self.raw.err_headers_out, null);
+      }
+   }
 }
 
 pub type Conn<'a> = Wrapper<'a, raw::conn_rec>;

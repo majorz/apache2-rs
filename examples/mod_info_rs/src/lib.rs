@@ -144,8 +144,17 @@ fn info_rs_handler(r: &Request) -> Status {
 
    r.write(format!("<p>ProxyReq: {}</p>", r.proxyreq()));
 
-   let csrftoken = unwrap_str(r.cookie("csrftoken"));
-   r.write(format!("<p>CSRF Token: {}</p>", csrftoken));
+   let key = "sample_cookie";
+   let val = "info_rs";
+   match r.cookie(key) {
+      None => {
+         r.set_cookie(key, val, 0);
+         r.write(format!("<p>New Cookie – {}: {}</p>", key, val));
+      },
+      Some(stored) => {
+         r.write(format!("<p>Cookie – {}: {}</p>", key, stored));
+      }
+   };
 
    r.write("<h3>Request Headers</h3>");
 
