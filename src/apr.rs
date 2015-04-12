@@ -21,6 +21,10 @@ pub mod raw {
       pub fn apr_pstrmemdup(p: *mut apr_pool_t, s: *const c_char, n: apr_size_t) -> *mut c_char;
       pub fn apr_version_string() -> *const c_char;
       pub fn apu_version_string() -> *const c_char;
+      pub fn apr_base64_encode_len(len: c_int) -> c_int;
+      pub fn apr_base64_encode(coded_dst: *mut c_char, plain_src: *const c_char, len_plain_src: c_int) -> c_int;
+      pub fn apr_base64_decode_len(coded_src: *const c_char) -> c_int;
+      pub fn apr_base64_decode(plain_dst: *mut c_char, coded_src: *const c_char) -> c_int;
    }
 
    pub fn dup_c_str<T: Into<Vec<u8>>>(pool: *mut apr_pool_t, data: T) -> *mut c_char {
