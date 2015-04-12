@@ -502,8 +502,6 @@ impl<'a> Request<'a> {
          Err(_) => return None
       };
 
-      c_str_value(c_str_plain.as_ptr());
-
       let plain_len: c_int = c_str_plain.to_bytes().len() as c_int;
 
       let mut encoded_len: c_int = unsafe {
@@ -527,6 +525,35 @@ impl<'a> Request<'a> {
       };
 
       c_str_value(encoded)
+   }
+
+   pub fn base64_decode<T: Into<Vec<u8>>>(&self, encoded: T) -> Option<&'a str> {
+      let c_str_encoded: CString = match CString::new(encoded) {
+         Ok(val) => val,
+         Err(_) => return None
+      };
+
+      let mut plain_len: c_int = unsafe {
+         ::apr::raw::apr_base64_decode_len(c_str_encoded.as_ptr())
+      };
+
+      if plain_len == 0 {
+         return None
+      };
+
+      let plain: *mut c_char = unsafe {
+         ::apr::raw::apr_palloc(self.raw.pool, plain_len as ::apr::raw::apr_size_t) as *mut c_char
+      };
+
+      plain_len = unsafe {
+         ::apr::raw::apr_base64_decode(plain, c_str_encoded.as_ptr())
+      };
+
+      if plain_len == 0 {
+         return None
+      };
+
+      c_str_value(plain)
    }
 }
 
