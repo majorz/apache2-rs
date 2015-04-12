@@ -196,6 +196,22 @@ fn info_rs_handler(r: &Request) -> Status {
       r.write(format!("<p>{}: {}</p>", key, val));
    }
 
+   r.write("<h3>Request API check</h3>");
+
+   let original = "Բարեւ, Héébee, გამარჯობა, Witôjze, Здраво, Ciao";
+   let encoded = r.base64_encode(original).unwrap();
+   let plain = r.base64_decode(encoded).unwrap();
+   r.write(format!("<p>Original Text: {}</p>", original));
+   r.write(format!("<p>Base64 Encoded: {}</p>", encoded));
+   r.write(format!("<p>Base64 Decoded: {}</p>", plain));
+
+   let original_url = "http://foo.bar/1 2 3 & 4 + 5";
+   let encoded_url = r.escape_urlencoded(original_url).unwrap();
+   let plain_url = r.unescape_urlencoded(encoded_url).unwrap();
+   r.write(format!("<p>Original URL: {}</p>", original_url));
+   r.write(format!("<p>Encoded URL: {}</p>", encoded_url));
+   r.write(format!("<p>Decoded URL: {}</p>", plain_url));
+
    r.write("</body></html>");
 
    Status::OK
