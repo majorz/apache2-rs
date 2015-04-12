@@ -178,6 +178,10 @@ pub mod raw {
 
       pub fn ap_cookie_write(r: *const request_rec, name: *const c_char, val: *const c_char,
          attrs: *const c_char, maxage: c_int, ...) -> apr_status_t;
+
+      pub fn ap_escape_urlencoded(p: *mut apr_pool_t, s: *const c_char) -> *mut c_char;
+
+      pub fn ap_unescape_urlencoded(query: *mut c_char) -> c_int;
    }
 }
 
@@ -401,6 +405,30 @@ impl<'a> Request<'a> {
       };
 
       c_str_value(escaped)
+   }
+
+   pub fn escape_urlencoded<T: Into<Vec<u8>>>(&self, s: T) -> Option<&'a str> {
+      let c_str = CString::new(s).unwrap();
+
+      let escaped = unsafe {
+         raw::ap_escape_urlencoded(self.raw.pool, c_str.as_ptr())
+      };
+
+      c_str_value(escaped)
+   }
+
+   pub fn unescape_urlencoded<T: Into<Vec<u8>>>(&self, query: T) -> Option<&'a str> {
+      let c_str = ::apr::raw::dup_c_str(self.raw.pool, query);
+
+      let res = unsafe {
+         raw::ap_unescape_urlencoded(c_str)
+      };
+
+      if res != 0 {
+         return None
+      };
+
+      c_str_value(c_str)
    }
 
    pub fn server_name(&self) -> Option<&'a str> {
