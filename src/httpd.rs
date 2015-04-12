@@ -495,6 +495,39 @@ impl<'a> Request<'a> {
             self.raw.err_headers_out, null);
       }
    }
+
+   pub fn base64_encode<T: Into<Vec<u8>>>(&self, plain: T) -> Option<&'a str> {
+      let c_str_plain: CString = match CString::new(plain) {
+         Ok(val) => val,
+         Err(_) => return None
+      };
+
+      c_str_value(c_str_plain.as_ptr());
+
+      let plain_len: c_int = c_str_plain.to_bytes().len() as c_int;
+
+      let mut encoded_len: c_int = unsafe {
+         ::apr::raw::apr_base64_encode_len(plain_len)
+      };
+
+      if encoded_len == 0 {
+         return None
+      };
+
+      let encoded: *mut c_char = unsafe {
+         ::apr::raw::apr_palloc(self.raw.pool, encoded_len as ::apr::raw::apr_size_t) as *mut c_char
+      };
+
+      encoded_len = unsafe {
+         ::apr::raw::apr_base64_encode(encoded, c_str_plain.as_ptr(), plain_len)
+      };
+
+      if encoded_len == 0 {
+         return None
+      };
+
+      c_str_value(encoded)
+   }
 }
 
 pub type Conn<'a> = Wrapper<'a, raw::conn_rec>;

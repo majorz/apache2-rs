@@ -1,7 +1,7 @@
 pub mod raw {
    #![allow(non_camel_case_types)]
 
-   use libc::{c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong};
+   use libc::{c_void, c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong};
 
    // run this hook first, before ANYTHING
    pub const APR_HOOK_REALLY_FIRST:  c_int = -10;
@@ -15,12 +15,16 @@ pub mod raw {
    pub const APR_HOOK_REALLY_LAST:   c_int = 30;
 
    extern "C" {
+      pub fn apr_version_string() -> *const c_char;
+      pub fn apu_version_string() -> *const c_char;
+
       pub fn apr_table_get(t: *const apr_table_t, key: *const c_char) -> *const c_char;
       pub fn apr_table_set(t: *const apr_table_t, key: *const c_char, val: *const c_char) -> ();
       pub fn apr_table_elts(t: *const apr_table_t) -> *const apr_array_header_t;
+
       pub fn apr_pstrmemdup(p: *mut apr_pool_t, s: *const c_char, n: apr_size_t) -> *mut c_char;
-      pub fn apr_version_string() -> *const c_char;
-      pub fn apu_version_string() -> *const c_char;
+      pub fn apr_palloc(p: *mut apr_pool_t, size: apr_size_t) -> *mut c_void;
+
       pub fn apr_base64_encode_len(len: c_int) -> c_int;
       pub fn apr_base64_encode(coded_dst: *mut c_char, plain_src: *const c_char, len_plain_src: c_int) -> c_int;
       pub fn apr_base64_decode_len(coded_src: *const c_char) -> c_int;
