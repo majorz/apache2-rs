@@ -1,194 +1,11 @@
 pub mod raw {
-   use libc::{c_char, c_int, c_uint, c_long, c_void};
-
-   use apr::raw::{apr_pool_t, apr_time_t, apr_array_header_t, apr_off_t, apr_thread_mutex_t,
-      apr_int64_t, apr_table_t, apr_bucket_brigade, apr_uri_t, apr_finfo_t, apr_sockaddr_t,
-      apr_thread_t, apr_bucket_alloc_t, apr_port_t, apr_status_t};
-
-   use util_filter::raw::{ap_filter_t};
-
-   pub const OK:        c_int = 0;
-   pub const DECLINED:  c_int = -1;
-   pub const DONE:      c_int = -2;
-   pub const SUSPENDED: c_int = -3;
-
-   pub const  PROXYREQ_NONE:     c_int = 0;
-   pub const  PROXYREQ_PROXY:    c_int = 1;
-   pub const  PROXYREQ_REVERSE:  c_int = 2;
-   pub const  PROXYREQ_RESPONSE: c_int = 3;
-
-   #[repr(C)]
-   pub struct request_rec {
-      pub pool: *mut apr_pool_t,
-      pub connection: *mut conn_rec,
-      pub server: *mut server_rec,
-      pub next: *mut request_rec,
-      pub prev: *mut request_rec,
-      pub main: *mut request_rec,
-      pub the_request: *mut c_char,
-      pub assbackwards: c_int,
-      pub proxyreq: c_int,
-      pub header_only: c_int,
-      pub proto_num: c_int,
-      pub protocol: *mut c_char,
-      pub hostname: *const c_char,
-      pub request_time: apr_time_t,
-      pub status_line: *const c_char,
-      pub status: c_int,
-      pub method_number: c_int,
-      pub method: *const c_char,
-      pub allowed: apr_int64_t,
-      pub allowed_xmethods: *mut apr_array_header_t,
-      pub allowed_methods: *mut ap_method_list_t,
-      pub sent_bodyct: apr_off_t,
-      pub bytes_sent: apr_off_t,
-      pub mtime: apr_time_t,
-      pub range: *const c_char,
-      pub clength: apr_off_t,
-      pub chunked: c_int,
-      pub read_body: c_int,
-      pub read_chunked: c_int,
-      pub expecting_100: c_uint,
-      pub kept_body: *mut apr_bucket_brigade,
-      pub body_table: *mut apr_table_t,
-      pub remaining: apr_off_t,
-      pub read_length: apr_off_t,
-      pub headers_in: *mut apr_table_t,
-      pub headers_out: *mut apr_table_t,
-      pub err_headers_out: *mut apr_table_t,
-      pub subprocess_env: *mut apr_table_t,
-      pub notes: *mut apr_table_t,
-      pub content_type: *const c_char,
-      pub handler: *const c_char,
-      pub content_encoding: *const c_char,
-      pub content_languages: *mut apr_array_header_t,
-      pub vlist_validator: *mut c_char,
-      pub user: *mut c_char,
-      pub ap_auth_type: *mut c_char,
-      pub unparsed_uri: *mut c_char,
-      pub uri: *mut c_char,
-      pub filename: *mut c_char,
-      pub canonical_filename: *mut c_char,
-      pub path_info: *mut c_char,
-      pub args: *mut c_char,
-      pub used_path_info: c_int,
-      pub eos_sent: c_int,
-      pub per_dir_config: *mut ap_conf_vector_t,
-      pub request_config: *mut ap_conf_vector_t,
-      pub log: *const ap_logconf,
-      pub log_id: *const c_char,
-      pub htaccess: *const htaccess_result,
-      pub output_filters: *mut ap_filter_t,
-      pub input_filters: *mut ap_filter_t,
-      pub proto_output_filters: *mut ap_filter_t,
-      pub proto_input_filters: *mut ap_filter_t,
-      pub no_cache: c_int,
-      pub no_local_copy: c_int,
-      pub invoke_mtx: *mut apr_thread_mutex_t,
-      pub parsed_uri: apr_uri_t,
-      pub finfo: apr_finfo_t,
-      pub useragent_addr: *mut apr_sockaddr_t,
-      pub useragent_ip: *mut c_char,
-      pub trailers_in: *mut apr_table_t,
-      pub trailers_out: *mut apr_table_t,
-   }
-
-   #[repr(C)]
-   pub struct conn_rec {
-      pub pool: *mut apr_pool_t,
-      pub base_server: *mut server_rec,
-      pub vhost_lookup_data: *mut c_void,
-      pub local_addr: *mut apr_sockaddr_t,
-      pub client_addr: *mut apr_sockaddr_t,
-      pub client_ip: *mut c_char,
-      pub remote_host: *mut c_char,
-      pub remote_logname: *mut c_char,
-      pub local_ip: *mut c_char,
-      pub local_host: *mut c_char,
-      pub id: c_long,
-      pub conn_config: *mut ap_conf_vector_t,
-      pub notes: *mut apr_table_t,
-      pub input_filters: *mut ap_filter_t,
-      pub output_filters: *mut ap_filter_t,
-      pub sbh: *mut c_void,
-      pub bucket_alloc: *mut apr_bucket_alloc_t,
-      pub cs: *mut conn_state_t,
-      pub data_in_input_filters: c_int,
-      pub data_in_output_filters: c_int,
-      pub _bindgen_bitfield_1_: c_uint,
-      pub _bindgen_bitfield_2_: c_int,
-      pub aborted: c_uint,
-      pub keepalive: ap_conn_keepalive_e,
-      pub keepalives: c_int,
-      pub log: *const ap_logconf,
-      pub log_id: *const c_char,
-      pub current_thread: *mut apr_thread_t,
-   }
-
-   #[repr(C)]
-   pub struct ap_logconf {
-       pub module_levels: *mut c_char,
-       pub level: c_int,
-   }
-
-   #[repr(C)]
-   pub struct ap_conn_keepalive_e;
-
-   #[repr(C)]
-   pub struct ap_conf_vector_t;
-
-   #[repr(C)]
-   pub struct ap_method_list_t;
-
-   #[repr(C)]
-   pub struct conn_state_t;
-
-   #[repr(C)]
-   pub struct htaccess_result;
-
-   #[repr(C)]
-   pub struct process_rec;
-
-   #[repr(C)]
-   pub struct server_rec;
-
-   extern "C" {
-      pub fn ap_get_server_banner() -> *const c_char;
-
-      pub fn ap_get_server_description() -> *const c_char;
-
-      pub fn ap_get_server_built() -> *const c_char;
-
-      pub fn ap_escape_html2(p: *mut apr_pool_t, s: *const c_char, toasc: c_int) -> *mut c_char;
-
-      pub fn ap_context_document_root(r: *const request_rec) -> *const c_char;
-
-      pub fn ap_context_prefix(r: *const request_rec) -> *const c_char;
-
-      pub fn ap_run_http_scheme(r: *const request_rec) -> *const c_char;
-
-      pub fn ap_run_default_port(r: *const request_rec) -> apr_port_t;
-
-      pub fn ap_is_initial_req(r: *const request_rec) -> c_int;
-
-      pub fn ap_some_auth_required(r: *const request_rec) -> c_int;
-
-      pub fn ap_cookie_read(r: *const request_rec, name: *const c_char, val: *mut *const c_char,
-         remove: c_int) -> apr_status_t;
-
-      pub fn ap_cookie_write(r: *const request_rec, name: *const c_char, val: *const c_char,
-         attrs: *const c_char, maxage: c_int, ...) -> apr_status_t;
-
-      pub fn ap_escape_urlencoded(p: *mut apr_pool_t, s: *const c_char) -> *mut c_char;
-
-      pub fn ap_unescape_urlencoded(query: *mut c_char) -> c_int;
-   }
 }
 
 
 use libc::{c_void, c_int, c_char};
 
 use std::ffi::CString;
+use ffi;
 use std::fmt;
 
 use wrapper::{Wrapper, c_str_value, wrap_ptr};
@@ -209,10 +26,10 @@ pub enum Status {
 impl Into<c_int> for Status {
    fn into(self) -> c_int {
       match self {
-         Status::OK => raw::OK,
-         Status::DECLINED => raw::DECLINED,
-         Status::DONE => raw::DONE,
-         Status::SUSPENDED => raw::SUSPENDED,
+         Status::OK => ffi::OK,
+         Status::DECLINED => ffi::DECLINED,
+         Status::DONE => ffi::DONE,
+         Status::SUSPENDED => ffi::SUSPENDED,
       }
    }
 }
@@ -227,10 +44,10 @@ pub enum ProxyReq {
 impl Into<ProxyReq> for c_int {
    fn into(self) -> ProxyReq {
       match self {
-         raw::PROXYREQ_NONE => ProxyReq::NONE,
-         raw::PROXYREQ_PROXY => ProxyReq::PROXY,
-         raw::PROXYREQ_REVERSE => ProxyReq::REVERSE,
-         raw::PROXYREQ_RESPONSE => ProxyReq::RESPONSE,
+         ffi::PROXYREQ_NONE => ProxyReq::NONE,
+         ffi::PROXYREQ_PROXY => ProxyReq::PROXY,
+         ffi::PROXYREQ_REVERSE => ProxyReq::REVERSE,
+         ffi::PROXYREQ_RESPONSE => ProxyReq::RESPONSE,
          _ => panic!("Unknown ProxyReq type")
       }
    }
@@ -250,7 +67,7 @@ impl fmt::Display for ProxyReq {
 }
 
 
-pub type Request<'a> = Wrapper<'a, raw::request_rec>;
+pub type Request<'a> = Wrapper<'a, ffi::request_rec>;
 
 
 impl<'a> Request<'a> {
@@ -319,10 +136,10 @@ impl<'a> Request<'a> {
    }
 
    pub fn set_content_type<T: Into<Vec<u8>>>(&self, ct: T) {
-      let c_str = ::apr::raw::dup_c_str(self.raw.pool, ct);
+      let c_str = ffi::dup_c_str(self.raw.pool, ct);
 
       unsafe {
-         ::http_protocol::raw::ap_set_content_type(
+         ffi::ap_set_content_type(
             self.raw,
             c_str
          );
@@ -385,7 +202,7 @@ impl<'a> Request<'a> {
       let c_str_buf = CString::new(data).unwrap();
 
       unsafe {
-         ::http_protocol::raw::ap_rwrite(
+         ffi::ap_rwrite(
             c_str_buf.as_ptr() as *mut c_void,
             c_str_buf.to_bytes().len() as i32,
             self.raw
@@ -397,7 +214,7 @@ impl<'a> Request<'a> {
       let c_str = CString::new(s).unwrap();
 
       let escaped = unsafe {
-         raw::ap_escape_html2(
+         ffi::ap_escape_html2(
             self.raw.pool,
             c_str.as_ptr(),
             0
@@ -411,17 +228,17 @@ impl<'a> Request<'a> {
       let c_str = CString::new(s).unwrap();
 
       let escaped = unsafe {
-         raw::ap_escape_urlencoded(self.raw.pool, c_str.as_ptr())
+         ffi::ap_escape_urlencoded(self.raw.pool, c_str.as_ptr())
       };
 
       c_str_value(escaped)
    }
 
    pub fn unescape_urlencoded<T: Into<Vec<u8>>>(&self, query: T) -> Option<&'a str> {
-      let c_str = ::apr::raw::dup_c_str(self.raw.pool, query);
+      let c_str = ffi::dup_c_str(self.raw.pool, query);
 
       let res = unsafe {
-         raw::ap_unescape_urlencoded(c_str)
+         ffi::ap_unescape_urlencoded(c_str)
       };
 
       if res != 0 {
@@ -433,23 +250,23 @@ impl<'a> Request<'a> {
 
    pub fn server_name(&self) -> Option<&'a str> {
       c_str_value(
-         unsafe { ::http_core::raw::ap_get_server_name(self.raw) }
+         unsafe { ffi::ap_get_server_name(self.raw) }
       )
    }
 
    pub fn server_port(&self) -> u16 {
-      unsafe { ::http_core::raw::ap_get_server_port(self.raw) }
+      unsafe { ffi::ap_get_server_port(self.raw) }
    }
 
    pub fn document_root(&self) -> Option<&'a str> {
       c_str_value(
-         unsafe { ::http_core::raw::ap_document_root(self.raw) }
+         unsafe { ffi::ap_document_root(self.raw) }
       )
    }
 
    pub fn auth_name(&self) -> Option<&'a str> {
       c_str_value(
-         unsafe { ::http_core::raw::ap_auth_name(self.raw) }
+         unsafe { ffi::ap_auth_name(self.raw) }
       )
    }
 
@@ -457,7 +274,7 @@ impl<'a> Request<'a> {
       let mut pw: *const c_char = ::std::ptr::null_mut();
 
       unsafe {
-         ::http_protocol::raw::ap_get_basic_auth_pw(self.raw, &mut pw);
+         ffi::ap_get_basic_auth_pw(self.raw, &mut pw);
       }
 
       c_str_value(pw)
@@ -466,60 +283,60 @@ impl<'a> Request<'a> {
 
    pub fn context_document_root(&self) -> Option<&'a str> {
       c_str_value(
-         unsafe { raw::ap_context_document_root(self.raw) }
+         unsafe { ffi::ap_context_document_root(self.raw) }
       )
    }
 
    pub fn context_prefix(&self) -> Option<&'a str> {
       c_str_value(
-         unsafe { raw::ap_context_prefix(self.raw) }
+         unsafe { ffi::ap_context_prefix(self.raw) }
       )
    }
 
    pub fn http_scheme(&self) -> Option<&'a str> {
       c_str_value(
-         unsafe { raw::ap_run_http_scheme(self.raw) }
+         unsafe { ffi::ap_run_http_scheme(self.raw) }
       )
    }
 
    pub fn default_port(&self) -> u16 {
-      unsafe { raw::ap_run_default_port(self.raw) }
+      unsafe { ffi::ap_run_default_port(self.raw) }
    }
 
    pub fn is_initial_req(&self) -> bool {
-      unsafe { raw::ap_is_initial_req(self.raw) == 1 }
+      unsafe { ffi::ap_is_initial_req(self.raw) == 1 }
    }
 
    pub fn some_auth_required(&self) -> bool {
-      unsafe { raw::ap_some_auth_required(self.raw) == 1 }
+      unsafe { ffi::ap_some_auth_required(self.raw) == 1 }
    }
 
    pub fn cookie<T: Into<Vec<u8>>>(&self, name: T) -> Option<&'a str> {
-      let c_str_name = ::apr::raw::dup_c_str(self.raw.pool, name);
+      let c_str_name = ffi::dup_c_str(self.raw.pool, name);
       let mut val: *const c_char = ::std::ptr::null_mut();
 
       unsafe {
-         raw::ap_cookie_read(self.raw, c_str_name, &mut val, 0);
+         ffi::ap_cookie_read(self.raw, c_str_name, &mut val, 0);
       }
 
       c_str_value(val)
    }
 
    pub fn set_cookie<T: Into<Vec<u8>>>(&self, name: T, val: T, maxage: i32) {
-      let c_str_name = ::apr::raw::dup_c_str(self.raw.pool, name);
-      let c_str_val = ::apr::raw::dup_c_str(self.raw.pool, val);
+      let c_str_name = ffi::dup_c_str(self.raw.pool, name);
+      let c_str_val = ffi::dup_c_str(self.raw.pool, val);
 
       let args = if self.http_scheme().unwrap() == "https" {
          "Secure;HttpOnly"
       } else {
          "HttpOnly"
       };
-      let c_str_args = ::apr::raw::dup_c_str(self.raw.pool, args);
+      let c_str_args = ffi::dup_c_str(self.raw.pool, args);
 
-      let null: *const ::apr::raw::apr_table_t = ::std::ptr::null();
+      let null: *const ffi::apr_table_t = ::std::ptr::null();
 
       unsafe {
-         raw::ap_cookie_write(self.raw, c_str_name, c_str_val, c_str_args, maxage,
+         ffi::ap_cookie_write(self.raw, c_str_name, c_str_val, c_str_args, maxage,
             self.raw.err_headers_out, null);
       }
    }
@@ -533,7 +350,7 @@ impl<'a> Request<'a> {
       let plain_len: c_int = c_str_plain.to_bytes().len() as c_int;
 
       let mut encoded_len: c_int = unsafe {
-         ::apr::raw::apr_base64_encode_len(plain_len)
+         ffi::apr_base64_encode_len(plain_len)
       };
 
       if encoded_len == 0 {
@@ -541,11 +358,11 @@ impl<'a> Request<'a> {
       };
 
       let encoded: *mut c_char = unsafe {
-         ::apr::raw::apr_palloc(self.raw.pool, encoded_len as ::apr::raw::apr_size_t) as *mut c_char
+         ffi::apr_palloc(self.raw.pool, encoded_len as ffi::apr_size_t) as *mut c_char
       };
 
       encoded_len = unsafe {
-         ::apr::raw::apr_base64_encode(encoded, c_str_plain.as_ptr(), plain_len)
+         ffi::apr_base64_encode(encoded, c_str_plain.as_ptr(), plain_len)
       };
 
       if encoded_len == 0 {
@@ -562,7 +379,7 @@ impl<'a> Request<'a> {
       };
 
       let mut plain_len: c_int = unsafe {
-         ::apr::raw::apr_base64_decode_len(c_str_encoded.as_ptr())
+         ffi::apr_base64_decode_len(c_str_encoded.as_ptr())
       };
 
       if plain_len == 0 {
@@ -570,11 +387,11 @@ impl<'a> Request<'a> {
       };
 
       let plain: *mut c_char = unsafe {
-         ::apr::raw::apr_palloc(self.raw.pool, plain_len as ::apr::raw::apr_size_t) as *mut c_char
+         ffi::apr_palloc(self.raw.pool, plain_len as ffi::apr_size_t) as *mut c_char
       };
 
       plain_len = unsafe {
-         ::apr::raw::apr_base64_decode(plain, c_str_encoded.as_ptr())
+         ffi::apr_base64_decode(plain, c_str_encoded.as_ptr())
       };
 
       if plain_len == 0 {
@@ -585,7 +402,7 @@ impl<'a> Request<'a> {
    }
 }
 
-pub type Conn<'a> = Wrapper<'a, raw::conn_rec>;
+pub type Conn<'a> = Wrapper<'a, ffi::conn_rec>;
 
 
 impl<'a> Conn<'a> {
@@ -617,18 +434,24 @@ impl<'a> Conn<'a> {
 
 pub fn server_banner<'a>() -> Option<&'a str> {
    c_str_value(
-      unsafe { raw::ap_get_server_banner() }
+      unsafe { ffi::ap_get_server_banner() }
    )
 }
 
 pub fn server_description<'a>() -> Option<&'a str> {
    c_str_value(
-      unsafe { raw::ap_get_server_description() }
+      unsafe { ffi::ap_get_server_description() }
    )
 }
 
 pub fn server_built<'a>() -> Option<&'a str> {
    c_str_value(
-      unsafe { raw::ap_get_server_built() }
+      unsafe { ffi::ap_get_server_built() }
+   )
+}
+
+pub fn show_mpm<'a>() -> Option<&'a str> {
+   c_str_value(
+      unsafe { ffi::ap_show_mpm() }
    )
 }
