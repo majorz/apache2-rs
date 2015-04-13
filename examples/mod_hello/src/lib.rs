@@ -6,13 +6,9 @@ extern crate apache2;
 apache2_module!(hello_handler);
 
 fn hello_handler(r: &apache2::Request) -> apache2::Status {
-   r.set_content_type("text/html");
+   r.set_content_type("text/plain; charset=utf-8");
 
-   r.write(
-      "<!doctype html><html><head><meta charset=\"utf-8\"></head><body>
-         Hello Haló Ciao Здравейте Γεια σας مرحبا Բարեւ ສະບາຍດີ Ձեզ Héébee Բարեւ გამარჯობა
-      </body></html>"
-   );
+   r.write("Hello Ciao Здравейте Γεια σας مرحبا Բարեւ ສະບາຍດີ Ձեզ Բարեւ გამარჯობა");
 
    apache2::Status::OK
 }
