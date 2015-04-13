@@ -1,0 +1,14 @@
+[package]
+
+name = "mod_https_www_redirect"
+version = "0.0.2"
+
+[lib]
+name = "mod_https_www_redirect"
+crate-type = ["dylib"]
+
+[dependencies]
+libc = "*"
+
+[dependencies.apache2]
+path = "../.."
