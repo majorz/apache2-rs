@@ -22,7 +22,7 @@ pub use apr::{apr_version_string, apu_version_string};
 
 #[macro_export]
 macro_rules! apache2_module {
-   ($module:ident, $handler:ident, $c_handler:ident, $c_name:expr) => {
+   ($handler:ident, $c_handler:ident, $module:ident, $c_name:expr) => {
       const C_NAME: &'static [u8] = $c_name;
       const C_NAME_PTR: *const &'static [u8] = &C_NAME;
       const C_NAME_CHAR_PTR: *const libc::c_char = C_NAME_PTR as *const libc::c_char;
