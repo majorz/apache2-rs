@@ -3,8 +3,7 @@ extern crate libc;
 #[macro_use]
 extern crate apache2;
 
-apache2_module!(hello_handler, c_hello_handler, hello_module, b"mod_hello\0");
-
+apache2_module!(hello_handler);
 
 fn hello_handler(r: &apache2::Request) -> apache2::Status {
    r.set_content_type("text/html");

@@ -12,6 +12,10 @@ pub use apr::{apr_version_string, apu_version_string};
 
 #[macro_export]
 macro_rules! apache2_module {
+   ($handler:ident) => {
+      apache2_module!($handler, c_hello_handler, hello_module, b"mod_hello\0");
+   };
+
    ($handler:ident, $c_handler:ident, $module:ident, $c_name:expr) => {
       const C_NAME: &'static [u8] = $c_name;
       const C_NAME_PTR: *const &'static [u8] = &C_NAME;
