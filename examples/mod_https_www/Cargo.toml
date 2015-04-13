@@ -1,10 +1,10 @@
 [package]
 
-name = "mod_https_www_redirect"
+name = "mod_https_www"
 version = "0.0.2"
 
 [lib]
-name = "mod_https_www_redirect"
+name = "mod_https_www"
 crate-type = ["dylib"]
 
 [dependencies]
