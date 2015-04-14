@@ -301,15 +301,14 @@ pub type register_hooks_fn = extern "C" fn(
    p: *mut apr_pool_t
 );
 
-pub type hook_handler_fn = extern "C" fn(
-   r: *const request_rec
-) -> c_int;
+pub type hook_handler_fn = extern "C" fn(r: *const request_rec) -> c_int;
+pub type hook_pre_config_fn = extern "C" fn(conf: *const apr_pool_t, log: *const apr_pool_t, temp: *const apr_pool_t) -> c_int;
+pub type hook_check_config_fn = extern "C" fn(conf: *const apr_pool_t, log: *const apr_pool_t, temp: *const apr_pool_t, s: *const server_rec) -> c_int;
+pub type hook_test_config_fn = extern "C" fn(conf: *const apr_pool_t, s: *const server_rec) -> c_int;
+pub type hook_post_config_fn = extern "C" fn(conf: *const apr_pool_t, log: *const apr_pool_t, temp: *const apr_pool_t, s: *const server_rec) -> c_int;
 
 
 extern "C" {
-   pub fn ap_hook_handler(hook_handler: Option<hook_handler_fn>,
-      pre: *const *const c_char, succ: *const *const c_char, order: c_int);
-
    pub fn ap_get_server_banner() -> *const c_char;
    pub fn ap_get_server_description() -> *const c_char;
    pub fn ap_get_server_built() -> *const c_char;
@@ -344,4 +343,19 @@ extern "C" {
    pub fn ap_get_server_name(r: *const request_rec) -> *const c_char;
    pub fn ap_get_server_port(r: *const request_rec) -> apr_port_t;
    pub fn ap_auth_name(r: *const request_rec) -> *const c_char;
+
+   pub fn ap_hook_handler(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_pre_config(f: Option<hook_pre_config_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_check_config(f: Option<hook_check_config_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_test_config(f: Option<hook_test_config_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_post_config(f: Option<hook_post_config_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_create_request(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_translate_name(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_map_to_storage(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_check_user_id(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_fixups(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_type_checker(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_access_checker(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_access_checker_ex(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
+   pub fn ap_hook_auth_checker(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
 }
