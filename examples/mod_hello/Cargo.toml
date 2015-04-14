@@ -7,8 +7,5 @@ version = "0.0.2"
 name = "mod_hello"
 crate-type = ["dylib"]
 
-[dependencies]
-libc = "*"
-
 [dependencies.apache2]
 path = "../.."

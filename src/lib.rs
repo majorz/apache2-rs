@@ -5,9 +5,10 @@ pub mod apr;
 pub mod httpd;
 pub mod wrapper;
 
+pub use libc::{c_void, c_char, c_int};
 
 pub use httpd::{Request, Status, ProxyReq, server_banner, server_description, server_built, show_mpm};
-pub use apr::{apr_version_string, apu_version_string};
+pub use apr::{apr_version_string, apu_version_string, HookOrder};
 
 
 #[macro_export]
@@ -23,7 +24,7 @@ macro_rules! apache2_module {
    ($handler:ident, $c_handler:ident, $module:ident, $c_name:expr, $hook:ident, $order:expr) => {
       const C_NAME: &'static [u8] = $c_name;
       const C_NAME_PTR: *const &'static [u8] = &C_NAME;
-      const C_NAME_CHAR_PTR: *const libc::c_char = C_NAME_PTR as *const libc::c_char;
+      const C_NAME_CHAR_PTR: *const $crate::c_char = C_NAME_PTR as *const $crate::c_char;
 
       #[no_mangle]
       pub static mut $module: $crate::ffi::module = $crate::ffi::module {
@@ -31,7 +32,7 @@ macro_rules! apache2_module {
          minor_version: $crate::ffi::MODULE_MAGIC_NUMBER_MINOR,
          module_index: -1,
          name: C_NAME_CHAR_PTR,
-         dynamic_load_handle: 0 as *mut libc::c_void,
+         dynamic_load_handle: 0 as *mut $crate::c_void,
          next: 0 as *mut $crate::ffi::module,
          magic: $crate::ffi::MODULE_MAGIC_COOKIE,
          rewrite_args: None,
@@ -55,7 +56,7 @@ macro_rules! apache2_module {
       }
 
       #[no_mangle]
-      pub extern "C" fn $c_handler(r: *const $crate::ffi::request_rec) -> libc::c_int {
+      pub extern "C" fn $c_handler(r: *const $crate::ffi::request_rec) -> $crate::c_int {
          match $crate::httpd::Request::from_raw_ptr(r) {
             None => $crate::httpd::Status::DECLINED.into(),
             Some(request) => $handler(&request).into()

@@ -1,5 +1,3 @@
-extern crate libc;
-
 #[macro_use]
 extern crate apache2;
 
