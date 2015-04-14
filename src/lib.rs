@@ -17,6 +17,10 @@ macro_rules! apache2_module {
    };
 
    ($handler:ident, $c_handler:ident, $module:ident, $c_name:expr) => {
+      apache2_module!($handler, $c_handler, $module, $c_name, ap_hook_handler, $crate::apr::HookOrder::MIDDLE);
+   };
+
+   ($handler:ident, $c_handler:ident, $module:ident, $c_name:expr, $hook:ident, $order:expr) => {
       const C_NAME: &'static [u8] = $c_name;
       const C_NAME_PTR: *const &'static [u8] = &C_NAME;
       const C_NAME_CHAR_PTR: *const libc::c_char = C_NAME_PTR as *const libc::c_char;
@@ -41,11 +45,11 @@ macro_rules! apache2_module {
 
       extern "C" fn c_module_hooks(_: *mut $crate::ffi::apr_pool_t) {
          unsafe {
-            $crate::ffi::ap_hook_handler(
+            $crate::ffi::$hook(
                Some($c_handler),
                std::ptr::null(),
                std::ptr::null(),
-               $crate::ffi::APR_HOOK_MIDDLE
+               $order.into()
             );
          }
       }

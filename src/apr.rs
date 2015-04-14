@@ -1,8 +1,31 @@
+#![allow(non_camel_case_types)]
+
 use std::ffi::CString;
 
 use ffi;
 
 use wrapper::{Wrapper, c_str_value};
+
+
+pub enum HookOrder {
+   REALLY_FIRST,  // run this hook first, before ANYTHING
+   FIRST,         // run this hook first
+   MIDDLE,        // run this hook somewhere
+   LAST,          // run this hook after every other hook which is defined
+   REALLY_LAST    // run this hook last, after EVERYTHING
+}
+
+impl Into<::libc::c_int> for HookOrder {
+   fn into(self) -> ::libc::c_int {
+      match self {
+         HookOrder::REALLY_FIRST => ffi::APR_HOOK_REALLY_FIRST,
+         HookOrder::FIRST => ffi::APR_HOOK_FIRST,
+         HookOrder::MIDDLE => ffi::APR_HOOK_MIDDLE,
+         HookOrder::LAST => ffi::APR_HOOK_LAST,
+         HookOrder::REALLY_LAST => ffi::APR_HOOK_REALLY_LAST
+      }
+   }
+}
 
 
 pub type AprTable<'a> = Wrapper<'a, ffi::apr_table_t>;
