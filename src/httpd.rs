@@ -277,6 +277,14 @@ impl<'a> Request<'a> {
       self.raw.proxyreq.into()
    }
 
+   pub fn header_only(&self) -> bool {
+      self.raw.header_only != 0
+   }
+
+   pub fn set_header_only(&mut self, header_only: bool) {
+      self.raw.header_only = header_only as c_int;
+   }
+
    pub fn protocol(&self) -> Option<&'a str> {
       c_str_value(self.raw.protocol)
    }
@@ -291,6 +299,10 @@ impl<'a> Request<'a> {
 
    pub fn status(&self) -> Status {
       self.raw.status.into()
+   }
+
+   pub fn set_status(&mut self, status: Status) {
+      self.raw.status = status.into();
    }
 
    pub fn method(&self) -> Option<&'a str> {
