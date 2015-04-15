@@ -13,12 +13,10 @@ fn unwrap_str<'a>(option: Option<&'a str>) -> &'a str {
    }
 }
 
-fn info_rs_handler(r: &Request) -> Status {
+fn info_rs_handler(r: &mut Request) -> Status {
    if r.handler().unwrap() != "server-info-rs" {
       return Status::DECLINED
    }
-
-   let conn = r.connection().unwrap();
 
    r.set_content_type("text/html");
 
@@ -32,7 +30,7 @@ fn info_rs_handler(r: &Request) -> Status {
       )
    );
    let server_port = r.server_port();
-   let local_ip = unwrap_str(conn.local_ip());
+   let local_ip = unwrap_str(r.connection().unwrap().local_ip());
    r.write(format!("<p>Server: {}:{} (via {})</p>", server_name, server_port, local_ip));
 
    let description = unwrap_str(server_description());
@@ -58,7 +56,7 @@ fn info_rs_handler(r: &Request) -> Status {
 
    r.write("<h2>Current Request Information</h2>");
 
-   let client_ip = unwrap_str(conn.client_ip());
+   let client_ip = unwrap_str(r.connection().unwrap().client_ip());
    r.write(format!("<p>Client IP: {}</p>", client_ip));
 
    let useragent_ip = unwrap_str(r.useragent_ip());

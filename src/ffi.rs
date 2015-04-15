@@ -360,7 +360,7 @@ pub type register_hooks_fn = extern "C" fn(
    p: *mut apr_pool_t
 );
 
-pub type hook_handler_fn = extern "C" fn(r: *const request_rec) -> c_int;
+pub type hook_handler_fn = extern "C" fn(r: *mut request_rec) -> c_int;
 pub type hook_pre_config_fn = extern "C" fn(conf: *const apr_pool_t, log: *const apr_pool_t, temp: *const apr_pool_t) -> c_int;
 pub type hook_check_config_fn = extern "C" fn(conf: *const apr_pool_t, log: *const apr_pool_t, temp: *const apr_pool_t, s: *const server_rec) -> c_int;
 pub type hook_test_config_fn = extern "C" fn(conf: *const apr_pool_t, s: *const server_rec) -> c_int;

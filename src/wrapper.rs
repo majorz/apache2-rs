@@ -4,15 +4,15 @@ use libc::c_char;
 
 
 pub struct Wrapper<'a, T: 'a> {
-   pub raw: &'a T
+   pub raw: &'a mut T
 }
 
 impl<'a, T> Wrapper<'a, T> {
-   pub fn from_raw_ptr(ptr: *const T) -> Option<Self> {
+   pub fn from_raw_ptr(ptr: *mut T) -> Option<Self> {
       if ptr.is_null() {
          None
       } else {
-         let raw: &T = unsafe { &*ptr };
+         let raw: &mut T = unsafe { &mut *ptr };
          Some(
             Wrapper::<T> {
                raw: raw
@@ -37,7 +37,7 @@ pub fn c_str_value<'a>(ptr: *const c_char) -> Option<&'a str> {
 }
 
 #[inline]
-pub fn wrap_ptr<'a, T>(ptr: *const T) -> Option<Wrapper<'a, T>> {
+pub fn wrap_ptr<'a, T>(ptr: *mut T) -> Option<Wrapper<'a, T>> {
    if ptr.is_null() {
       return None
    }

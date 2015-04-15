@@ -6,7 +6,7 @@ use apache2::{Request, Status};
 apache2_module!(coming_soon_handler, c_coming_soon_handler, coming_soon_module, b"mod_coming_soon\0");
 
 
-fn coming_soon_handler(r: &Request) -> Status {
+fn coming_soon_handler(r: &mut Request) -> Status {
    if r.handler().unwrap() != "coming-soon" || r.uri().unwrap() != "/" {
       return Status::DECLINED
    }
