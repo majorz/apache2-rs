@@ -32,13 +32,13 @@ pub type AprTable<'a> = Wrapper<'a, ffi::apr_table_t>;
 
 
 impl<'a> AprTable<'a> {
-   pub fn get(&self, key: &'static str) -> Option<&'a str> {
+   pub fn get<T: Into<Vec<u8>>>(&self, key: T) -> Option<&'a str> {
       c_str_value(
          unsafe { ffi::apr_table_get(self.raw, CString::new(key).unwrap().as_ptr()) }
       )
    }
 
-   pub fn set(&mut self, key: &'static str, val: &'static str) {
+   pub fn set<T: Into<Vec<u8>>, U: Into<Vec<u8>>>(&mut self, key: T, val: U) {
       unsafe {
          ffi::apr_table_set(
             self.raw,
