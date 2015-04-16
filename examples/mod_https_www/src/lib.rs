@@ -3,7 +3,7 @@
 #[macro_use]
 extern crate apache2;
 
-apache2_module!(https_www_handler, c_https_www_handler, https_www_module, b"mod_https_www\0");
+apache2_module!(https_www_handler, c_https_www_handler, https_www_module, b"mod_https_www\0", ap_hook_translate_name, apache2::HookOrder::MIDDLE);
 
 
 fn https_www_handler(r: &mut apache2::Request) -> apache2::Status {
