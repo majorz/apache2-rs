@@ -9,6 +9,7 @@ use std::fmt;
 use wrapper::{Wrapper, c_str_value, wrap_ptr};
 
 use apr::AprTable;
+use cookie::Cookie;
 
 
 pub enum Status {
@@ -528,22 +529,16 @@ impl<'a> Request<'a> {
       c_str_value(val)
    }
 
-   pub fn set_cookie<T: Into<Vec<u8>>>(&self, name: T, val: T, maxage: i32) {
-      let c_str_name = ffi::dup_c_str(self.raw.pool, name);
-      let c_str_val = ffi::dup_c_str(self.raw.pool, val);
-
-      let args = if self.http_scheme().unwrap() == "https" {
-         "Secure;HttpOnly"
-      } else {
-         "HttpOnly"
-      };
-      let c_str_args = ffi::dup_c_str(self.raw.pool, args);
+   pub fn set_cookie(&self, cookie: &Cookie) {
+      let c_str_name = ffi::dup_c_str(self.raw.pool, cookie.name.clone());
+      let c_str_val = ffi::dup_c_str(self.raw.pool, cookie.value.clone());
+      let c_str_attrs = ffi::dup_c_str(self.raw.pool, cookie.attrs());
 
       let null: *const ffi::apr_table_t = ::std::ptr::null();
 
       unsafe {
-         ffi::ap_cookie_write(self.raw, c_str_name, c_str_val, c_str_args, maxage,
-            self.raw.err_headers_out, null);
+         ffi::ap_cookie_write(self.raw, c_str_name, c_str_val, c_str_attrs, 0,
+            self.raw.headers_out, null);
       }
    }
 

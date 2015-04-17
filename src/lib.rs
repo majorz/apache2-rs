@@ -1,14 +1,17 @@
 extern crate libc;
+extern crate time;
 
 pub mod ffi;
 pub mod apr;
 pub mod httpd;
 pub mod wrapper;
+pub mod cookie;
 
 pub use libc::{c_void, c_char, c_int};
 
 pub use httpd::{Request, Status, ProxyReq, server_banner, server_description, server_built, show_mpm};
 pub use apr::{apr_version_string, apu_version_string, HookOrder};
+pub use cookie::Cookie;
 
 
 #[macro_export]

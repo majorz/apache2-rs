@@ -2,7 +2,7 @@
 extern crate apache2;
 
 use apache2::{Request, Status, server_banner, server_description, server_built, show_mpm,
-   apr_version_string, apu_version_string};
+   apr_version_string, apu_version_string, Cookie};
 
 apache2_module!(info_rs_handler, c_info_rs_handler, info_rs_module, b"mod_info_rs\0");
 
@@ -144,7 +144,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
    let val = "info_rs";
    match r.cookie(key) {
       None => {
-         r.set_cookie(key, val, 0);
+         r.set_cookie(&Cookie::new(key.to_string(), val.to_string()));
          r.write(format!("<p>New Cookie – {}: {}</p>", key, val));
       },
       Some(stored) => {
