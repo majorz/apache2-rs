@@ -144,7 +144,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
    let val = "info_rs";
    match r.cookie(key) {
       None => {
-         r.set_cookie(&Cookie::new(key.to_string(), val.to_string()));
+         r.set_cookie(Cookie::new(key, val));
          r.write(format!("<p>New Cookie – {}: {}</p>", key, val));
       },
       Some(stored) => {

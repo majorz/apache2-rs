@@ -2,26 +2,26 @@ use time;
 
 
 #[derive(PartialEq, Clone, Debug)]
-pub struct Cookie {
-   pub name: String,
-   pub value: String,
+pub struct Cookie<'a> {
+   pub name: &'a str,
+   pub value: &'a str,
    pub expires: Option<time::Tm>,
    pub max_age: Option<u64>,
-   pub domain: Option<String>,
-   pub path: Option<String>,
+   pub domain: Option<&'a str>,
+   pub path: Option<&'a str>,
    pub secure: bool,
    pub httponly: bool,
 }
 
-impl Cookie {
-   pub fn new(name: String, value: String) -> Cookie {
-      Cookie {
+impl<'a> Cookie<'a> {
+   pub fn new(name: &'a str, value: &'a str) -> Cookie<'a> {
+      Cookie::<'a> {
          name: name,
          value: value,
          expires: None,
          max_age: None,
          domain: None,
-         path: Some("/".to_string()),
+         path: Some("/"),
          secure: false,
          httponly: false,
       }

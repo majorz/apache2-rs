@@ -529,9 +529,9 @@ impl<'a> Request<'a> {
       c_str_value(val)
    }
 
-   pub fn set_cookie(&self, cookie: &Cookie) {
-      let c_str_name = ffi::dup_c_str(self.raw.pool, cookie.name.clone());
-      let c_str_val = ffi::dup_c_str(self.raw.pool, cookie.value.clone());
+   pub fn set_cookie(&self, cookie: Cookie) {
+      let c_str_name = ffi::dup_c_str(self.raw.pool, cookie.name);
+      let c_str_val = ffi::dup_c_str(self.raw.pool, cookie.value);
       let c_str_attrs = ffi::dup_c_str(self.raw.pool, cookie.attrs());
 
       let null: *const ffi::apr_table_t = ::std::ptr::null();
