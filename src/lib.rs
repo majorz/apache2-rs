@@ -1,5 +1,4 @@
 extern crate libc;
-extern crate time;
 
 pub mod ffi;
 pub mod apr;

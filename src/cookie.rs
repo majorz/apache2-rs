@@ -1,11 +1,11 @@
-use time;
+use httpd::Request;
 
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct Cookie<'a> {
    pub name: &'a str,
    pub value: &'a str,
-   pub expires: Option<time::Tm>,
+   pub expires: Option<i64>,
    pub max_age: Option<u64>,
    pub domain: Option<&'a str>,
    pub path: Option<&'a str>,
@@ -27,7 +27,7 @@ impl<'a> Cookie<'a> {
       }
    }
 
-   pub fn attrs(&self) -> String {
+   pub fn attrs(&self, r: &Request) -> String {
       let mut res = String::new();
 
       if self.httponly {
@@ -54,7 +54,12 @@ impl<'a> Cookie<'a> {
       }
 
       match self.expires {
-         Some(ref t) => res.push_str(format!(";Expires={}", t.rfc822()).as_ref()),
+         Some(ref t) => {
+            match r.rfc822_date(*t) {
+               Some(s) => res.push_str(format!(";Expires={}", s).as_ref()),
+               None => {}
+            }
+         },
          None => {}
       }
 

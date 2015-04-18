@@ -532,7 +532,7 @@ impl<'a> Request<'a> {
    pub fn set_cookie(&self, cookie: Cookie) {
       let c_str_name = ffi::dup_c_str(self.raw.pool, cookie.name);
       let c_str_val = ffi::dup_c_str(self.raw.pool, cookie.value);
-      let c_str_attrs = ffi::dup_c_str(self.raw.pool, cookie.attrs());
+      let c_str_attrs = ffi::dup_c_str(self.raw.pool, cookie.attrs(&self));
 
       let null: *const ffi::apr_table_t = ::std::ptr::null();
 
@@ -600,6 +600,18 @@ impl<'a> Request<'a> {
       };
 
       c_str_value(plain)
+   }
+
+   pub fn rfc822_date(&self, t: i64) -> Option<&'a str> {
+      let date: *mut c_char = unsafe {
+         ffi::apr_palloc(self.raw.pool, ffi::APR_RFC822_DATE_LEN) as *mut c_char
+      };
+
+      unsafe {
+         ffi::apr_rfc822_date(date, t);
+      }
+
+      c_str_value(date)
    }
 }
 

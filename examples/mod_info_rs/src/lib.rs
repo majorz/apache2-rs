@@ -144,7 +144,10 @@ fn info_rs_handler(r: &mut Request) -> Status {
    let val = "info_rs";
    match r.cookie(key) {
       None => {
-         r.set_cookie(Cookie::new(key, val));
+         let mut cookie = Cookie::new(key, val);
+         cookie.expires = Some(2131231234534534);
+
+         r.set_cookie(cookie);
          r.write(format!("<p>New Cookie – {}: {}</p>", key, val));
       },
       Some(stored) => {
@@ -207,6 +210,9 @@ fn info_rs_handler(r: &mut Request) -> Status {
    r.write(format!("<p>Original URL: {}</p>", original_url));
    r.write(format!("<p>Encoded URL: {}</p>", encoded_url));
    r.write(format!("<p>Decoded URL: {}</p>", plain_url));
+
+   let date = unwrap_str(r.rfc822_date(0));
+   r.write(format!("<p>RFC 822 Date: {}</p>", date));
 
    r.write("</body></html>");
 

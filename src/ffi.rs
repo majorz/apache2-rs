@@ -4,6 +4,8 @@ use libc::{c_void, c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_
 
 // APACHE PORTABLE RUNTIME
 
+pub const APR_RFC822_DATE_LEN:    apr_size_t = 30;
+
 // run this hook first, before ANYTHING
 pub const APR_HOOK_REALLY_FIRST:  c_int = -10;
 // run this hook first
@@ -91,6 +93,8 @@ extern "C" {
    pub fn apr_base64_encode(coded_dst: *mut c_char, plain_src: *const c_char, len_plain_src: c_int) -> c_int;
    pub fn apr_base64_decode_len(coded_src: *const c_char) -> c_int;
    pub fn apr_base64_decode(plain_dst: *mut c_char, coded_src: *const c_char) -> c_int;
+
+   pub fn apr_rfc822_date(date_str: *mut c_char, t: apr_time_t) -> apr_status_t;
 }
 
 pub fn dup_c_str<T: Into<Vec<u8>>>(pool: *mut apr_pool_t, data: T) -> *mut c_char {
