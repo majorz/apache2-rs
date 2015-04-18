@@ -318,6 +318,13 @@ impl<'a> Request<'a> {
       self.raw.mtime
    }
 
+   pub fn set_last_modified(&mut self, mtime: i64) {
+      unsafe {
+         ffi::ap_update_mtime(self.raw, mtime);
+         ffi::ap_set_last_modified(self.raw);
+      }
+   }
+
    pub fn range(&self) -> Option<&'a str> {
       c_str_value(self.raw.range)
    }

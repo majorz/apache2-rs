@@ -94,6 +94,7 @@ extern "C" {
    pub fn apr_base64_decode_len(coded_src: *const c_char) -> c_int;
    pub fn apr_base64_decode(plain_dst: *mut c_char, coded_src: *const c_char) -> c_int;
 
+   pub fn apr_time_now() -> apr_time_t;
    pub fn apr_rfc822_date(date_str: *mut c_char, t: apr_time_t) -> apr_status_t;
 }
 
@@ -406,6 +407,9 @@ extern "C" {
    pub fn ap_get_server_name(r: *const request_rec) -> *const c_char;
    pub fn ap_get_server_port(r: *const request_rec) -> apr_port_t;
    pub fn ap_auth_name(r: *const request_rec) -> *const c_char;
+
+   pub fn ap_set_last_modified(r: *mut request_rec) -> ();
+   pub fn ap_update_mtime(r: *mut request_rec, dependency_mtime: apr_time_t) -> ();
 
    pub fn ap_hook_handler(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
    pub fn ap_hook_pre_config(f: Option<hook_pre_config_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);

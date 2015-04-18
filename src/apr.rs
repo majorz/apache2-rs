@@ -100,3 +100,9 @@ pub fn apu_version_string<'a>() -> Option<&'a str> {
       unsafe { ffi::apu_version_string() }
    )
 }
+
+pub fn time_now() -> i64 {
+   unsafe {
+      ffi::apr_time_now()
+   }
+}
