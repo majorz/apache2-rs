@@ -153,7 +153,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
    match r.cookie(key) {
       None => {
          let mut cookie = Cookie::new(key, val);
-         cookie.expires = Some(2131231234534534);
+         cookie.expires = Some(time_now() + 1000000 * 30);
 
          r.set_cookie(cookie);
          r.write(format!("<p>New Cookie – {}: {}</p>", key, val));
