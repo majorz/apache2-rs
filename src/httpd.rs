@@ -294,6 +294,10 @@ impl<'a> Request<'a> {
       c_str_value(self.raw.hostname)
    }
 
+   pub fn request_time(&self) -> i64 {
+      self.raw.request_time
+   }
+
    pub fn status_line(&self) -> Option<&'a str> {
       c_str_value(self.raw.status_line)
    }
@@ -308,6 +312,10 @@ impl<'a> Request<'a> {
 
    pub fn method(&self) -> Option<&'a str> {
       c_str_value(self.raw.method)
+   }
+
+   pub fn mtime(&self) -> i64 {
+      self.raw.mtime
    }
 
    pub fn range(&self) -> Option<&'a str> {

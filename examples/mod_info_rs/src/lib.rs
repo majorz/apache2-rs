@@ -119,6 +119,12 @@ fn info_rs_handler(r: &mut Request) -> Status {
    let canonical_filename = unwrap_str(r.canonical_filename());
    r.write(format!("<p>Canonical Filename: {}</p>", canonical_filename));
 
+   let request_time = unwrap_str(r.rfc822_date(r.request_time()));
+   r.write(format!("<p>Request Time: {} / {}</p>", request_time, r.request_time()));
+
+   let mtime = unwrap_str(r.rfc822_date(r.mtime()));
+   r.write(format!("<p>Last modified time: {} / {}</p>", mtime, r.mtime()));
+
    let log_id = unwrap_str(r.log_id());
    r.write(format!("<p>Log ID: {}</p>", log_id));
 
