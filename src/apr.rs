@@ -48,6 +48,16 @@ impl<'a> AprTable<'a> {
       };
    }
 
+   pub fn add<T: Into<Vec<u8>>, U: Into<Vec<u8>>>(&mut self, key: T, val: U) {
+      unsafe {
+         ffi::apr_table_add(
+            self.raw,
+            CString::new(key).unwrap().as_ptr(),
+            CString::new(val).unwrap().as_ptr()
+         )
+      };
+   }
+
    pub fn iter(&self) -> AprTableIter {
       let ptr = unsafe { ffi::apr_table_elts(self.raw) };
       let raw: &ffi::apr_array_header_t = unsafe { &*ptr };
