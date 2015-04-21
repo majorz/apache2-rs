@@ -9,3 +9,6 @@ crate-type = ["dylib"]
 
 [dependencies.apache2]
 path = "../.."
+
+[dependencies.redis]
+git = "https://github.com/mitsuhiko/redis-rs.git"
