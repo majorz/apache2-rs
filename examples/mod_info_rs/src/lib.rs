@@ -168,7 +168,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
    let headers_in = r.headers_in().unwrap();
 
    for (key, val) in headers_in.iter() {
-      r.write(format!("<p>{}: {}</p>", key, val));
+      r.write(format!("<p>{}: {}</p>", key, unwrap_str(val)));
    }
 
    r.write("<h3>Headers Out</h3>");
@@ -176,7 +176,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
    let headers_out = r.headers_out().unwrap();
 
    for (key, val) in headers_out.iter() {
-      r.write(format!("<p>{}: {}</p>", key, val));
+      r.write(format!("<p>{}: {}</p>", key, unwrap_str(val)));
    }
 
    r.write("<h3>Err Headers Out</h3>");
@@ -184,7 +184,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
    let err_headers_out = r.err_headers_out().unwrap();
 
    for (key, val) in err_headers_out.iter() {
-      r.write(format!("<p>{}: {}</p>", key, val));
+      r.write(format!("<p>{}: {}</p>", key, unwrap_str(val)));
    }
 
    r.write("<h3>Notes</h3>");
@@ -192,7 +192,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
    let notes = r.notes().unwrap();
 
    for (key, val) in notes.iter() {
-      r.write(format!("<p>{}: {}</p>", key, val));
+      r.write(format!("<p>{}: {}</p>", key, unwrap_str(val)));
    }
 
    r.write("<h3>Subprocess Environment</h3>");
@@ -200,7 +200,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
    let subprocess_env = r.subprocess_env().unwrap();
 
    for (key, val) in subprocess_env.iter() {
-      r.write(format!("<p>{}: {}</p>", key, val));
+      r.write(format!("<p>{}: {}</p>", key, unwrap_str(val)));
    }
 
    r.write("<h3>Request API check</h3>");

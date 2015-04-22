@@ -75,9 +75,9 @@ pub struct AprTableIter<'a> {
 }
 
 impl<'a> Iterator for AprTableIter<'a> {
-   type Item = (&'a str, &'a str);
+   type Item = (&'a str, Option<&'a str>);
 
-   fn next(&mut self) -> Option<(&'a str, &'a str)> {
+   fn next(&mut self) -> Option<(&'a str, Option<&'a str>)> {
       if self.next_idx != self.array_header.nelts as usize {
          let mut elts = self.array_header.elts as *const ffi::apr_table_entry_t;
 
@@ -85,9 +85,9 @@ impl<'a> Iterator for AprTableIter<'a> {
          self.next_idx += 1;
 
          let key = c_str_value(unsafe { (*elts).key }).unwrap();
-         let val = c_str_value(unsafe { (*elts).val }).unwrap();
+         let val_option = c_str_value(unsafe { (*elts).val });
 
-         Some((key, val))
+         Some((key, val_option))
       } else {
          None
       }
