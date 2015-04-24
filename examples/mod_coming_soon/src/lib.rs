@@ -206,15 +206,21 @@ const STYLESHEET: &'static str = "
    }
 
    .urgent-call .first {
-      margin-bottom: 0.25em;
+      margin-bottom: 0.5em;
    }
 
    .urgent-call .second {
       width: 100%;
-      color: #9c292e;
+      color: #e66f3f;
       font-family: 'Khand', sans-serif;
       font-weight: bold;
       font-size: 1.2em;
+      text-shadow: 0px 1px 6px rgba(0, 0, 0, 0.3);
+      letter-spacing: 0.1em;
+   }
+
+   .urgent-call .third {
+      margin-top: 0.15em;
    }
 
    .petition .button {
