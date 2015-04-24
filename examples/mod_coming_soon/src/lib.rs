@@ -373,11 +373,11 @@ const STYLESHEET: &'static str = "
 
    @media all and (min-width: 1600px) {
       h1 {
-         font-size: 5.25em;
+         font-size: 5em;
       }
 
       h2 {
-         font-size: 1.8em;
+         font-size: 1.7em;
       }
 
       .coming-soon {
@@ -394,7 +394,7 @@ const STYLESHEET: &'static str = "
       }
 
       .timer .number {
-         font-size: 6em;
+         font-size: 5em;
       }
 
       .timer .days {
