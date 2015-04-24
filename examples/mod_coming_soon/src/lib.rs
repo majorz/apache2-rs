@@ -129,7 +129,7 @@ const STYLESHEET: &'static str = "
    h2 {
       display: block;
       width: 70%;
-      margin: 0 auto;
+      margin: -0.2em auto 0;
       font-family: 'Fira Sans', sans-serif;
       font-weight: 300;
       font-size: 1.2em;
@@ -140,7 +140,7 @@ const STYLESHEET: &'static str = "
    .coming-soon {
       display: block;
       width: 40%;
-      margin: 3em auto .1em;
+      margin: 2.5em auto .1em;
       font-size: 1.5em;
       color: white;
       text-align: center;
@@ -191,7 +191,8 @@ const STYLESHEET: &'static str = "
    .urgent-call .description {
       display: block;
       width: 100%;
-      line-height: 1.9em;
+      padding-top: 1em;
+      padding-bottom: 1em;
       background: -webkit-linear-gradient(left, rgba(86,86,107,0), rgba(86,86,107,.25), rgba(86,86,107,0));
       background: linear-gradient(to right,rgba(86,86,107,0),rgba(86,86,107,.25),rgba(86,86,107,0));
    }
@@ -202,6 +203,10 @@ const STYLESHEET: &'static str = "
       color: white;
       font-size: 1em;
       text-align: center;
+   }
+
+   .urgent-call .first {
+      margin-bottom: 0.25em;
    }
 
    .urgent-call .second {
@@ -316,7 +321,6 @@ const STYLESHEET: &'static str = "
 
       .urgent-call .description {
          font-size: 0.7em;
-         line-height: 140%;
       }
 
       .petition .button {
@@ -358,7 +362,6 @@ const STYLESHEET: &'static str = "
 
       .urgent-call .description {
          font-size: .85em;
-         line-height: 140%;
       }
 
       .petition .button {
@@ -399,7 +402,6 @@ const STYLESHEET: &'static str = "
       }
 
       .urgent-call .description {
-         line-height: 3em;
       }
 
       .urgent-call .first, .urgent-call .third {
