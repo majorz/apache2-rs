@@ -140,9 +140,8 @@ const STYLESHEET: &'static str = "
    .coming-soon {
       display: block;
       width: 40%;
-      margin: 7% auto .5em;
+      margin: 3em auto .1em;
       font-size: 1.5em;
-      line-height: .5em;
       color: white;
       text-align: center;
    }
@@ -388,7 +387,7 @@ const STYLESHEET: &'static str = "
 
       .timer {
          width: 10em;
-         margin: 1em auto 2em;
+         margin: 0.5em auto 2em;
       }
 
       .timer .number {
