@@ -30,7 +30,7 @@ macro_rules! AP_DECLARE_MODULE {
          version: $crate::ffi::MODULE_MAGIC_NUMBER_MAJOR,
          minor_version: $crate::ffi::MODULE_MAGIC_NUMBER_MINOR,
          module_index: -1,
-         name: $name,
+         name: $name as *const u8 as *const $crate::c_char,
          dynamic_load_handle: 0 as *mut $crate::c_void,
          next: 0 as *mut $crate::ffi::module,
          magic: $crate::ffi::MODULE_MAGIC_COOKIE,
@@ -39,7 +39,7 @@ macro_rules! AP_DECLARE_MODULE {
          merge_dir_config: $merge_dir_config,
          create_server_config: $create_server_config,
          merge_server_config: $merge_server_config,
-         cmds: $cmds,
+         cmds: $cmds as *const $crate::ffi::command_rec,
          register_hooks: $register_hooks
       };
    }
@@ -59,12 +59,12 @@ macro_rules! apache2_module {
    ($handler:ident, $c_handler:ident, $module:ident, $c_name:expr, $hook:ident, $order:expr) => {
       AP_DECLARE_MODULE!(
          $module,
-         $c_name as *const u8 as *const $crate::c_char,
+         $c_name,
          None,
          None,
          None,
          None,
-         0 as *const $crate::ffi::command_rec,
+         0,
          Some(c_module_hooks)
       );
 
