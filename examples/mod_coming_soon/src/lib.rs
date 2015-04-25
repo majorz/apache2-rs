@@ -11,13 +11,9 @@ macro_rules! html_template {() => ("<!doctype html>
    <head>
       <meta charset=\"utf-8\">
       <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\">
-      <title>PolyDraw – Coming Soon</title>
+      <title>PolyDraw / Coming Soon</title>
       <meta name=\"description\" content=\"PolyDraw website is coming soon\">
       <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-
-      <link href=\"https://fonts.googleapis.com/css?family=Fira+Sans:300,500\" rel=\"stylesheet\" type=\"text/css\">
-      <link href=\"https://fonts.googleapis.com/css?family=Roboto+Condensed:400\" rel=\"stylesheet\" type=\"text/css\">
-      <link href=\"https://fonts.googleapis.com/css?family=Khand:400\" rel=\"stylesheet\" type=\"text/css\">
    </head>
 
    <style>
@@ -89,6 +85,38 @@ fn coming_soon_handler(r: &mut Request) -> Status {
 
 
 const STYLESHEET: &'static str = "
+   @font-face {
+      font-family: 'Fira Sans';
+      font-style: normal;
+      font-weight: 300;
+      src: local('Fira Sans Light'), local('FiraSans-Light'), url(https://fonts.gstatic.com/s/firasans/v5/VTBnrK42EiOBncVyQXZ7j-gdm0LZdjqr5-oayXSOefg.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+   }
+
+   @font-face {
+      font-family: 'Fira Sans';
+      font-style: normal;
+      font-weight: 500;
+      src: local('Fira Sans Medium'), local('FiraSans-Medium'), url(https://fonts.gstatic.com/s/firasans/v5/zM2u8V3CuPVwAAXFQcDi4Ogdm0LZdjqr5-oayXSOefg.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+   }
+
+   @font-face {
+      font-family: 'Roboto Condensed';
+      font-style: normal;
+      font-weight: 400;
+      src: local('Roboto Condensed'), local('RobotoCondensed-Regular'), url(https://fonts.gstatic.com/s/robotocondensed/v13/Zd2E9abXLFGSr9G3YK2MsDAdhzWOYhqHvOZMRGaEyPo.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+   }
+
+   @font-face {
+      font-family: 'Khand';
+      font-style: normal;
+      font-weight: 400;
+      src: local('Khand'), local('Khand-Regular'), url(https://fonts.gstatic.com/s/khand/v4/jE6debCT41WQse1Htsii-w.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+   }
+
    html, body {
       height: 100%;
       width: 100%;
