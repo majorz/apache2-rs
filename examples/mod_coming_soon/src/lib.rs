@@ -420,7 +420,7 @@ const STYLESHEET: &'static str = "
 
       .petition .button {
          width: 180px;
-         margin: .8em auto 0;
+         margin: 1em auto 0;
          padding: 5px;
          font-size: 1.2em;
       }
