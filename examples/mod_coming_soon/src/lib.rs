@@ -211,11 +211,11 @@ const STYLESHEET: &'static str = "
 
    .urgent-call .second {
       width: 100%;
-      color: #F37875;
+      color: #f36c69;
       font-family: 'Khand', sans-serif;
       font-weight: bold;
       font-size: 1.2em;
-      text-shadow: 0px 1px 9px rgba(0, 0, 0, 0.3);
+      text-shadow: 0px 1px 9px rgba(0, 0, 0, 0.35);
       letter-spacing: 0.1em;
    }
 
