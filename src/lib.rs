@@ -14,6 +14,39 @@ pub use cookie::Cookie;
 
 
 #[macro_export]
+macro_rules! AP_DECLARE_MODULE {
+   (
+      $module:ident,
+      $name:expr,
+      $create_dir_config:expr,
+      $merge_dir_config:expr,
+      $create_server_config:expr,
+      $merge_server_config:expr,
+      $cmds:expr,
+      $register_hooks:expr
+   ) => {
+      #[no_mangle]
+      pub static mut $module: $crate::ffi::module = $crate::ffi::module {
+         version: $crate::ffi::MODULE_MAGIC_NUMBER_MAJOR,
+         minor_version: $crate::ffi::MODULE_MAGIC_NUMBER_MINOR,
+         module_index: -1,
+         name: $name,
+         dynamic_load_handle: 0 as *mut $crate::c_void,
+         next: 0 as *mut $crate::ffi::module,
+         magic: $crate::ffi::MODULE_MAGIC_COOKIE,
+         rewrite_args: None,
+         create_dir_config: $create_dir_config,
+         merge_dir_config: $merge_dir_config,
+         create_server_config: $create_server_config,
+         merge_server_config: $merge_server_config,
+         cmds: $cmds,
+         register_hooks: $register_hooks
+      };
+   }
+}
+
+
+#[macro_export]
 macro_rules! apache2_module {
    ($handler:ident) => {
       apache2_module!($handler, c_hello_handler, hello_module, b"mod_hello\0");
@@ -24,27 +57,16 @@ macro_rules! apache2_module {
    };
 
    ($handler:ident, $c_handler:ident, $module:ident, $c_name:expr, $hook:ident, $order:expr) => {
-      const C_NAME: &'static [u8] = $c_name;
-      const C_NAME_PTR: *const &'static [u8] = &C_NAME;
-      const C_NAME_CHAR_PTR: *const $crate::c_char = C_NAME_PTR as *const $crate::c_char;
-
-      #[no_mangle]
-      pub static mut $module: $crate::ffi::module = $crate::ffi::module {
-         version: $crate::ffi::MODULE_MAGIC_NUMBER_MAJOR,
-         minor_version: $crate::ffi::MODULE_MAGIC_NUMBER_MINOR,
-         module_index: -1,
-         name: C_NAME_CHAR_PTR,
-         dynamic_load_handle: 0 as *mut $crate::c_void,
-         next: 0 as *mut $crate::ffi::module,
-         magic: $crate::ffi::MODULE_MAGIC_COOKIE,
-         rewrite_args: None,
-         create_dir_config: None,
-         merge_dir_config: None,
-         create_server_config: None,
-         merge_server_config: None,
-         cmds: 0 as *const $crate::ffi::command_rec,
-         register_hooks: Some(c_module_hooks),
-      };
+      AP_DECLARE_MODULE!(
+         $module,
+         $c_name as *const u8 as *const $crate::c_char,
+         None,
+         None,
+         None,
+         None,
+         0 as *const $crate::ffi::command_rec,
+         Some(c_module_hooks)
+      );
 
       extern "C" fn c_module_hooks(_: *mut $crate::ffi::apr_pool_t) {
          unsafe {
