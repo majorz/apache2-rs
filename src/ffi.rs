@@ -317,7 +317,7 @@ pub struct module {
    pub create_server_config: Option<create_server_config_fn>,
    pub merge_server_config: Option<merge_config_fn>,
    pub cmds: *const command_rec,
-   pub register_hooks: ::std::option::Option<register_hooks_fn>
+   pub register_hooks: Option<register_hooks_fn>
 }
 
 #[repr(C)]
