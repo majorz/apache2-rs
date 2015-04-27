@@ -1,8 +1,8 @@
 #[macro_use]
 extern crate apache2;
 
-use apache2::{Request, Status, server_banner, server_description, server_built, show_mpm,
-   apr_version_string, apu_version_string, Cookie, time_now};
+use apache2::{Request, Status, StatusResult, server_banner, server_description, server_built,
+   show_mpm, apr_version_string, apu_version_string, Cookie, time_now};
 
 apache2_module!(info_rs_handler, c_info_rs_handler, info_rs_module, b"mod_info_rs\0");
 
@@ -13,9 +13,9 @@ fn unwrap_str<'a>(option: Result<&'a str, &'static str>) -> &'a str {
    }
 }
 
-fn info_rs_handler(r: &mut Request) -> Status {
-   if r.handler().unwrap() != "server-info-rs" {
-      return Status::DECLINED
+fn info_rs_handler(r: &mut Request) -> StatusResult {
+   if try!(r.handler()) != "server-info-rs" {
+      return Ok(Status::DECLINED)
    }
 
    r.set_content_type("text/html");
@@ -32,7 +32,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
       )
    );
    let server_port = r.server_port();
-   let local_ip = unwrap_str(r.connection().unwrap().local_ip());
+   let local_ip = unwrap_str(try!(r.connection()).local_ip());
    r.write(format!("<p>Server: {}:{} (via {})</p>", server_name, server_port, local_ip));
 
    let description = unwrap_str(server_description());
@@ -58,7 +58,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
 
    r.write("<h2>Current Request Information</h2>");
 
-   let client_ip = unwrap_str(r.connection().unwrap().client_ip());
+   let client_ip = unwrap_str(try!(r.connection()).client_ip());
    r.write(format!("<p>Client IP: {}</p>", client_ip));
 
    let useragent_ip = unwrap_str(r.useragent_ip());
@@ -165,7 +165,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
 
    r.write("<h3>Request Headers</h3>");
 
-   let headers_in = r.headers_in().unwrap();
+   let headers_in = try!(r.headers_in());
 
    for (key, val) in headers_in.iter() {
       r.write(format!("<p>{}: {}</p>", key, unwrap_str(val)));
@@ -173,7 +173,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
 
    r.write("<h3>Headers Out</h3>");
 
-   let headers_out = r.headers_out().unwrap();
+   let headers_out = try!(r.headers_out());
 
    for (key, val) in headers_out.iter() {
       r.write(format!("<p>{}: {}</p>", key, unwrap_str(val)));
@@ -181,7 +181,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
 
    r.write("<h3>Err Headers Out</h3>");
 
-   let err_headers_out = r.err_headers_out().unwrap();
+   let err_headers_out = try!(r.err_headers_out());
 
    for (key, val) in err_headers_out.iter() {
       r.write(format!("<p>{}: {}</p>", key, unwrap_str(val)));
@@ -189,7 +189,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
 
    r.write("<h3>Notes</h3>");
 
-   let notes = r.notes().unwrap();
+   let notes = try!(r.notes());
 
    for (key, val) in notes.iter() {
       r.write(format!("<p>{}: {}</p>", key, unwrap_str(val)));
@@ -197,7 +197,7 @@ fn info_rs_handler(r: &mut Request) -> Status {
 
    r.write("<h3>Subprocess Environment</h3>");
 
-   let subprocess_env = r.subprocess_env().unwrap();
+   let subprocess_env = try!(r.subprocess_env());
 
    for (key, val) in subprocess_env.iter() {
       r.write(format!("<p>{}: {}</p>", key, unwrap_str(val)));
@@ -206,15 +206,15 @@ fn info_rs_handler(r: &mut Request) -> Status {
    r.write("<h3>Request API check</h3>");
 
    let original = "Բարեւ, Héébee, გამარჯობა, Witôjze, Здраво, Ciao";
-   let encoded = r.base64_encode(original).unwrap();
-   let plain = r.base64_decode(encoded).unwrap();
+   let encoded = try!(r.base64_encode(original));
+   let plain = try!(r.base64_decode(encoded));
    r.write(format!("<p>Original Text: {}</p>", original));
    r.write(format!("<p>Base64 Encoded: {}</p>", encoded));
    r.write(format!("<p>Base64 Decoded: {}</p>", plain));
 
    let original_url = "http://foo.bar/1 2 3 & 4 + 5";
-   let encoded_url = r.escape_urlencoded(original_url).unwrap();
-   let plain_url = r.unescape_urlencoded(encoded_url).unwrap();
+   let encoded_url = try!(r.escape_urlencoded(original_url));
+   let plain_url = try!(r.unescape_urlencoded(encoded_url));
    r.write(format!("<p>Original URL: {}</p>", original_url));
    r.write(format!("<p>Encoded URL: {}</p>", encoded_url));
    r.write(format!("<p>Decoded URL: {}</p>", plain_url));
@@ -224,5 +224,5 @@ fn info_rs_handler(r: &mut Request) -> Status {
 
    r.write("</body></html>");
 
-   Status::OK
+   Ok(Status::OK)
 }

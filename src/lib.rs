@@ -8,7 +8,8 @@ pub mod cookie;
 
 pub use libc::{c_void, c_char, c_int};
 
-pub use httpd::{Request, Status, ProxyReq, server_banner, server_description, server_built, show_mpm};
+pub use httpd::{Request, Status, StatusResult, ProxyReq, server_banner, server_description,
+   server_built, show_mpm};
 pub use apr::{apr_version_string, apu_version_string, HookOrder, time_now};
 pub use cookie::Cookie;
 
@@ -83,7 +84,10 @@ macro_rules! apache2_module {
       pub extern "C" fn $c_handler(r: *mut $crate::ffi::request_rec) -> $crate::c_int {
          match $crate::httpd::Request::from_raw_ptr(r) {
             Err(_) => $crate::httpd::Status::DECLINED.into(),
-            Ok(mut request) => $handler(&mut request).into()
+            Ok(mut request) => match $handler(&mut request) {
+               Ok(status) => status,
+               Err(_) => $crate::httpd::Status::HTTP_INTERNAL_SERVER_ERROR
+            }.into()
          }
       }
    }

@@ -3,29 +3,21 @@
 #[macro_use]
 extern crate apache2;
 
-apache2_module!(https_www_handler, c_https_www_handler, https_www_module, b"mod_https_www\0", ap_hook_translate_name, apache2::HookOrder::MIDDLE);
+use apache2::{HookOrder, Request, Status, StatusResult};
+
+apache2_module!(https_www_handler, c_https_www_handler, https_www_module, b"mod_https_www\0",
+   ap_hook_translate_name, HookOrder::MIDDLE);
 
 
-fn https_www_handler(r: &mut apache2::Request) -> apache2::Status {
-   let scheme = match r.http_scheme() {
-      Err(_) => {
-         return apache2::Status::HTTP_INTERNAL_SERVER_ERROR;
-      },
-      Ok(scheme) => scheme
-   };
-
-   let hostname = match r.hostname() {
-      Err(_) => {
-         return apache2::Status::HTTP_INTERNAL_SERVER_ERROR;
-      },
-      Ok(hostname) => hostname
-   };
+fn https_www_handler(r: &mut Request) -> StatusResult {
+   let scheme = try!(r.http_scheme());
+   let hostname = try!(r.hostname());
 
    let already_www = &hostname[..4] == "www.";
    let already_https = scheme == "https";
 
    if already_www && already_https {
-      return apache2::Status::DECLINED;
+      return Ok(Status::DECLINED);
    };
 
    let full_hostname = if already_www {
@@ -34,17 +26,12 @@ fn https_www_handler(r: &mut apache2::Request) -> apache2::Status {
       format!("www.{}", hostname)
    };
 
-   let uri = match r.unparsed_uri() {
-      Err(_) => {
-         return apache2::Status::HTTP_INTERNAL_SERVER_ERROR;
-      },
-      Ok(uri) => uri
-   };
+   let uri = try!(r.unparsed_uri());
 
    let location = format!("https://{}{}", full_hostname, uri);
-   r.headers_out().unwrap().set("Location", location);
+   try!(r.headers_out()).set("Location", location);
 
    r.set_status(apache2::Status::HTTP_MOVED_PERMANENTLY);
 
-   apache2::Status::DONE
+   Ok(Status::DONE)
 }

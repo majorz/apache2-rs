@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate apache2;
 
-use apache2::{Request, Status};
+use apache2::{Request, Status, StatusResult};
 
 apache2_module!(coming_soon_handler, c_coming_soon_handler, coming_soon_module, b"mod_coming_soon\0");
 
@@ -68,9 +68,9 @@ macro_rules! html_template {() => ("<!doctype html>
 ")}
 
 
-fn coming_soon_handler(r: &mut Request) -> Status {
-   if r.handler().unwrap() != "coming-soon" || r.uri().unwrap() != "/" {
-      return Status::DECLINED
+fn coming_soon_handler(r: &mut Request) -> StatusResult {
+   if try!(r.handler()) != "coming-soon" || try!(r.uri()) != "/" {
+      return Ok(Status::DECLINED)
    }
 
    r.set_content_type("text/html");
@@ -80,7 +80,7 @@ fn coming_soon_handler(r: &mut Request) -> Status {
       STYLESHEET
    ));
 
-   Status::OK
+   Ok(Status::OK)
 }
 
 
