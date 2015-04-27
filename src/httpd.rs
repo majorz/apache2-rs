@@ -6,7 +6,7 @@ use std::ffi::CString;
 use ffi;
 use std::fmt;
 
-use wrapper::{Wrapper, from_char_ptr, wrap_ptr};
+use wrapper::{Wrapper, from_char_ptr};
 
 use apr::AprTable;
 use cookie::Cookie;
@@ -262,8 +262,8 @@ pub type Request<'a> = Wrapper<'a, ffi::request_rec>;
 
 
 impl<'a> Request<'a> {
-   pub fn connection(&self) -> Option<Conn> {
-      wrap_ptr(self.raw.connection)
+   pub fn connection(&self) -> Result<Conn, &'static str> {
+      Wrapper::from_raw_ptr(self.raw.connection)
    }
 
    pub fn the_request(&self) -> Result<&'a str, &'static str> {
@@ -333,24 +333,24 @@ impl<'a> Request<'a> {
       return self.raw.clength
    }
 
-   pub fn headers_in(&self) -> Option<AprTable> {
-      wrap_ptr(self.raw.headers_in)
+   pub fn headers_in(&self) -> Result<AprTable, &'static str> {
+      Wrapper::from_raw_ptr(self.raw.headers_in)
    }
 
-   pub fn headers_out(&self) -> Option<AprTable> {
-      wrap_ptr(self.raw.headers_out)
+   pub fn headers_out(&self) -> Result<AprTable, &'static str> {
+      Wrapper::from_raw_ptr(self.raw.headers_out)
    }
 
-   pub fn err_headers_out(&self) -> Option<AprTable> {
-      wrap_ptr(self.raw.err_headers_out)
+   pub fn err_headers_out(&self) -> Result<AprTable, &'static str> {
+      Wrapper::from_raw_ptr(self.raw.err_headers_out)
    }
 
-   pub fn subprocess_env(&self) -> Option<AprTable> {
-      wrap_ptr(self.raw.subprocess_env)
+   pub fn subprocess_env(&self) -> Result<AprTable, &'static str> {
+      Wrapper::from_raw_ptr(self.raw.subprocess_env)
    }
 
-   pub fn notes(&self) -> Option<AprTable> {
-      wrap_ptr(self.raw.notes)
+   pub fn notes(&self) -> Result<AprTable, &'static str> {
+      Wrapper::from_raw_ptr(self.raw.notes)
    }
 
    pub fn content_type(&self) -> Result<&'a str, &'static str> {

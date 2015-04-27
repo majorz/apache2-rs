@@ -10,12 +10,12 @@ pub struct Wrapper<'a, T: 'a> {
 }
 
 impl<'a, T> Wrapper<'a, T> {
-   pub fn from_raw_ptr(ptr: *mut T) -> Option<Self> {
+   pub fn from_raw_ptr(ptr: *mut T) -> Result<Self, &'static str> {
       if ptr.is_null() {
-         None
+         Err(NULL_PTR_ERROR)
       } else {
          let raw: &mut T = unsafe { &mut *ptr };
-         Some(
+         Ok(
             Wrapper::<T> {
                raw: raw
             }
@@ -36,13 +36,4 @@ pub fn from_char_ptr<'a>(ptr: *const c_char) -> Result<&'a str, &'static str> {
       Ok(s) => Ok(s),
       Err(_) => Err(UTF8_DECODE_ERROR)
    }
-}
-
-#[inline]
-pub fn wrap_ptr<'a, T>(ptr: *mut T) -> Option<Wrapper<'a, T>> {
-   if ptr.is_null() {
-      return None
-   }
-
-   Wrapper::<'a, T>::from_raw_ptr(ptr)
 }

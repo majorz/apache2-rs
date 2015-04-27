@@ -82,8 +82,8 @@ macro_rules! apache2_module {
       #[no_mangle]
       pub extern "C" fn $c_handler(r: *mut $crate::ffi::request_rec) -> $crate::c_int {
          match $crate::httpd::Request::from_raw_ptr(r) {
-            None => $crate::httpd::Status::DECLINED.into(),
-            Some(mut request) => $handler(&mut request).into()
+            Err(_) => $crate::httpd::Status::DECLINED.into(),
+            Ok(mut request) => $handler(&mut request).into()
          }
       }
    }
