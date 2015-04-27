@@ -2,6 +2,8 @@ use std::str;
 use std::ffi::CStr;
 use libc::c_char;
 
+use ffi::{UTF8_DECODE_ERROR, NULL_PTR_ERROR};
+
 
 pub struct Wrapper<'a, T: 'a> {
    pub raw: &'a mut T
@@ -24,15 +26,15 @@ impl<'a, T> Wrapper<'a, T> {
 }
 
 #[inline]
-pub fn c_str_value<'a>(ptr: *const c_char) -> Option<&'a str> {
+pub fn c_str_value<'a>(ptr: *const c_char) -> Result<&'a str, &'static str> {
    if ptr.is_null() {
-      return None
+      return Err(NULL_PTR_ERROR);
    }
 
-   let data = unsafe { CStr::from_ptr(ptr) }.to_bytes();
-   match str::from_utf8(data) {
-      Ok(s) => Some(s),
-      Err(_) => None
+   let slice = unsafe { CStr::from_ptr(ptr) };
+   match str::from_utf8(slice.to_bytes()) {
+      Ok(s) => Ok(s),
+      Err(_) => Err(UTF8_DECODE_ERROR)
    }
 }
 

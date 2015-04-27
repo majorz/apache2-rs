@@ -56,8 +56,8 @@ impl<'a> Cookie<'a> {
       match self.expires {
          Some(ref t) => {
             match r.rfc822_date(*t) {
-               Some(s) => res.push_str(format!(";Expires={}", s).as_ref()),
-               None => {}
+               Ok(s) => res.push_str(format!(";Expires={}", s).as_ref()),
+               Err(_) => {}
             }
          },
          None => {}

@@ -8,17 +8,17 @@ apache2_module!(https_www_handler, c_https_www_handler, https_www_module, b"mod_
 
 fn https_www_handler(r: &mut apache2::Request) -> apache2::Status {
    let scheme = match r.http_scheme() {
-      None => {
+      Err(_) => {
          return apache2::Status::HTTP_INTERNAL_SERVER_ERROR;
       },
-      Some(scheme) => scheme
+      Ok(scheme) => scheme
    };
 
    let hostname = match r.hostname() {
-      None => {
+      Err(_) => {
          return apache2::Status::HTTP_INTERNAL_SERVER_ERROR;
       },
-      Some(hostname) => hostname
+      Ok(hostname) => hostname
    };
 
    let already_www = &hostname[..4] == "www.";
@@ -35,10 +35,10 @@ fn https_www_handler(r: &mut apache2::Request) -> apache2::Status {
    };
 
    let uri = match r.unparsed_uri() {
-      None => {
+      Err(_) => {
          return apache2::Status::HTTP_INTERNAL_SERVER_ERROR;
       },
-      Some(uri) => uri
+      Ok(uri) => uri
    };
 
    let location = format!("https://{}{}", full_hostname, uri);

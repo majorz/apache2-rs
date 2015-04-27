@@ -6,10 +6,10 @@ use apache2::{Request, Status, server_banner, server_description, server_built, 
 
 apache2_module!(info_rs_handler, c_info_rs_handler, info_rs_module, b"mod_info_rs\0");
 
-fn unwrap_str<'a>(option: Option<&'a str>) -> &'a str {
+fn unwrap_str<'a>(option: Result<&'a str, &'static str>) -> &'a str {
    match option {
-      Some(val) => val,
-      None => "--"
+      Ok(val) => val,
+      Err(_) => "--"
    }
 }
 
@@ -151,14 +151,14 @@ fn info_rs_handler(r: &mut Request) -> Status {
    let key = "sample_cookie";
    let val = "info_rs";
    match r.cookie(key) {
-      None => {
+      Err(_) => {
          let mut cookie = Cookie::new(key, val);
          cookie.expires = Some(time_now() + 1000000 * 30);
 
          r.set_cookie(cookie);
          r.write(format!("<p>New Cookie – {}: {}</p>", key, val));
       },
-      Some(stored) => {
+      Ok(stored) => {
          r.write(format!("<p>Cookie – {}: {}</p>", key, stored));
       }
    };

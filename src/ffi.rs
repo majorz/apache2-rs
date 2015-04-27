@@ -2,6 +2,11 @@
 
 use libc::{c_void, c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong};
 
+
+pub const NULL_PTR_ERROR: &'static str = "NULL pointer error";
+pub const UTF8_DECODE_ERROR: &'static str = "UTF-8 decode error";
+
+
 // APACHE PORTABLE RUNTIME
 
 pub const APR_RFC822_DATE_LEN:    apr_size_t = 30;

@@ -32,7 +32,7 @@ pub type AprTable<'a> = Wrapper<'a, ffi::apr_table_t>;
 
 
 impl<'a> AprTable<'a> {
-   pub fn get<T: Into<Vec<u8>>>(&self, key: T) -> Option<&'a str> {
+   pub fn get<T: Into<Vec<u8>>>(&self, key: T) -> Result<&'a str, &'static str> {
       c_str_value(
          unsafe { ffi::apr_table_get(self.raw, CString::new(key).unwrap().as_ptr()) }
       )
@@ -75,9 +75,9 @@ pub struct AprTableIter<'a> {
 }
 
 impl<'a> Iterator for AprTableIter<'a> {
-   type Item = (&'a str, Option<&'a str>);
+   type Item = (&'a str, Result<&'a str, &'static str>);
 
-   fn next(&mut self) -> Option<(&'a str, Option<&'a str>)> {
+   fn next(&mut self) -> Option<(&'a str, Result<&'a str, &'static str>)> {
       if self.next_idx != self.array_header.nelts as usize {
          let mut elts = self.array_header.elts as *const ffi::apr_table_entry_t;
 
@@ -85,9 +85,9 @@ impl<'a> Iterator for AprTableIter<'a> {
          self.next_idx += 1;
 
          let key = c_str_value(unsafe { (*elts).key }).unwrap();
-         let val_option = c_str_value(unsafe { (*elts).val });
+         let val_result = c_str_value(unsafe { (*elts).val });
 
-         Some((key, val_option))
+         Some((key, val_result))
       } else {
          None
       }
@@ -99,13 +99,13 @@ impl<'a> Iterator for AprTableIter<'a> {
    }
 }
 
-pub fn apr_version_string<'a>() -> Option<&'a str> {
+pub fn apr_version_string<'a>() -> Result<&'a str, &'static str> {
    c_str_value(
       unsafe { ffi::apr_version_string() }
    )
 }
 
-pub fn apu_version_string<'a>() -> Option<&'a str> {
+pub fn apu_version_string<'a>() -> Result<&'a str, &'static str> {
    c_str_value(
       unsafe { ffi::apu_version_string() }
    )
