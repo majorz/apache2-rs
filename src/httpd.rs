@@ -422,15 +422,23 @@ impl<'a> Request<'a> {
       from_char_ptr(self.raw.useragent_ip)
    }
 
-   pub fn write<T: Into<Vec<u8>>>(&self, data: T) {
-      let c_str_buf = CString::new(data).unwrap();
+   pub fn write<T: Into<Vec<u8>>>(&self, data: T) -> Result<(), &'static str> {
+      let c_str_buf = match CString::new(data) {
+         Ok(s) => s,
+         Err(_) => return Err(ffi::UTF8_DECODE_ERROR)
+      };
 
-      unsafe {
+      let sent = unsafe {
          ffi::ap_rwrite(
             c_str_buf.as_ptr() as *mut c_void,
             c_str_buf.to_bytes().len() as i32,
             self.raw
-         );
+         )
+      };
+
+      match sent {
+         -1 => Err("Error writing buffer for the current request"),
+         _ => Ok(())
       }
    }
 

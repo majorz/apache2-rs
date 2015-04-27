@@ -75,10 +75,10 @@ fn coming_soon_handler(r: &mut Request) -> StatusResult {
 
    r.set_content_type("text/html");
 
-   r.write(format!(
+   try!(r.write(format!(
       html_template!(),
       STYLESHEET
-   ));
+   )));
 
    Ok(Status::OK)
 }
