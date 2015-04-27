@@ -4,7 +4,7 @@ use std::ffi::CString;
 
 use ffi;
 
-use wrapper::{Wrapper, c_str_value};
+use wrapper::{Wrapper, from_char_ptr};
 
 
 pub enum HookOrder {
@@ -33,7 +33,7 @@ pub type AprTable<'a> = Wrapper<'a, ffi::apr_table_t>;
 
 impl<'a> AprTable<'a> {
    pub fn get<T: Into<Vec<u8>>>(&self, key: T) -> Result<&'a str, &'static str> {
-      c_str_value(
+      from_char_ptr(
          unsafe { ffi::apr_table_get(self.raw, CString::new(key).unwrap().as_ptr()) }
       )
    }
@@ -84,8 +84,8 @@ impl<'a> Iterator for AprTableIter<'a> {
          elts = unsafe { elts.offset(self.next_idx as isize) };
          self.next_idx += 1;
 
-         let key = c_str_value(unsafe { (*elts).key }).unwrap();
-         let val_result = c_str_value(unsafe { (*elts).val });
+         let key = from_char_ptr(unsafe { (*elts).key }).unwrap();
+         let val_result = from_char_ptr(unsafe { (*elts).val });
 
          Some((key, val_result))
       } else {
@@ -100,13 +100,13 @@ impl<'a> Iterator for AprTableIter<'a> {
 }
 
 pub fn apr_version_string<'a>() -> Result<&'a str, &'static str> {
-   c_str_value(
+   from_char_ptr(
       unsafe { ffi::apr_version_string() }
    )
 }
 
 pub fn apu_version_string<'a>() -> Result<&'a str, &'static str> {
-   c_str_value(
+   from_char_ptr(
       unsafe { ffi::apu_version_string() }
    )
 }

@@ -26,7 +26,7 @@ impl<'a, T> Wrapper<'a, T> {
 }
 
 #[inline]
-pub fn c_str_value<'a>(ptr: *const c_char) -> Result<&'a str, &'static str> {
+pub fn from_char_ptr<'a>(ptr: *const c_char) -> Result<&'a str, &'static str> {
    if ptr.is_null() {
       return Err(NULL_PTR_ERROR);
    }
