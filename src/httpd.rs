@@ -441,7 +441,10 @@ impl<'a> Request<'a> {
    }
 
    pub fn escape_html<T: Into<Vec<u8>>>(&self, s: T) -> Result<&'a str, ()> {
-      let c_str = CString::new(s).unwrap();
+      let c_str = match CString::new(s) {
+         Ok(s) => s,
+         Err(_) => return Err(())
+      };
 
       let escaped = unsafe {
          ffi::ap_escape_html2(
@@ -455,7 +458,10 @@ impl<'a> Request<'a> {
    }
 
    pub fn escape_urlencoded<T: Into<Vec<u8>>>(&self, s: T) -> Result<&'a str, ()> {
-      let c_str = CString::new(s).unwrap();
+      let c_str = match CString::new(s) {
+         Ok(s) => s,
+         Err(_) => return Err(())
+      };
 
       let escaped = unsafe {
          ffi::ap_escape_urlencoded(self.raw.pool, c_str.as_ptr())
