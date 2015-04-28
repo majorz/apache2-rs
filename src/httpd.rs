@@ -358,7 +358,7 @@ impl<'a> Request<'a> {
    }
 
    pub fn set_content_type<T: Into<Vec<u8>>>(&self, ct: T) {
-      let c_str = ffi::dup_c_str(self.raw.pool, ct);
+      let c_str = ffi::strdup(self.raw.pool, ct);
 
       unsafe {
          ffi::ap_set_content_type(
@@ -465,7 +465,7 @@ impl<'a> Request<'a> {
    }
 
    pub fn unescape_urlencoded<T: Into<Vec<u8>>>(&self, query: T) -> Result<&'a str, ()> {
-      let c_str = ffi::dup_c_str(self.raw.pool, query);
+      let c_str = ffi::strdup(self.raw.pool, query);
 
       let res = unsafe {
          ffi::ap_unescape_urlencoded(c_str)
@@ -542,7 +542,7 @@ impl<'a> Request<'a> {
    }
 
    pub fn cookie<T: Into<Vec<u8>>>(&self, name: T) -> Result<&'a str, ()> {
-      let c_str_name = ffi::dup_c_str(self.raw.pool, name);
+      let c_str_name = ffi::strdup(self.raw.pool, name);
       let mut val: *const c_char = ::std::ptr::null_mut();
 
       unsafe {
@@ -553,9 +553,9 @@ impl<'a> Request<'a> {
    }
 
    pub fn set_cookie(&self, cookie: Cookie) {
-      let c_str_name = ffi::dup_c_str(self.raw.pool, cookie.name);
-      let c_str_val = ffi::dup_c_str(self.raw.pool, cookie.value);
-      let c_str_attrs = ffi::dup_c_str(self.raw.pool, cookie.attrs(&self));
+      let c_str_name = ffi::strdup(self.raw.pool, cookie.name);
+      let c_str_val = ffi::strdup(self.raw.pool, cookie.value);
+      let c_str_attrs = ffi::strdup(self.raw.pool, cookie.attrs(&self));
 
       let null: *const ffi::apr_table_t = ::std::ptr::null();
 

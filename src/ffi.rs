@@ -101,7 +101,7 @@ extern "C" {
    pub fn apr_rfc822_date(date_str: *mut c_char, t: apr_time_t) -> apr_status_t;
 }
 
-pub fn dup_c_str<T: Into<Vec<u8>>>(pool: *mut apr_pool_t, data: T) -> *mut c_char {
+pub fn strdup<T: Into<Vec<u8>>>(pool: *mut apr_pool_t, data: T) -> *mut c_char {
    let bytes = data.into();
 
    unsafe {
