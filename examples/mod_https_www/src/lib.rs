@@ -29,7 +29,10 @@ fn https_www_handler(r: &mut Request) -> Result<Status, ()> {
    let uri = try!(r.unparsed_uri());
 
    let location = format!("https://{}{}", full_hostname, uri);
-   try!(r.headers_out()).set("Location", location);
+
+   try!(
+      try!(r.headers_out()).set("Location", location)
+   );
 
    r.set_status(apache2::Status::HTTP_MOVED_PERMANENTLY);
 

@@ -33,29 +33,58 @@ pub type AprTable<'a> = Wrapper<'a, ffi::apr_table_t>;
 
 impl<'a> AprTable<'a> {
    pub fn get<T: Into<Vec<u8>>>(&self, key: T) -> Result<&'a str, ()> {
+      let key = match CString::new(key) {
+         Ok(s) => s,
+         Err(_) => return Err(())
+      };
+
       from_char_ptr(
-         unsafe { ffi::apr_table_get(self.raw, CString::new(key).unwrap().as_ptr()) }
+         unsafe { ffi::apr_table_get(self.raw, key.as_ptr()) }
       )
    }
 
-   pub fn set<T: Into<Vec<u8>>, U: Into<Vec<u8>>>(&mut self, key: T, val: U) {
+   pub fn set<T: Into<Vec<u8>>, U: Into<Vec<u8>>>(&mut self, key: T, val: U) -> Result<(), ()> {
+      let key = match CString::new(key) {
+         Ok(s) => s,
+         Err(_) => return Err(())
+      };
+
+      let val = match CString::new(val) {
+         Ok(s) => s,
+         Err(_) => return Err(())
+      };
+
       unsafe {
          ffi::apr_table_set(
             self.raw,
-            CString::new(key).unwrap().as_ptr(),
-            CString::new(val).unwrap().as_ptr()
+            key.as_ptr(),
+            val.as_ptr()
          )
       };
+
+      Ok(())
    }
 
-   pub fn add<T: Into<Vec<u8>>, U: Into<Vec<u8>>>(&mut self, key: T, val: U) {
+   pub fn add<T: Into<Vec<u8>>, U: Into<Vec<u8>>>(&mut self, key: T, val: U) -> Result<(), ()> {
+      let key = match CString::new(key) {
+         Ok(s) => s,
+         Err(_) => return Err(())
+      };
+
+      let val = match CString::new(val) {
+         Ok(s) => s,
+         Err(_) => return Err(())
+      };
+
       unsafe {
          ffi::apr_table_add(
             self.raw,
-            CString::new(key).unwrap().as_ptr(),
-            CString::new(val).unwrap().as_ptr()
+            key.as_ptr(),
+            val.as_ptr()
          )
       };
+
+      Ok(())
    }
 
    pub fn iter(&self) -> AprTableIter {
