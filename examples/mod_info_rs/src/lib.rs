@@ -6,7 +6,7 @@ use apache2::{Request, Status, StatusResult, server_banner, server_description, 
 
 apache2_module!(info_rs_handler, c_info_rs_handler, info_rs_module, b"mod_info_rs\0");
 
-fn unwrap_str<'a>(option: Result<&'a str, &'static str>) -> &'a str {
+fn unwrap_str<'a>(option: Result<&'a str, ()>) -> &'a str {
    match option {
       Ok(val) => val,
       Err(_) => "--"

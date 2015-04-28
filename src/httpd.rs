@@ -225,7 +225,7 @@ impl Into<Status> for c_int {
    }
 }
 
-pub type StatusResult = Result<Status, &'static str>;
+pub type StatusResult = Result<Status, ()>;
 
 pub enum ProxyReq {
    NONE,     // No proxy
@@ -264,11 +264,11 @@ pub type Request<'a> = Wrapper<'a, ffi::request_rec>;
 
 
 impl<'a> Request<'a> {
-   pub fn connection(&self) -> Result<Conn, &'static str> {
+   pub fn connection(&self) -> Result<Conn, ()> {
       Wrapper::from_raw_ptr(self.raw.connection)
    }
 
-   pub fn the_request(&self) -> Result<&'a str, &'static str> {
+   pub fn the_request(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.the_request)
    }
 
@@ -288,11 +288,11 @@ impl<'a> Request<'a> {
       self.raw.header_only = header_only as c_int;
    }
 
-   pub fn protocol(&self) -> Result<&'a str, &'static str> {
+   pub fn protocol(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.protocol)
    }
 
-   pub fn hostname(&self) -> Result<&'a str, &'static str> {
+   pub fn hostname(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.hostname)
    }
 
@@ -300,7 +300,7 @@ impl<'a> Request<'a> {
       self.raw.request_time
    }
 
-   pub fn status_line(&self) -> Result<&'a str, &'static str> {
+   pub fn status_line(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.status_line)
    }
 
@@ -312,7 +312,7 @@ impl<'a> Request<'a> {
       self.raw.status = status.into();
    }
 
-   pub fn method(&self) -> Result<&'a str, &'static str> {
+   pub fn method(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.method)
    }
 
@@ -327,7 +327,7 @@ impl<'a> Request<'a> {
       }
    }
 
-   pub fn range(&self) -> Result<&'a str, &'static str> {
+   pub fn range(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.range)
    }
 
@@ -335,27 +335,27 @@ impl<'a> Request<'a> {
       return self.raw.clength
    }
 
-   pub fn headers_in(&self) -> Result<AprTable, &'static str> {
+   pub fn headers_in(&self) -> Result<AprTable, ()> {
       Wrapper::from_raw_ptr(self.raw.headers_in)
    }
 
-   pub fn headers_out(&self) -> Result<AprTable, &'static str> {
+   pub fn headers_out(&self) -> Result<AprTable, ()> {
       Wrapper::from_raw_ptr(self.raw.headers_out)
    }
 
-   pub fn err_headers_out(&self) -> Result<AprTable, &'static str> {
+   pub fn err_headers_out(&self) -> Result<AprTable, ()> {
       Wrapper::from_raw_ptr(self.raw.err_headers_out)
    }
 
-   pub fn subprocess_env(&self) -> Result<AprTable, &'static str> {
+   pub fn subprocess_env(&self) -> Result<AprTable, ()> {
       Wrapper::from_raw_ptr(self.raw.subprocess_env)
    }
 
-   pub fn notes(&self) -> Result<AprTable, &'static str> {
+   pub fn notes(&self) -> Result<AprTable, ()> {
       Wrapper::from_raw_ptr(self.raw.notes)
    }
 
-   pub fn content_type(&self) -> Result<&'a str, &'static str> {
+   pub fn content_type(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.content_type)
    }
 
@@ -370,62 +370,62 @@ impl<'a> Request<'a> {
       };
    }
 
-   pub fn handler(&self) -> Result<&'a str, &'static str> {
+   pub fn handler(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.handler)
    }
 
-   pub fn content_encoding(&self) -> Result<&'a str, &'static str> {
+   pub fn content_encoding(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.content_encoding)
    }
 
-   pub fn vlist_validator(&self) -> Result<&'a str, &'static str> {
+   pub fn vlist_validator(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.vlist_validator)
    }
 
-   pub fn user(&self) -> Result<&'a str, &'static str> {
+   pub fn user(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.user)
    }
 
-   pub fn auth_type(&self) -> Result<&'a str, &'static str> {
+   pub fn auth_type(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.ap_auth_type)
    }
 
-   pub fn unparsed_uri(&self) -> Result<&'a str, &'static str> {
+   pub fn unparsed_uri(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.unparsed_uri)
    }
 
-   pub fn uri(&self) -> Result<&'a str, &'static str> {
+   pub fn uri(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.uri)
    }
 
-   pub fn filename(&self) -> Result<&'a str, &'static str> {
+   pub fn filename(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.filename)
    }
 
-   pub fn canonical_filename(&self) -> Result<&'a str, &'static str> {
+   pub fn canonical_filename(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.canonical_filename)
    }
 
-   pub fn path_info(&self) -> Result<&'a str, &'static str> {
+   pub fn path_info(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.path_info)
    }
 
-   pub fn args(&self) -> Result<&'a str, &'static str> {
+   pub fn args(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.args)
    }
 
-   pub fn log_id(&self) -> Result<&'a str, &'static str> {
+   pub fn log_id(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.log_id)
    }
 
-   pub fn useragent_ip(&self) -> Result<&'a str, &'static str> {
+   pub fn useragent_ip(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.useragent_ip)
    }
 
-   pub fn write<T: Into<Vec<u8>>>(&self, data: T) -> Result<(), &'static str> {
+   pub fn write<T: Into<Vec<u8>>>(&self, data: T) -> Result<(), ()> {
       let c_str_buf = match CString::new(data) {
          Ok(s) => s,
-         Err(_) => return Err(ffi::UTF8_DECODE_ERROR)
+         Err(_) => return Err(())
       };
 
       let sent = unsafe {
@@ -437,12 +437,12 @@ impl<'a> Request<'a> {
       };
 
       match sent {
-         -1 => Err("Error writing buffer for the current request"),
+         -1 => Err(()),
          _ => Ok(())
       }
    }
 
-   pub fn escape_html<T: Into<Vec<u8>>>(&self, s: T) -> Result<&'a str, &'static str> {
+   pub fn escape_html<T: Into<Vec<u8>>>(&self, s: T) -> Result<&'a str, ()> {
       let c_str = CString::new(s).unwrap();
 
       let escaped = unsafe {
@@ -456,7 +456,7 @@ impl<'a> Request<'a> {
       from_char_ptr(escaped)
    }
 
-   pub fn escape_urlencoded<T: Into<Vec<u8>>>(&self, s: T) -> Result<&'a str, &'static str> {
+   pub fn escape_urlencoded<T: Into<Vec<u8>>>(&self, s: T) -> Result<&'a str, ()> {
       let c_str = CString::new(s).unwrap();
 
       let escaped = unsafe {
@@ -466,7 +466,7 @@ impl<'a> Request<'a> {
       from_char_ptr(escaped)
    }
 
-   pub fn unescape_urlencoded<T: Into<Vec<u8>>>(&self, query: T) -> Result<&'a str, &'static str> {
+   pub fn unescape_urlencoded<T: Into<Vec<u8>>>(&self, query: T) -> Result<&'a str, ()> {
       let c_str = ffi::dup_c_str(self.raw.pool, query);
 
       let res = unsafe {
@@ -474,13 +474,13 @@ impl<'a> Request<'a> {
       };
 
       if res != 0 {
-         return Err("Unescape URL-encoded error");
+         return Err(());
       };
 
       from_char_ptr(c_str)
    }
 
-   pub fn server_name(&self) -> Result<&'a str, &'static str> {
+   pub fn server_name(&self) -> Result<&'a str, ()> {
       from_char_ptr(
          unsafe { ffi::ap_get_server_name(self.raw) }
       )
@@ -490,19 +490,19 @@ impl<'a> Request<'a> {
       unsafe { ffi::ap_get_server_port(self.raw) }
    }
 
-   pub fn document_root(&self) -> Result<&'a str, &'static str> {
+   pub fn document_root(&self) -> Result<&'a str, ()> {
       from_char_ptr(
          unsafe { ffi::ap_document_root(self.raw) }
       )
    }
 
-   pub fn auth_name(&self) -> Result<&'a str, &'static str> {
+   pub fn auth_name(&self) -> Result<&'a str, ()> {
       from_char_ptr(
          unsafe { ffi::ap_auth_name(self.raw) }
       )
    }
 
-   pub fn basic_auth_pw(&self) -> Result<&'a str, &'static str> {
+   pub fn basic_auth_pw(&self) -> Result<&'a str, ()> {
       let mut pw: *const c_char = ::std::ptr::null_mut();
 
       unsafe {
@@ -513,19 +513,19 @@ impl<'a> Request<'a> {
 
    }
 
-   pub fn context_document_root(&self) -> Result<&'a str, &'static str> {
+   pub fn context_document_root(&self) -> Result<&'a str, ()> {
       from_char_ptr(
          unsafe { ffi::ap_context_document_root(self.raw) }
       )
    }
 
-   pub fn context_prefix(&self) -> Result<&'a str, &'static str> {
+   pub fn context_prefix(&self) -> Result<&'a str, ()> {
       from_char_ptr(
          unsafe { ffi::ap_context_prefix(self.raw) }
       )
    }
 
-   pub fn http_scheme(&self) -> Result<&'a str, &'static str> {
+   pub fn http_scheme(&self) -> Result<&'a str, ()> {
       from_char_ptr(
          unsafe { ffi::ap_run_http_scheme(self.raw) }
       )
@@ -543,7 +543,7 @@ impl<'a> Request<'a> {
       unsafe { ffi::ap_some_auth_required(self.raw) == 1 }
    }
 
-   pub fn cookie<T: Into<Vec<u8>>>(&self, name: T) -> Result<&'a str, &'static str> {
+   pub fn cookie<T: Into<Vec<u8>>>(&self, name: T) -> Result<&'a str, ()> {
       let c_str_name = ffi::dup_c_str(self.raw.pool, name);
       let mut val: *const c_char = ::std::ptr::null_mut();
 
@@ -567,10 +567,10 @@ impl<'a> Request<'a> {
       }
    }
 
-   pub fn base64_encode<T: Into<Vec<u8>>>(&self, plain: T) -> Result<&'a str, &'static str> {
+   pub fn base64_encode<T: Into<Vec<u8>>>(&self, plain: T) -> Result<&'a str, ()> {
       let c_str_plain: CString = match CString::new(plain) {
          Ok(val) => val,
-         Err(_) => return Err("Error allocating CString from plain argument")
+         Err(_) => return Err(())
       };
 
       let plain_len: c_int = c_str_plain.to_bytes().len() as c_int;
@@ -580,7 +580,7 @@ impl<'a> Request<'a> {
       };
 
       if encoded_len == 0 {
-         return Err("Base64 encode len error");
+         return Err(());
       };
 
       let encoded: *mut c_char = unsafe {
@@ -592,16 +592,16 @@ impl<'a> Request<'a> {
       };
 
       if encoded_len == 0 {
-         return Err("Base64 encode error");
+         return Err(());
       };
 
       from_char_ptr(encoded)
    }
 
-   pub fn base64_decode<T: Into<Vec<u8>>>(&self, encoded: T) -> Result<&'a str, &'static str> {
+   pub fn base64_decode<T: Into<Vec<u8>>>(&self, encoded: T) -> Result<&'a str, ()> {
       let c_str_encoded: CString = match CString::new(encoded) {
          Ok(val) => val,
-         Err(_) => return Err("Error allocating CString from Base64 encoded argument")
+         Err(_) => return Err(())
       };
 
       let mut plain_len: c_int = unsafe {
@@ -609,7 +609,7 @@ impl<'a> Request<'a> {
       };
 
       if plain_len == 0 {
-         return Err("Base64 decode len error");
+         return Err(());
       };
 
       let plain: *mut c_char = unsafe {
@@ -621,13 +621,13 @@ impl<'a> Request<'a> {
       };
 
       if plain_len == 0 {
-         return Err("Base64 decode error");
+         return Err(());
       };
 
       from_char_ptr(plain)
    }
 
-   pub fn rfc822_date(&self, t: i64) -> Result<&'a str, &'static str> {
+   pub fn rfc822_date(&self, t: i64) -> Result<&'a str, ()> {
       let date: *mut c_char = unsafe {
          ffi::apr_palloc(self.raw.pool, ffi::APR_RFC822_DATE_LEN) as *mut c_char
       };
@@ -644,51 +644,51 @@ pub type Conn<'a> = Wrapper<'a, ffi::conn_rec>;
 
 
 impl<'a> Conn<'a> {
-   pub fn client_ip(&self) -> Result<&'a str, &'static str> {
+   pub fn client_ip(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.client_ip)
    }
 
-   pub fn remote_host(&self) -> Result<&'a str, &'static str> {
+   pub fn remote_host(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.remote_host)
    }
 
-   pub fn remote_logname(&self) -> Result<&'a str, &'static str> {
+   pub fn remote_logname(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.remote_logname)
    }
 
-   pub fn local_ip(&self) -> Result<&'a str, &'static str> {
+   pub fn local_ip(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.local_ip)
    }
 
-   pub fn local_host(&self) -> Result<&'a str, &'static str> {
+   pub fn local_host(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.local_host)
    }
 
-   pub fn log_id(&self) -> Result<&'a str, &'static str> {
+   pub fn log_id(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.log_id)
    }
 }
 
 
-pub fn server_banner<'a>() -> Result<&'a str, &'static str> {
+pub fn server_banner<'a>() -> Result<&'a str, ()> {
    from_char_ptr(
       unsafe { ffi::ap_get_server_banner() }
    )
 }
 
-pub fn server_description<'a>() -> Result<&'a str, &'static str> {
+pub fn server_description<'a>() -> Result<&'a str, ()> {
    from_char_ptr(
       unsafe { ffi::ap_get_server_description() }
    )
 }
 
-pub fn server_built<'a>() -> Result<&'a str, &'static str> {
+pub fn server_built<'a>() -> Result<&'a str, ()> {
    from_char_ptr(
       unsafe { ffi::ap_get_server_built() }
    )
 }
 
-pub fn show_mpm<'a>() -> Result<&'a str, &'static str> {
+pub fn show_mpm<'a>() -> Result<&'a str, ()> {
    from_char_ptr(
       unsafe { ffi::ap_show_mpm() }
    )

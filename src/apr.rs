@@ -32,7 +32,7 @@ pub type AprTable<'a> = Wrapper<'a, ffi::apr_table_t>;
 
 
 impl<'a> AprTable<'a> {
-   pub fn get<T: Into<Vec<u8>>>(&self, key: T) -> Result<&'a str, &'static str> {
+   pub fn get<T: Into<Vec<u8>>>(&self, key: T) -> Result<&'a str, ()> {
       from_char_ptr(
          unsafe { ffi::apr_table_get(self.raw, CString::new(key).unwrap().as_ptr()) }
       )
@@ -75,9 +75,9 @@ pub struct AprTableIter<'a> {
 }
 
 impl<'a> Iterator for AprTableIter<'a> {
-   type Item = (&'a str, Result<&'a str, &'static str>);
+   type Item = (&'a str, Result<&'a str, ()>);
 
-   fn next(&mut self) -> Option<(&'a str, Result<&'a str, &'static str>)> {
+   fn next(&mut self) -> Option<(&'a str, Result<&'a str, ()>)> {
       if self.next_idx != self.array_header.nelts as usize {
          let mut elts = self.array_header.elts as *const ffi::apr_table_entry_t;
 
@@ -99,13 +99,13 @@ impl<'a> Iterator for AprTableIter<'a> {
    }
 }
 
-pub fn apr_version_string<'a>() -> Result<&'a str, &'static str> {
+pub fn apr_version_string<'a>() -> Result<&'a str, ()> {
    from_char_ptr(
       unsafe { ffi::apr_version_string() }
    )
 }
 
-pub fn apu_version_string<'a>() -> Result<&'a str, &'static str> {
+pub fn apu_version_string<'a>() -> Result<&'a str, ()> {
    from_char_ptr(
       unsafe { ffi::apu_version_string() }
    )
