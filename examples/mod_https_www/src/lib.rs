@@ -3,13 +3,13 @@
 #[macro_use]
 extern crate apache2;
 
-use apache2::{HookOrder, Request, Status, StatusResult};
+use apache2::{HookOrder, Request, Status};
 
 apache2_module!(https_www_handler, c_https_www_handler, https_www_module, b"mod_https_www\0",
    ap_hook_translate_name, HookOrder::MIDDLE);
 
 
-fn https_www_handler(r: &mut Request) -> StatusResult {
+fn https_www_handler(r: &mut Request) -> Result<Status, ()> {
    let scheme = try!(r.http_scheme());
    let hostname = try!(r.hostname());
 

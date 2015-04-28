@@ -8,8 +8,8 @@ pub mod cookie;
 
 pub use libc::{c_void, c_char, c_int};
 
-pub use httpd::{Request, Status, StatusResult, ProxyReq, server_banner, server_description,
-   server_built, show_mpm};
+pub use httpd::{Request, Status, ProxyReq, server_banner, server_description, server_built,
+   show_mpm};
 pub use apr::{apr_version_string, apu_version_string, HookOrder, time_now};
 pub use cookie::Cookie;
 

@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate apache2;
 
-use apache2::{Request, Status, StatusResult};
+use apache2::{Request, Status};
 
 apache2_module!(coming_soon_handler, c_coming_soon_handler, coming_soon_module, b"mod_coming_soon\0");
 
@@ -68,7 +68,7 @@ macro_rules! html_template {() => ("<!doctype html>
 ")}
 
 
-fn coming_soon_handler(r: &mut Request) -> StatusResult {
+fn coming_soon_handler(r: &mut Request) -> Result<Status, ()> {
    if try!(r.handler()) != "coming-soon" || try!(r.uri()) != "/" {
       return Ok(Status::DECLINED)
    }

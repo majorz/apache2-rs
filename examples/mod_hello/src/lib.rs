@@ -1,12 +1,14 @@
 #[macro_use]
 extern crate apache2;
 
+use apache2::{Request, Status};
+
 apache2_module!(hello_handler);
 
-fn hello_handler(r: &mut apache2::Request) -> apache2::StatusResult {
+fn hello_handler(r: &mut Request) -> Result<Status, ()> {
    r.set_content_type("text/plain; charset=utf-8");
 
    try!(r.write("Hello Ciao Здравейте Γεια σας مرحبا Բարեւ ສະບາຍດີ Ձեզ Բարեւ გამარჯობა"));
 
-   Ok(apache2::Status::OK)
+   Ok(Status::OK)
 }

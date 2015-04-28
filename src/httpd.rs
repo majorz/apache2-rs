@@ -225,8 +225,6 @@ impl Into<Status> for c_int {
    }
 }
 
-pub type StatusResult = Result<Status, ()>;
-
 pub enum ProxyReq {
    NONE,     // No proxy
    PROXY,    // Standard proxy
