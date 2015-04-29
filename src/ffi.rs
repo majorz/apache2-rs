@@ -370,6 +370,16 @@ impl cmd_func {
 }
 
 #[repr(C)]
+pub struct command_rec {
+    pub name: *const c_char,
+    pub func: cmd_func,
+    pub cmd_data: *mut c_void,
+    pub req_override: c_int,
+    pub args_how: cmd_how,
+    pub errmsg: *const c_char,
+}
+
+#[repr(C)]
 pub struct ap_filter_t;
 
 #[repr(C)]
@@ -394,10 +404,9 @@ pub struct process_rec;
 pub struct server_rec;
 
 #[repr(C)]
-pub struct command_rec;
-
-#[repr(C)]
 pub struct cmd_parms;
+
+pub type cmd_how = c_uint;
 
 pub type rewrite_args_fn = extern "C" fn(
    process: *mut process_rec
