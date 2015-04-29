@@ -203,6 +203,21 @@ pub const TAKE123:    c_uint = 10;
 pub const TAKE13:     c_uint = 11;
 pub const TAKE_ARGV:  c_uint = 12;
 
+pub const OR_NONE:            c_uint = 0;
+pub const OR_LIMIT:           c_uint = 1;
+pub const OR_OPTIONS:         c_uint = 2;
+pub const OR_FILEINFO:        c_uint = 4;
+pub const OR_AUTHCFG:         c_uint = 8;
+pub const OR_INDEXES:         c_uint = 16;
+pub const OR_UNSET:           c_uint = 32;
+pub const ACCESS_CONF:        c_uint = 64;
+pub const RSRC_CONF:          c_uint = 128;
+pub const EXEC_ON_READ:       c_uint = 256;
+pub const NONFATAL_OVERRIDE:  c_uint = 512;
+pub const NONFATAL_UNKNOWN:   c_uint = 1024;
+pub const NONFATAL_ALL:       c_uint = NONFATAL_OVERRIDE | NONFATAL_UNKNOWN;
+pub const OR_ALL:             c_uint = OR_LIMIT | OR_OPTIONS | OR_FILEINFO | OR_AUTHCFG | OR_INDEXES;
+
 #[repr(C)]
 pub struct request_rec {
    pub pool: *mut apr_pool_t,
