@@ -49,10 +49,6 @@ macro_rules! AP_DECLARE_MODULE {
 
 #[macro_export]
 macro_rules! apache2_module {
-   ($handler:ident) => {
-      apache2_module!($handler, c_hello_handler, hello_module, b"mod_hello\0");
-   };
-
    ($handler:ident, $c_handler:ident, $module:ident, $c_name:expr) => {
       apache2_module!($handler, $c_handler, $module, $c_name, ap_hook_handler, $crate::HookOrder::MIDDLE);
    };
