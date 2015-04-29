@@ -189,6 +189,20 @@ pub const  PROXYREQ_PROXY:    c_int = 1;
 pub const  PROXYREQ_REVERSE:  c_int = 2;
 pub const  PROXYREQ_RESPONSE: c_int = 3;
 
+pub const RAW_ARGS:   c_uint = 0;
+pub const TAKE1:      c_uint = 1;
+pub const TAKE2:      c_uint = 2;
+pub const ITERATE:    c_uint = 3;
+pub const ITERATE2:   c_uint = 4;
+pub const FLAG:       c_uint = 5;
+pub const NO_ARGS:    c_uint = 6;
+pub const TAKE12:     c_uint = 7;
+pub const TAKE3:      c_uint = 8;
+pub const TAKE23:     c_uint = 9;
+pub const TAKE123:    c_uint = 10;
+pub const TAKE13:     c_uint = 11;
+pub const TAKE_ARGV:  c_uint = 12;
+
 #[repr(C)]
 pub struct request_rec {
    pub pool: *mut apr_pool_t,
@@ -322,6 +336,40 @@ pub struct module {
 }
 
 #[repr(C)]
+pub struct cmd_func {
+   pub _bindgen_data_: [u64; 1usize],
+}
+impl cmd_func {
+   pub unsafe fn no_args(&mut self) -> *mut Option<no_args_fn> {
+     ::std::mem::transmute(&self._bindgen_data_)
+   }
+
+   pub unsafe fn raw_args(&mut self) -> *mut Option<raw_args_fn> {
+     ::std::mem::transmute(&self._bindgen_data_)
+   }
+
+   pub unsafe fn take_argv(&mut self) -> *mut Option<take_argv_fn> {
+     ::std::mem::transmute(&self._bindgen_data_)
+   }
+
+   pub unsafe fn take1(&mut self) -> *mut Option<take1_fn> {
+     ::std::mem::transmute(&self._bindgen_data_)
+   }
+
+   pub unsafe fn take2(&mut self) -> *mut Option<take2_fn> {
+     ::std::mem::transmute(&self._bindgen_data_)
+   }
+
+   pub unsafe fn take3(&mut self) -> *mut Option<take3_fn> {
+     ::std::mem::transmute(&self._bindgen_data_)
+   }
+
+   pub unsafe fn flag(&mut self) -> *mut Option<flag_fn> {
+     ::std::mem::transmute(&self._bindgen_data_)
+   }
+}
+
+#[repr(C)]
 pub struct ap_filter_t;
 
 #[repr(C)]
@@ -348,6 +396,9 @@ pub struct server_rec;
 #[repr(C)]
 pub struct command_rec;
 
+#[repr(C)]
+pub struct cmd_parms;
+
 pub type rewrite_args_fn = extern "C" fn(
    process: *mut process_rec
 );
@@ -367,6 +418,14 @@ pub type create_server_config_fn = extern "C" fn(
 pub type register_hooks_fn = extern "C" fn(
    p: *mut apr_pool_t
 );
+
+pub type no_args_fn = extern "C" fn(parms: *mut cmd_parms, mconfig: *mut c_void) -> *const c_char;
+pub type raw_args_fn = extern "C" fn(parms: *mut cmd_parms, mconfig: *mut c_void, args: *const c_char) -> *const c_char;
+pub type take_argv_fn = extern "C" fn(parms: *mut cmd_parms, mconfig: *mut c_void, argc: c_int, argv: *const *mut c_char) -> *const c_char;
+pub type take1_fn = extern "C" fn(parms: *mut cmd_parms, mconfig: *mut c_void, w: *const c_char) -> *const c_char;
+pub type take2_fn = extern "C" fn(parms: *mut cmd_parms, mconfig: *mut c_void, w: *const c_char, w2: *const c_char) -> *const c_char;
+pub type take3_fn = extern "C" fn(parms: *mut cmd_parms, mconfig: *mut c_void, w: *const c_char, w2: *const c_char, w3: *const c_char) -> *const c_char;
+pub type flag_fn = extern "C" fn(parms: *mut cmd_parms, mconfig: *mut c_void, on: c_int) -> *const c_char;
 
 pub type hook_handler_fn = extern "C" fn(r: *mut request_rec) -> c_int;
 pub type hook_pre_config_fn = extern "C" fn(conf: *const apr_pool_t, log: *const apr_pool_t, temp: *const apr_pool_t) -> c_int;
