@@ -221,8 +221,8 @@ const STYLESHEET: &'static str = "
       width: 100%;
       padding-top: 1em;
       padding-bottom: 1em;
-      background: -webkit-linear-gradient(left, rgba(86,86,107,0), rgba(86,86,107,.25), rgba(86,86,107,0));
-      background: linear-gradient(to right,rgba(86,86,107,0),rgba(86,86,107,.25),rgba(86,86,107,0));
+      background: -webkit-linear-gradient(left, rgba(86,86,107,0), rgba(86,86,107,.4), rgba(86,86,107,0));
+      background: linear-gradient(to right,rgba(86,86,107,0),rgba(86,86,107,.4),rgba(86,86,107,0));
    }
 
    .urgent-call .first, .urgent-call .second, .urgent-call .third {
