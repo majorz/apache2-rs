@@ -30,7 +30,7 @@ macro_rules! html_template {() => ("<!doctype html>
          <div class=\"in\">in</div>
 
          <div class=\"timer\">
-            <div class=\"number\">000</div>
+            <div class=\"number\">26</div>
             <div class=\"days\">days</div>
          </div>
 
