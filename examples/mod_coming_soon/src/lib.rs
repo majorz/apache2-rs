@@ -40,7 +40,7 @@ macro_rules! html_template {() => ("<!doctype html>
                   In the meantime, please sign the international petition against
                </div>
 
-               <div class=\"second\">ORGAN HARVESTING</div>
+               <div class=\"second\">LIVE ORGAN HARVESTING</div>
 
                <div class=\"third\">from Falun Gong practitioners in China!</div>
             </div>
