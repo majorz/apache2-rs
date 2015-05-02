@@ -1,0 +1,14 @@
+[package]
+
+name = "mod_conf"
+version = "0.0.2"
+
+[lib]
+name = "mod_conf"
+crate-type = ["dylib"]
+
+[dependencies]
+libc = "*"
+
+[dependencies.apache2]
+path = "../.."
