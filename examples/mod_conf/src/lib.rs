@@ -41,7 +41,7 @@ AP_DECLARE_MODULE!(
    None,
    None,
    None,
-   EXAMPLE_DIRECTIVES[0] as *const apache2::ffi::command_rec,
+   EXAMPLE_DIRECTIVES[0],
    Some(c_module_hooks)
 );
 
