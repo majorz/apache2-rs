@@ -15,14 +15,7 @@ pub extern "C" fn cmd(parms: *mut ffi::cmd_parms, mconfig: *mut c_void, w: *cons
    std::ptr::null()
 }
 
-/*
-pub name: *const c_char,
-pub func: cmd_func,
-pub cmd_data: *mut c_void,
-pub req_override: c_int,
-pub args_how: cmd_how,
-pub errmsg: *const c_char,
-*/
+
 const SOME_CMD: ffi::command_rec = ffi::command_rec {
    name: b"SomeCmd\0" as *const u8 as *const c_char,
    func: ffi::cmd_func {
