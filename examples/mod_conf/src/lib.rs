@@ -7,8 +7,6 @@ extern crate apache2;
 use libc::{c_void, c_char};
 use apache2::{Request, Status, ffi};
 
-pub const X: u32 = ffi::NONFATAL_OVERRIDE | ffi::NONFATAL_UNKNOWN;
-
 
 #[allow(unused_variables)]
 pub extern "C" fn cmd(parms: *mut ffi::cmd_parms, mconfig: *mut c_void, w: *const c_char) -> *const c_char {
@@ -22,8 +20,8 @@ const SOME_CMD: ffi::command_rec = ffi::command_rec {
       _bindgen_data_: [cmd as u64]
    },
    cmd_data: 0 as *mut c_void,
-   req_override: 0,
-   args_how: 0,
+   req_override: apache2::ffi::RSRC_CONF,
+   args_how: apache2::ffi::TAKE1,
    errmsg: b"Error message\0" as *const u8 as *const c_char
 };
 
