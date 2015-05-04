@@ -3,7 +3,7 @@
 This library is intended to make possible and easy writing Apache HTTP Server modules using
 the Rust programming language.
 
-*The library is still in early development phase*
+*NOTE: The library is still in early development phase – extensive documentation will be provided soon after the basic features are implemented*
 
 Here is a small example of what an Apache Rust module code looks like:
 
