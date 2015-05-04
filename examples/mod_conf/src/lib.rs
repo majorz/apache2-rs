@@ -14,7 +14,8 @@ pub extern "C" fn cmd(parms: *mut ffi::cmd_parms, mconfig: *mut c_void, w: *cons
 }
 
 
-const SOME_CMD: ffi::command_rec = ffi::command_rec {
+#[no_mangle]
+pub static mut SOME_CMD: ffi::command_rec = ffi::command_rec {
    name: b"SomeCmd\0" as *const u8 as *const c_char,
    func: ffi::cmd_func {
       _bindgen_data_: [cmd as u64]
@@ -26,8 +27,18 @@ const SOME_CMD: ffi::command_rec = ffi::command_rec {
 };
 
 
-const EXAMPLE_DIRECTIVES: [*const ffi::command_rec; 2] = [
-   &SOME_CMD,
+#[no_mangle]
+pub static mut EXAMPLE_DIRECTIVES: [*const ffi::command_rec; 2] = [
+   &ffi::command_rec {
+      name: b"SomeCmd\0" as *const u8 as *const c_char,
+      func: ffi::cmd_func {
+         _bindgen_data_: [cmd as u64]
+      },
+      cmd_data: 0 as *mut c_void,
+      req_override: apache2::ffi::RSRC_CONF,
+      args_how: apache2::ffi::TAKE1,
+      errmsg: b"Error message\0" as *const u8 as *const c_char
+   },
    0 as *const ffi::command_rec
 ];
 
@@ -39,7 +50,7 @@ AP_DECLARE_MODULE!(
    None,
    None,
    None,
-   EXAMPLE_DIRECTIVES[0],
+   unsafe { &EXAMPLE_DIRECTIVES as *const *const ffi::command_rec },
    Some(c_module_hooks)
 );
 
@@ -69,6 +80,10 @@ pub extern "C" fn c_conf_handler(r: *mut apache2::ffi::request_rec) -> apache2::
 
 
 fn conf_handler(r: &mut Request) -> Result<Status, ()> {
+   if try!(r.handler()) != "conf" {
+      return Ok(Status::DECLINED)
+   }
+
    r.set_content_type("text/plain; charset=utf-8");
 
    try!(r.write("CONF: *****"));
