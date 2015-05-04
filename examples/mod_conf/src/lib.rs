@@ -28,8 +28,8 @@ pub static mut SOME_CMD: ffi::command_rec = ffi::command_rec {
 
 
 #[no_mangle]
-pub static mut EXAMPLE_DIRECTIVES: [*const ffi::command_rec; 2] = [
-   &ffi::command_rec {
+pub static mut EXAMPLE_DIRECTIVES: [ffi::command_rec; 2] = [
+   ffi::command_rec {
       name: b"SomeCmd\0" as *const u8 as *const c_char,
       func: ffi::cmd_func {
          _bindgen_data_: [cmd as u64]
@@ -39,7 +39,16 @@ pub static mut EXAMPLE_DIRECTIVES: [*const ffi::command_rec; 2] = [
       args_how: apache2::ffi::TAKE1,
       errmsg: b"Error message\0" as *const u8 as *const c_char
    },
-   0 as *const ffi::command_rec
+   ffi::command_rec {
+      name: 0 as *const c_char,
+      func: ffi::cmd_func {
+         _bindgen_data_: [0 as u64]
+      },
+      cmd_data: 0 as *mut c_void,
+      req_override: 0,
+      args_how: 0,
+      errmsg: 0 as *const c_char
+   },
 ];
 
 
@@ -50,7 +59,7 @@ AP_DECLARE_MODULE!(
    None,
    None,
    None,
-   unsafe { &EXAMPLE_DIRECTIVES as *const *const ffi::command_rec },
+   unsafe { &EXAMPLE_DIRECTIVES as *const ffi::command_rec },
    Some(c_module_hooks)
 );
 
