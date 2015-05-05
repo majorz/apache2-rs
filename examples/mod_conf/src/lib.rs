@@ -16,7 +16,7 @@ pub extern "C" fn cmd(parms: *mut ffi::cmd_parms, mconfig: *mut c_void, w: *cons
 
 apache2_commands!(
    EXAMPLE_DIRECTIVES,
-   AP_INIT_TAKE1!(b"SomeCmd\0", cmd, 0, apache2::ffi::RSRC_CONF, b"Error message\0")
+   AP_INIT_TAKE1!(b"SomeCmd\0", cmd, apache2::ffi::RSRC_CONF, b"Error message\0")
 );
 
 
