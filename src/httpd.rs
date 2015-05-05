@@ -674,6 +674,20 @@ impl<'a> Conn<'a> {
 }
 
 
+pub type CmdParms<'a> = Wrapper<'a, ffi::cmd_parms>;
+
+
+impl<'a> CmdParms<'a> {
+}
+
+
+pub type Module<'a> = Wrapper<'a, ffi::module>;
+
+
+impl<'a> Module<'a> {
+}
+
+
 pub fn server_banner<'a>() -> Result<&'a str, ()> {
    from_char_ptr(
       unsafe { ffi::ap_get_server_banner() }

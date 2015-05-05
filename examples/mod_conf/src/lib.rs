@@ -5,7 +5,11 @@ extern crate apache2;
 
 
 use libc::{c_void, c_char};
-use apache2::{Request, Status, ffi};
+use apache2::{Request, Status, CmdParms, ffi};
+
+
+fn cmd_process(parms: &mut CmdParms) {
+}
 
 
 #[allow(unused_variables)]
