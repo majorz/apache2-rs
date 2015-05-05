@@ -509,6 +509,9 @@ extern "C" {
    pub fn ap_set_last_modified(r: *mut request_rec) -> ();
    pub fn ap_update_mtime(r: *mut request_rec, dependency_mtime: apr_time_t) -> ();
 
+   pub fn ap_get_module_config(cv: *const ap_conf_vector_t, m: *const module) -> *mut c_void;
+   pub fn ap_set_module_config(cv: *mut ap_conf_vector_t, m: *const module, val: *mut c_void) -> ();
+
    pub fn ap_hook_handler(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
    pub fn ap_hook_pre_config(f: Option<hook_pre_config_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
    pub fn ap_hook_check_config(f: Option<hook_check_config_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
