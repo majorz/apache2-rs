@@ -14,11 +14,10 @@ pub extern "C" fn cmd(parms: *mut ffi::cmd_parms, mconfig: *mut c_void, w: *cons
 }
 
 
-#[no_mangle]
-pub static mut EXAMPLE_DIRECTIVES: [ffi::command_rec; 2] = [
-   AP_INIT_TAKE1!(b"SomeCmd\0", cmd, 0, apache2::ffi::RSRC_CONF, b"Error message\0"),
-   NULL_COMMAND_REC!(),
-];
+apache2_commands!(
+   EXAMPLE_DIRECTIVES,
+   AP_INIT_TAKE1!(b"SomeCmd\0", cmd, 0, apache2::ffi::RSRC_CONF, b"Error message\0")
+);
 
 
 AP_DECLARE_MODULE!(
@@ -28,7 +27,7 @@ AP_DECLARE_MODULE!(
    None,
    None,
    None,
-   unsafe { &EXAMPLE_DIRECTIVES as *const ffi::command_rec },
+   &EXAMPLE_DIRECTIVES,
    Some(c_module_hooks)
 );
 

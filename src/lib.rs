@@ -40,7 +40,7 @@ macro_rules! AP_DECLARE_MODULE {
          merge_dir_config: $merge_dir_config,
          create_server_config: $create_server_config,
          merge_server_config: $merge_server_config,
-         cmds: $cmds as *const $crate::ffi::command_rec,
+         cmds: unsafe { $cmds as *const $crate::ffi::command_rec },
          register_hooks: $register_hooks
       };
    }
@@ -210,4 +210,49 @@ macro_rules! AP_INIT_FLAG {
    ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
       DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::FLAG, $errmsg)
    }
+}
+
+#[macro_export]
+macro_rules! apache2_commands {
+   ($cmds_name:ident, $cmd_count:expr, $( $cmd:expr ),*) => {
+      #[no_mangle]
+      pub static mut $cmds_name: [ffi::command_rec; $cmd_count] = [
+         $(
+            $cmd,
+         )*
+         NULL_COMMAND_REC!()
+      ];
+   };
+
+   ($cmds_name:ident, $cmd1:expr) => {
+      apache2_commands!($cmds_name, 2, $cmd1);
+   };
+
+   ($cmds_name:ident, $cmd1:expr, $cmd2:expr) => {
+      apache2_commands!($cmds_name, 3, $cmd1, $cmd2);
+   };
+
+   ($cmds_name:ident, $cmd1:expr, $cmd2:expr, $cmd3:expr) => {
+      apache2_commands!($cmds_name, 9, $cmd1, $cmd2, $cmd3);
+   };
+
+   ($cmds_name:ident, $cmd1:expr, $cmd2:expr, $cmd3:expr, $cmd4:expr) => {
+      apache2_commands!($cmds_name, 9, $cmd1, $cmd2, $cmd3, $cmd4);
+   };
+
+   ($cmds_name:ident, $cmd1:expr, $cmd2:expr, $cmd3:expr, $cmd4:expr, $cmd5:expr) => {
+      apache2_commands!($cmds_name, 9, $cmd1, $cmd2, $cmd3, $cmd4, $cmd5);
+   };
+
+   ($cmds_name:ident, $cmd1:expr, $cmd2:expr, $cmd3:expr, $cmd4:expr, $cmd5:expr, $cmd6:expr) => {
+      apache2_commands!($cmds_name, 9, $cmd1, $cmd2, $cmd3, $cmd4, $cmd5, $cmd6);
+   };
+
+   ($cmds_name:ident, $cmd1:expr, $cmd2:expr, $cmd3:expr, $cmd4:expr, $cmd5:expr, $cmd6:expr, $cmd7:expr) => {
+      apache2_commands!($cmds_name, 9, $cmd1, $cmd2, $cmd3, $cmd4, $cmd5, $cmd6, $cmd7);
+   };
+
+   ($cmds_name:ident, $cmd1:expr, $cmd2:expr, $cmd3:expr, $cmd4:expr, $cmd5:expr, $cmd6:expr, $cmd7:expr, $cmd8:expr) => {
+      apache2_commands!($cmds_name, 9, $cmd1, $cmd2, $cmd3, $cmd4, $cmd5, $cmd6, $cmd7, $cmd8);
+   };
 }
