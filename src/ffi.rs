@@ -451,21 +451,11 @@ pub type rewrite_args_fn = extern "C" fn(
    process: *mut process_rec
 );
 
-pub type create_dir_config_fn = extern "C" fn(
-   p: *mut apr_pool_t, dir: *mut c_char
-) -> *mut c_void;
+pub type create_dir_config_fn = extern "C" fn(p: *mut apr_pool_t, dir: *mut c_char) -> *mut c_void;
+pub type merge_config_fn = extern "C" fn(p: *mut apr_pool_t, base_conf: *mut c_void, new_conf: *mut c_void) -> *mut c_void;
+pub type create_server_config_fn = extern "C" fn(p: *mut apr_pool_t, s: *mut server_rec) -> *mut c_void;
 
-pub type merge_config_fn = extern "C" fn(
-   p: *mut apr_pool_t, base_conf: *mut c_void, new_conf: *mut c_void
-) -> *mut c_void;
-
-pub type create_server_config_fn = extern "C" fn(
-   p: *mut apr_pool_t, s: *mut server_rec
-) -> *mut c_void;
-
-pub type register_hooks_fn = extern "C" fn(
-   p: *mut apr_pool_t
-);
+pub type register_hooks_fn = extern "C" fn(p: *mut apr_pool_t);
 
 pub type no_args_fn = extern "C" fn(parms: *mut cmd_parms, mconfig: *mut c_void) -> *const c_char;
 pub type raw_args_fn = extern "C" fn(parms: *mut cmd_parms, mconfig: *mut c_void, args: *const c_char) -> *const c_char;
