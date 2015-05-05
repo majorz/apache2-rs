@@ -394,6 +394,27 @@ pub struct command_rec {
     pub errmsg: *const c_char,
 }
 
+
+#[repr(C)]
+pub struct cmd_parms {
+   pub info: *mut c_void,
+   pub _override: c_int,
+   pub override_opts: c_int,
+   pub override_list: *mut apr_table_t,
+   pub limited: apr_int64_t,
+   pub limited_xmethods: *mut apr_array_header_t,
+   pub xlimited: *mut ap_method_list_t,
+   pub config_file: *mut ap_configfile_t,
+   pub directive: *mut ap_directive_t,
+   pub pool: *mut apr_pool_t,
+   pub temp_pool: *mut apr_pool_t,
+   pub server: *mut server_rec,
+   pub path: *mut c_char,
+   pub cmd: *const command_rec,
+   pub context: *mut ap_conf_vector_t,
+   pub err_directive: *const ap_directive_t,
+}
+
 #[repr(C)]
 pub struct ap_filter_t;
 
@@ -407,6 +428,12 @@ pub struct ap_conf_vector_t;
 pub struct ap_method_list_t;
 
 #[repr(C)]
+pub struct ap_configfile_t;
+
+#[repr(C)]
+pub struct ap_directive_t;
+
+#[repr(C)]
 pub struct conn_state_t;
 
 #[repr(C)]
@@ -417,9 +444,6 @@ pub struct process_rec;
 
 #[repr(C)]
 pub struct server_rec;
-
-#[repr(C)]
-pub struct cmd_parms;
 
 pub type cmd_how = c_uint;
 
