@@ -26,6 +26,7 @@ macro_rules! AP_DECLARE_MODULE {
       $cmds:expr,
       $register_hooks:expr
    ) => {
+      #[allow(unused_unsafe)]
       #[no_mangle]
       pub static mut $module: $crate::ffi::module = $crate::ffi::module {
          version: $crate::ffi::MODULE_MAGIC_NUMBER_MAJOR,
