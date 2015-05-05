@@ -495,10 +495,8 @@ extern "C" {
 
    pub fn ap_some_auth_required(r: *const request_rec) -> c_int;
 
-   pub fn ap_cookie_read(r: *const request_rec, name: *const c_char, val: *mut *const c_char,
-      remove: c_int) -> apr_status_t;
-   pub fn ap_cookie_write(r: *const request_rec, name: *const c_char, val: *const c_char,
-      attrs: *const c_char, maxage: c_int, ...) -> apr_status_t;
+   pub fn ap_cookie_read(r: *const request_rec, name: *const c_char, val: *mut *const c_char, remove: c_int) -> apr_status_t;
+   pub fn ap_cookie_write(r: *const request_rec, name: *const c_char, val: *const c_char, attrs: *const c_char, maxage: c_int, ...) -> apr_status_t;
 
    pub fn ap_escape_urlencoded(p: *mut apr_pool_t, s: *const c_char) -> *mut c_char;
    pub fn ap_unescape_urlencoded(query: *mut c_char) -> c_int;
