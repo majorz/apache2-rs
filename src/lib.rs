@@ -88,3 +88,126 @@ macro_rules! apache2_module {
       }
    }
 }
+
+
+#[macro_export]
+macro_rules! DECLARE_COMMAND_REC {
+   (
+      $name:expr,
+      $func:expr,
+      $cmd_data:expr,
+      $req_override:expr,
+      $args_how:expr,
+      $errmsg:expr
+   ) => {
+      ffi::command_rec {
+         name: $name as *const u8 as *const c_char,
+         func: ffi::cmd_func {
+            _bindgen_data_: [$func as u64]
+         },
+         cmd_data: $cmd_data as *mut c_void,
+         req_override: $req_override,
+         args_how: $args_how,
+         errmsg: $errmsg as *const u8 as *const c_char
+      }
+   }
+}
+
+
+#[macro_export]
+macro_rules! NULL_COMMAND_REC {
+   () => {
+      DECLARE_COMMAND_REC!(0, 0, 0, 0, 0, 0)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_NO_ARGS {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::NO_ARGS, $errmsg)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_RAW_ARGS {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::RAW_ARGS, $errmsg)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_TAKE_ARGV {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::TAKE_ARGV, $errmsg)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_TAKE1 {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::TAKE1, $errmsg)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_ITERATE {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::ITERATE, $errmsg)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_TAKE2 {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::TAKE2, $errmsg)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_TAKE12 {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::TAKE12, $errmsg)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_ITERATE2 {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::ITERATE2, $errmsg)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_TAKE13 {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::TAKE13, $errmsg)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_TAKE23 {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::TAKE23, $errmsg)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_TAKE123 {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::TAKE123, $errmsg)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_TAKE3 {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::TAKE3, $errmsg)
+   }
+}
+
+#[macro_export]
+macro_rules! AP_INIT_FLAG {
+   ($name:expr, $func:expr, $cmd_data:expr, $req_override:expr, $errmsg:expr) => {
+      DECLARE_COMMAND_REC!($name, $func, $cmd_data, $req_override, ffi::FLAG, $errmsg)
+   }
+}

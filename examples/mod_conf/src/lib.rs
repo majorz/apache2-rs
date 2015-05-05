@@ -15,40 +15,9 @@ pub extern "C" fn cmd(parms: *mut ffi::cmd_parms, mconfig: *mut c_void, w: *cons
 
 
 #[no_mangle]
-pub static mut SOME_CMD: ffi::command_rec = ffi::command_rec {
-   name: b"SomeCmd\0" as *const u8 as *const c_char,
-   func: ffi::cmd_func {
-      _bindgen_data_: [cmd as u64]
-   },
-   cmd_data: 0 as *mut c_void,
-   req_override: apache2::ffi::RSRC_CONF,
-   args_how: apache2::ffi::TAKE1,
-   errmsg: b"Error message\0" as *const u8 as *const c_char
-};
-
-
-#[no_mangle]
 pub static mut EXAMPLE_DIRECTIVES: [ffi::command_rec; 2] = [
-   ffi::command_rec {
-      name: b"SomeCmd\0" as *const u8 as *const c_char,
-      func: ffi::cmd_func {
-         _bindgen_data_: [cmd as u64]
-      },
-      cmd_data: 0 as *mut c_void,
-      req_override: apache2::ffi::RSRC_CONF,
-      args_how: apache2::ffi::TAKE1,
-      errmsg: b"Error message\0" as *const u8 as *const c_char
-   },
-   ffi::command_rec {
-      name: 0 as *const c_char,
-      func: ffi::cmd_func {
-         _bindgen_data_: [0 as u64]
-      },
-      cmd_data: 0 as *mut c_void,
-      req_override: 0,
-      args_how: 0,
-      errmsg: 0 as *const c_char
-   },
+   AP_INIT_TAKE1!(b"SomeCmd\0", cmd, 0, apache2::ffi::RSRC_CONF, b"Error message\0"),
+   NULL_COMMAND_REC!(),
 ];
 
 
