@@ -34,6 +34,7 @@ pub type apr_uintptr_t = apr_uint64_t;
 pub type apr_status_t = c_int;
 pub type apr_signum_t = c_int;
 pub type apr_time_t = apr_int64_t;
+pub type apr_interval_time_t = apr_int64_t;
 pub type apr_port_t = apr_uint16_t;
 
 #[repr(C)]
@@ -53,31 +54,28 @@ pub struct apr_table_entry_t {
 }
 
 #[repr(C)]
-pub struct apr_bucket_alloc_t;
-
-#[repr(C)]
 pub struct apr_bucket_brigade;
 
 #[repr(C)]
 pub struct apr_finfo_t;
 
 #[repr(C)]
-pub struct apr_pool_t;
-
-#[repr(C)]
 pub struct apr_sockaddr_t;
 
 #[repr(C)]
-pub struct apr_table_t;
-
-#[repr(C)]
-pub struct apr_thread_mutex_t;
-
-#[repr(C)]
-pub struct apr_thread_t;
-
-#[repr(C)]
 pub struct apr_uri_t;
+
+pub enum apr_bucket_alloc_t { }
+
+pub enum apr_pool_t { }
+
+pub enum apr_table_t { }
+
+pub enum apr_thread_mutex_t { }
+
+pub enum apr_thread_t { }
+
+pub enum apr_file_t { }
 
 extern "C" {
    pub fn apr_version_string() -> *const c_char;
@@ -327,6 +325,37 @@ pub struct conn_rec {
 }
 
 #[repr(C)]
+pub struct server_rec {
+    pub process: *mut process_rec,
+    pub next: *mut server_rec,
+    pub error_fname: *mut c_char,
+    pub error_log: *mut apr_file_t,
+    pub log: ap_logconf,
+    pub module_config: *mut ap_conf_vector_t,
+    pub lookup_defaults: *mut ap_conf_vector_t,
+    pub defn_name: *const c_char,
+    pub defn_line_number: c_uint,
+    pub is_virtual: c_char,
+    pub port: apr_port_t,
+    pub server_scheme: *const c_char,
+    pub server_admin: *mut c_char,
+    pub server_hostname: *mut c_char,
+    pub addrs: *mut server_addr_rec,
+    pub timeout: apr_interval_time_t,
+    pub keep_alive_timeout: apr_interval_time_t,
+    pub keep_alive_max: c_int,
+    pub keep_alive: c_int,
+    pub names: *mut apr_array_header_t,
+    pub wild_names: *mut apr_array_header_t,
+    pub path: *const c_char,
+    pub pathlen: c_int,
+    pub limit_req_line: c_int,
+    pub limit_req_fieldsize: c_int,
+    pub limit_req_fields: c_int,
+    pub context: *mut c_void,
+}
+
+#[repr(C)]
 pub struct ap_logconf {
     pub module_levels: *mut c_char,
     pub level: c_int,
@@ -416,15 +445,6 @@ pub struct cmd_parms {
 }
 
 #[repr(C)]
-pub struct ap_filter_t;
-
-#[repr(C)]
-pub struct ap_conn_keepalive_e;
-
-#[repr(C)]
-pub struct ap_conf_vector_t;
-
-#[repr(C)]
 pub struct ap_method_list_t;
 
 #[repr(C)]
@@ -443,9 +463,15 @@ pub struct htaccess_result;
 pub struct process_rec;
 
 #[repr(C)]
-pub struct server_rec;
+pub struct server_addr_rec;
+
+pub enum ap_filter_t { }
+
+pub enum ap_conf_vector_t { }
 
 pub type cmd_how = c_uint;
+
+pub type ap_conn_keepalive_e = c_uint;
 
 pub type rewrite_args_fn = extern "C" fn(
    process: *mut process_rec
