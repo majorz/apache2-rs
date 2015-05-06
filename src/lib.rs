@@ -1,3 +1,6 @@
+#![feature(plugin)]
+#![plugin(interpolate_idents)]
+
 extern crate libc;
 
 pub mod ffi;
@@ -18,7 +21,7 @@ pub use cookie::Cookie;
 macro_rules! AP_DECLARE_MODULE {
    (
       $module:ident,
-      $name:expr,
+      $mod_name:expr,
       $create_dir_config:expr,
       $merge_dir_config:expr,
       $create_server_config:expr,
@@ -32,7 +35,7 @@ macro_rules! AP_DECLARE_MODULE {
          version: $crate::ffi::MODULE_MAGIC_NUMBER_MAJOR,
          minor_version: $crate::ffi::MODULE_MAGIC_NUMBER_MINOR,
          module_index: -1,
-         name: $name as *const u8 as *const $crate::c_char,
+         name: $mod_name as *const u8 as *const $crate::c_char,
          dynamic_load_handle: 0 as *mut $crate::c_void,
          next: 0 as *mut $crate::ffi::module,
          magic: $crate::ffi::MODULE_MAGIC_COOKIE,
@@ -50,41 +53,46 @@ macro_rules! AP_DECLARE_MODULE {
 
 #[macro_export]
 macro_rules! apache2_module {
-   ($handler:ident, $c_handler:ident, $module:ident, $c_name:expr) => {
-      apache2_module!($handler, $c_handler, $module, $c_name, ap_hook_handler, $crate::HookOrder::MIDDLE);
+   ($name:ident, $mod_name:expr) => {
+      apache2_module!($name, $mod_name, ap_hook_handler, $crate::HookOrder::MIDDLE);
    };
 
-   ($handler:ident, $c_handler:ident, $module:ident, $c_name:expr, $hook:ident, $order:expr) => {
-      AP_DECLARE_MODULE!(
-         $module,
-         $c_name,
-         None,
-         None,
-         None,
-         None,
-         0,
-         Some(c_module_hooks)
-      );
+   ($name:ident, $mod_name:expr, $hook:ident, $order:expr) => {
+      interpolate_idents! {
+         AP_DECLARE_MODULE!(
+            [$name _module],
+            $mod_name,
+            None,
+            None,
+            None,
+            None,
+            0,
+            Some([$name _hooks])
+         );
 
-      extern "C" fn c_module_hooks(_: *mut $crate::ffi::apr_pool_t) {
-         unsafe {
-            $crate::ffi::$hook(
-               Some($c_handler),
-               std::ptr::null(),
-               std::ptr::null(),
-               $order.into()
-            );
+         extern "C" fn [$name _hooks](_: *mut $crate::ffi::apr_pool_t) {
+            unsafe {
+               $crate::ffi::$hook(
+                  Some([c_ $name _handler]),
+                  std::ptr::null(),
+                  std::ptr::null(),
+                  $order.into()
+               );
+            }
          }
       }
 
+
       #[no_mangle]
-      pub extern "C" fn $c_handler(r: *mut $crate::ffi::request_rec) -> $crate::c_int {
-         match $crate::httpd::Request::from_raw_ptr(r) {
-            Err(_) => $crate::httpd::Status::DECLINED.into(),
-            Ok(mut request) => match $handler(&mut request) {
-               Ok(status) => status,
-               Err(_) => $crate::httpd::Status::HTTP_INTERNAL_SERVER_ERROR
-            }.into()
+      interpolate_idents! {
+         pub extern "C" fn [c_ $name _handler](r: *mut $crate::ffi::request_rec) -> $crate::c_int {
+            match $crate::httpd::Request::from_raw_ptr(r) {
+               Err(_) => $crate::httpd::Status::DECLINED.into(),
+               Ok(mut request) => match [$name _handler](&mut request) {
+                  Ok(status) => status,
+                  Err(_) => $crate::httpd::Status::HTTP_INTERNAL_SERVER_ERROR
+               }.into()
+            }
          }
       }
    }

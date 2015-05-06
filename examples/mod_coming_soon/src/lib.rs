@@ -1,9 +1,12 @@
+#![feature(plugin)]
+#![plugin(interpolate_idents)]
+
 #[macro_use]
 extern crate apache2;
 
 use apache2::{Request, Status};
 
-apache2_module!(coming_soon_handler, c_coming_soon_handler, coming_soon_module, b"mod_coming_soon\0");
+apache2_module!(coming_soon, b"mod_coming_soon\0");
 
 
 macro_rules! html_template {() => ("<!doctype html>

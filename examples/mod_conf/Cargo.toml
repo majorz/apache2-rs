@@ -9,6 +9,7 @@ crate-type = ["dylib"]
 
 [dependencies]
 libc = "*"
+interpolate_idents = "*"
 
 [dependencies.apache2]
 path = "../.."

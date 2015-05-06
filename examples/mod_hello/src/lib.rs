@@ -1,9 +1,12 @@
+#![feature(plugin)]
+#![plugin(interpolate_idents)]
+
 #[macro_use]
 extern crate apache2;
 
 use apache2::{Request, Status};
 
-apache2_module!(hello_handler, c_hello_handler, hello_module, b"mod_hello\0");
+apache2_module!(hello, b"mod_hello\0");
 
 
 fn hello_handler(r: &mut Request) -> Result<Status, ()> {
