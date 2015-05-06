@@ -674,6 +674,13 @@ impl<'a> Conn<'a> {
 }
 
 
+pub type Server<'a> = Wrapper<'a, ffi::server_rec>;
+
+
+impl<'a> Server<'a> {
+}
+
+
 pub type CmdParms<'a> = Wrapper<'a, ffi::cmd_parms>;
 
 
