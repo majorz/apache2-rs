@@ -22,7 +22,7 @@ apache2_module!(hello, b"mod_hello\0");
 fn hello_handler(r: &mut Request) -> Result<Status, ()> {
    r.set_content_type("text/plain; charset=utf-8");
 
-   try!(r.write("Hello Ciao Здравейте Γεια σας مرحبا Բարեւ ສະບາຍດີ Ձեզ Բարեւ გამარჯობა"));
+   try!(r.write("Hello Ciao Здравейте"));
 
    Ok(Status::OK)
 }
