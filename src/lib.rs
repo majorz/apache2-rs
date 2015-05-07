@@ -58,7 +58,13 @@ macro_rules! apache2_module {
    };
 
    ($name:ident, $mod_name:expr, $hook:ident, $order:expr) => {
+      apache2_module!($name, $mod_name, $hook, $order, []);
+   };
+
+   ($name:ident, $mod_name:expr, $hook:ident, $order:expr, [ $( $cmd:expr );* ]) => {
       interpolate_idents! {
+         DECLARE_COMMAND_ARRAY!([$name _cmds], { $( $cmd );* });
+
          AP_DECLARE_MODULE!(
             [$name _module],
             $mod_name,
@@ -66,7 +72,7 @@ macro_rules! apache2_module {
             None,
             None,
             None,
-            0,
+            &[$name _cmds],
             Some([$name _hooks])
          );
 
@@ -109,15 +115,15 @@ macro_rules! DECLARE_COMMAND_REC {
       $args_how:expr,
       $errmsg:expr
    ) => {
-      ffi::command_rec {
-         name: $name as *const u8 as *const c_char,
-         func: ffi::cmd_func {
+      $crate::ffi::command_rec {
+         name: $name as *const u8 as *const $crate::c_char,
+         func: $crate::ffi::cmd_func {
             _bindgen_data_: [$func as u64]
          },
-         cmd_data: $cmd_data as *mut c_void,
+         cmd_data: $cmd_data as *mut $crate::c_void,
          req_override: $req_override,
          args_how: $args_how,
-         errmsg: $errmsg as *const u8 as *const c_char
+         errmsg: $errmsg as *const u8 as *const $crate::c_char
       }
    }
 }
@@ -133,135 +139,137 @@ macro_rules! NULL_COMMAND_REC {
 #[macro_export]
 macro_rules! AP_INIT_NO_ARGS {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::NO_ARGS, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::NO_ARGS, $errmsg)
    }
 }
 
 #[macro_export]
 macro_rules! AP_INIT_RAW_ARGS {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::RAW_ARGS, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::RAW_ARGS, $errmsg)
    }
 }
 
 #[macro_export]
 macro_rules! AP_INIT_TAKE_ARGV {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::TAKE_ARGV, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE_ARGV, $errmsg)
    }
 }
 
 #[macro_export]
 macro_rules! AP_INIT_TAKE1 {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::TAKE1, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE1, $errmsg)
    }
 }
 
 #[macro_export]
 macro_rules! AP_INIT_ITERATE {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::ITERATE, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::ITERATE, $errmsg)
    }
 }
 
 #[macro_export]
 macro_rules! AP_INIT_TAKE2 {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::TAKE2, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE2, $errmsg)
    }
 }
 
 #[macro_export]
 macro_rules! AP_INIT_TAKE12 {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::TAKE12, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE12, $errmsg)
    }
 }
 
 #[macro_export]
 macro_rules! AP_INIT_ITERATE2 {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::ITERATE2, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::ITERATE2, $errmsg)
    }
 }
 
 #[macro_export]
 macro_rules! AP_INIT_TAKE13 {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::TAKE13, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE13, $errmsg)
    }
 }
 
 #[macro_export]
 macro_rules! AP_INIT_TAKE23 {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::TAKE23, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE23, $errmsg)
    }
 }
 
 #[macro_export]
 macro_rules! AP_INIT_TAKE123 {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::TAKE123, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE123, $errmsg)
    }
 }
 
 #[macro_export]
 macro_rules! AP_INIT_TAKE3 {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::TAKE3, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE3, $errmsg)
    }
 }
 
 #[macro_export]
 macro_rules! AP_INIT_FLAG {
    ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, ffi::FLAG, $errmsg)
+      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::FLAG, $errmsg)
    }
 }
 
 #[macro_export]
-macro_rules! apache2_commands {
-   ($cmds_name:ident, $cmd_count:expr, $( $cmd:expr ),*) => {
+macro_rules! DECLARE_COMMAND_ARRAY {
+   ($cmds_name:ident, $cmd_count:expr, { $( $cmd:expr );* }) => {
       #[no_mangle]
-      pub static mut $cmds_name: [ffi::command_rec; $cmd_count] = [
-         $(
-            $cmd,
-         )*
+      pub static mut $cmds_name: [$crate::ffi::command_rec; $cmd_count] = [
+         $( $cmd, )*
          NULL_COMMAND_REC!()
       ];
    };
 
-   ($cmds_name:ident, $cmd1:expr) => {
-      apache2_commands!($cmds_name, 2, $cmd1);
+   ($cmds_name:ident, {}) => {
+      DECLARE_COMMAND_ARRAY!($cmds_name, 1, {});
    };
 
-   ($cmds_name:ident, $cmd1:expr, $cmd2:expr) => {
-      apache2_commands!($cmds_name, 3, $cmd1, $cmd2);
+   ($cmds_name:ident, { $cmd1:expr }) => {
+      DECLARE_COMMAND_ARRAY!($cmds_name, 2, { $cmd1 });
    };
 
-   ($cmds_name:ident, $cmd1:expr, $cmd2:expr, $cmd3:expr) => {
-      apache2_commands!($cmds_name, 9, $cmd1, $cmd2, $cmd3);
+   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr }) => {
+      DECLARE_COMMAND_ARRAY!($cmds_name, 3, { $cmd1; $cmd2 });
    };
 
-   ($cmds_name:ident, $cmd1:expr, $cmd2:expr, $cmd3:expr, $cmd4:expr) => {
-      apache2_commands!($cmds_name, 9, $cmd1, $cmd2, $cmd3, $cmd4);
+   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr; $cmd3:expr }) => {
+      DECLARE_COMMAND_ARRAY!($cmds_name, 4, { $cmd1; $cmd2; $cmd3 });
    };
 
-   ($cmds_name:ident, $cmd1:expr, $cmd2:expr, $cmd3:expr, $cmd4:expr, $cmd5:expr) => {
-      apache2_commands!($cmds_name, 9, $cmd1, $cmd2, $cmd3, $cmd4, $cmd5);
+   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr; $cmd3:expr; $cmd4:expr }) => {
+      DECLARE_COMMAND_ARRAY!($cmds_name, 5, { $cmd1; $cmd2; $cmd3; $cmd4 });
    };
 
-   ($cmds_name:ident, $cmd1:expr, $cmd2:expr, $cmd3:expr, $cmd4:expr, $cmd5:expr, $cmd6:expr) => {
-      apache2_commands!($cmds_name, 9, $cmd1, $cmd2, $cmd3, $cmd4, $cmd5, $cmd6);
+   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr; $cmd3:expr; $cmd4:expr; $cmd5:expr }) => {
+      DECLARE_COMMAND_ARRAY!($cmds_name, 6, { $cmd1; $cmd2; $cmd3; $cmd4; $cmd5 });
    };
 
-   ($cmds_name:ident, $cmd1:expr, $cmd2:expr, $cmd3:expr, $cmd4:expr, $cmd5:expr, $cmd6:expr, $cmd7:expr) => {
-      apache2_commands!($cmds_name, 9, $cmd1, $cmd2, $cmd3, $cmd4, $cmd5, $cmd6, $cmd7);
+   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr; $cmd3:expr; $cmd4:expr; $cmd5:expr; $cmd6:expr }) => {
+      DECLARE_COMMAND_ARRAY!($cmds_name, 7, { $cmd1; $cmd2; $cmd3; $cmd4; $cmd5; $cmd6 });
    };
 
-   ($cmds_name:ident, $cmd1:expr, $cmd2:expr, $cmd3:expr, $cmd4:expr, $cmd5:expr, $cmd6:expr, $cmd7:expr, $cmd8:expr) => {
-      apache2_commands!($cmds_name, 9, $cmd1, $cmd2, $cmd3, $cmd4, $cmd5, $cmd6, $cmd7, $cmd8);
+   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr; $cmd3:expr; $cmd4:expr; $cmd5:expr; $cmd6:expr; $cmd7:expr }) => {
+      DECLARE_COMMAND_ARRAY!($cmds_name, 8, { $cmd1; $cmd2; $cmd3; $cmd4; $cmd5; $cmd6; $cmd7 });
+   };
+
+   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr; $cmd3:expr; $cmd4:expr; $cmd5:expr; $cmd6:expr; $cmd7:expr; $cmd8:expr }) => {
+      DECLARE_COMMAND_ARRAY!($cmds_name, 9, { $cmd1; $cmd2; $cmd3; $cmd4; $cmd5; $cmd6; $cmd7; $cmd8 });
    };
 }

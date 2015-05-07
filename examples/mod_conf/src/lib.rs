@@ -1,3 +1,6 @@
+#![feature(plugin)]
+#![plugin(interpolate_idents)]
+
 extern crate libc;
 
 #[macro_use]
@@ -18,46 +21,15 @@ pub extern "C" fn cmd(parms: *mut ffi::cmd_parms, mconfig: *mut c_void, w: *cons
 }
 
 
-apache2_commands!(
-   EXAMPLE_DIRECTIVES,
-   AP_INIT_TAKE1!(b"SomeCmd\0", cmd, apache2::ffi::RSRC_CONF, b"Error message\0")
-);
-
-
-AP_DECLARE_MODULE!(
-   conf_module,
-   b"mod_conf\0",
-   None,
-   None,
-   None,
-   None,
-   &EXAMPLE_DIRECTIVES,
-   Some(c_module_hooks)
-);
-
-
-extern "C" fn c_module_hooks(_: *mut apache2::ffi::apr_pool_t) {
-   unsafe {
-      apache2::ffi::ap_hook_handler(
-         Some(c_conf_handler),
-         std::ptr::null(),
-         std::ptr::null(),
-         apache2::HookOrder::MIDDLE.into()
-      );
-   }
+#[allow(unused_variables)]
+pub extern "C" fn second_cmd(parms: *mut ffi::cmd_parms, mconfig: *mut c_void, w: *const c_char) -> *const c_char {
+   std::ptr::null()
 }
 
-
-#[no_mangle]
-pub extern "C" fn c_conf_handler(r: *mut apache2::ffi::request_rec) -> apache2::c_int {
-   match apache2::httpd::Request::from_raw_ptr(r) {
-      Err(_) => apache2::httpd::Status::DECLINED.into(),
-      Ok(mut request) => match conf_handler(&mut request) {
-         Ok(status) => status,
-         Err(_) => apache2::httpd::Status::HTTP_INTERNAL_SERVER_ERROR
-      }.into()
-   }
-}
+apache2_module!(conf, b"mod_conf\0", ap_hook_handler, apache2::HookOrder::MIDDLE, [
+   AP_INIT_TAKE1!(b"SomeCmd\0", cmd, apache2::ffi::RSRC_CONF, b"Error message\0");
+   AP_INIT_TAKE1!(b"SecondCmd\0", second_cmd, apache2::ffi::RSRC_CONF, b"Second error message\0")
+]);
 
 
 fn conf_handler(r: &mut Request) -> Result<Status, ()> {
