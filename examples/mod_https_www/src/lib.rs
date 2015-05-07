@@ -7,7 +7,9 @@ extern crate apache2;
 
 use apache2::{HookOrder, Request, Status};
 
-apache2_module!(https_www, b"mod_https_www\0", ap_hook_translate_name, HookOrder::MIDDLE);
+apache2_module!(https_www, b"mod_https_www\0", handlers {
+   https_www_handler, translate_name, HookOrder::MIDDLE
+});
 
 
 fn https_www_handler(r: &mut Request) -> Result<Status, ()> {

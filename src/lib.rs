@@ -20,14 +20,40 @@ pub use cookie::Cookie;
 #[macro_export]
 macro_rules! apache2_module {
    ($name:ident, $mod_name:expr) => {
-      apache2_module!($name, $mod_name, ap_hook_handler, $crate::HookOrder::MIDDLE);
+      interpolate_idents! {
+         apache2_module!(
+            $name,
+            $mod_name,
+            handlers {
+               [$name _handler], handler, $crate::HookOrder::MIDDLE
+            }
+         );
+      }
    };
 
-   ($name:ident, $mod_name:expr, $hook:ident, $order:expr) => {
-      apache2_module!($name, $mod_name, $hook, $order, []);
+   ($name:ident, $mod_name:expr, handlers { $handler:ident, $hook:ident, $order:expr }) => {
+      apache2_module!(
+         $name,
+         $mod_name,
+         handlers { $handler, $hook, $order },
+         commands {}
+      );
    };
 
-   ($name:ident, $mod_name:expr, $hook:ident, $order:expr, [ $( $cmd:expr );* ]) => {
+   ($name:ident, $mod_name:expr, commands { $( $cmd:expr );* }) => {
+      interpolate_idents! {
+         apache2_module!(
+            $name,
+            $mod_name,
+            handlers {
+               [$name _handler], handler, $crate::HookOrder::MIDDLE
+            },
+            commands { $( $cmd );* }
+         );
+      }
+   };
+
+   ($name:ident, $mod_name:expr, handlers { $handler:ident, $hook:ident, $order:expr }, commands { $( $cmd:expr );* }) => {
       interpolate_idents! {
          DECLARE_COMMAND_ARRAY!([$name _cmds], { $( $cmd );* });
 
@@ -44,7 +70,7 @@ macro_rules! apache2_module {
 
          extern "C" fn [$name _hooks](_: *mut $crate::ffi::apr_pool_t) {
             unsafe {
-               $crate::ffi::$hook(
+               $crate::ffi::[ap_hook_ $hook](
                   Some([c_ $name _handler]),
                   std::ptr::null(),
                   std::ptr::null(),
@@ -60,7 +86,7 @@ macro_rules! apache2_module {
          pub extern "C" fn [c_ $name _handler](r: *mut $crate::ffi::request_rec) -> $crate::c_int {
             match $crate::httpd::Request::from_raw_ptr(r) {
                Err(_) => $crate::httpd::Status::DECLINED.into(),
-               Ok(mut request) => match [$name _handler](&mut request) {
+               Ok(mut request) => match $handler(&mut request) {
                   Ok(status) => status,
                   Err(_) => $crate::httpd::Status::HTTP_INTERNAL_SERVER_ERROR
                }.into()

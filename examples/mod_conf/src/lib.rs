@@ -16,7 +16,7 @@ fn cmd_process(parms: &mut CmdParms) {
 
 
 #[allow(unused_variables)]
-pub extern "C" fn cmd(parms: *mut ffi::cmd_parms, mconfig: *mut c_void, w: *const c_char) -> *const c_char {
+pub extern "C" fn first_cmd(parms: *mut ffi::cmd_parms, mconfig: *mut c_void, w: *const c_char) -> *const c_char {
    std::ptr::null()
 }
 
@@ -26,10 +26,10 @@ pub extern "C" fn second_cmd(parms: *mut ffi::cmd_parms, mconfig: *mut c_void, w
    std::ptr::null()
 }
 
-apache2_module!(conf, b"mod_conf\0", ap_hook_handler, apache2::HookOrder::MIDDLE, [
-   AP_INIT_TAKE1!(b"SomeCmd\0", cmd, apache2::ffi::RSRC_CONF, b"Error message\0");
-   AP_INIT_TAKE1!(b"SecondCmd\0", second_cmd, apache2::ffi::RSRC_CONF, b"Second error message\0")
-]);
+apache2_module!(conf, b"mod_conf\0", commands {
+   AP_INIT_TAKE1!(b"FirstCmd\0", first_cmd, apache2::ffi::RSRC_CONF, b"First cmd error message\0");
+   AP_INIT_TAKE1!(b"SecondCmd\0", second_cmd, apache2::ffi::RSRC_CONF, b"Second cmd error message\0")
+});
 
 
 fn conf_handler(r: &mut Request) -> Result<Status, ()> {
