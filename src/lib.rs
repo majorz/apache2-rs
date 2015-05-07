@@ -18,40 +18,6 @@ pub use cookie::Cookie;
 
 
 #[macro_export]
-macro_rules! AP_DECLARE_MODULE {
-   (
-      $module:ident,
-      $mod_name:expr,
-      $create_dir_config:expr,
-      $merge_dir_config:expr,
-      $create_server_config:expr,
-      $merge_server_config:expr,
-      $cmds:expr,
-      $register_hooks:expr
-   ) => {
-      #[allow(unused_unsafe)]
-      #[no_mangle]
-      pub static mut $module: $crate::ffi::module = $crate::ffi::module {
-         version: $crate::ffi::MODULE_MAGIC_NUMBER_MAJOR,
-         minor_version: $crate::ffi::MODULE_MAGIC_NUMBER_MINOR,
-         module_index: -1,
-         name: $mod_name as *const u8 as *const $crate::c_char,
-         dynamic_load_handle: 0 as *mut $crate::c_void,
-         next: 0 as *mut $crate::ffi::module,
-         magic: $crate::ffi::MODULE_MAGIC_COOKIE,
-         rewrite_args: None,
-         create_dir_config: $create_dir_config,
-         merge_dir_config: $merge_dir_config,
-         create_server_config: $create_server_config,
-         merge_server_config: $merge_server_config,
-         cmds: unsafe { $cmds as *const $crate::ffi::command_rec },
-         register_hooks: $register_hooks
-      };
-   }
-}
-
-
-#[macro_export]
 macro_rules! apache2_module {
    ($name:ident, $mod_name:expr) => {
       apache2_module!($name, $mod_name, ap_hook_handler, $crate::HookOrder::MIDDLE);
@@ -65,7 +31,7 @@ macro_rules! apache2_module {
       interpolate_idents! {
          DECLARE_COMMAND_ARRAY!([$name _cmds], { $( $cmd );* });
 
-         AP_DECLARE_MODULE!(
+         DECLARE_MODULE!(
             [$name _module],
             $mod_name,
             None,
@@ -101,6 +67,40 @@ macro_rules! apache2_module {
             }
          }
       }
+   }
+}
+
+
+#[macro_export]
+macro_rules! DECLARE_MODULE {
+   (
+      $module:ident,
+      $mod_name:expr,
+      $create_dir_config:expr,
+      $merge_dir_config:expr,
+      $create_server_config:expr,
+      $merge_server_config:expr,
+      $cmds:expr,
+      $register_hooks:expr
+   ) => {
+      #[allow(unused_unsafe)]
+      #[no_mangle]
+      pub static mut $module: $crate::ffi::module = $crate::ffi::module {
+         version: $crate::ffi::MODULE_MAGIC_NUMBER_MAJOR,
+         minor_version: $crate::ffi::MODULE_MAGIC_NUMBER_MINOR,
+         module_index: -1,
+         name: $mod_name as *const u8 as *const $crate::c_char,
+         dynamic_load_handle: 0 as *mut $crate::c_void,
+         next: 0 as *mut $crate::ffi::module,
+         magic: $crate::ffi::MODULE_MAGIC_COOKIE,
+         rewrite_args: None,
+         create_dir_config: $create_dir_config,
+         merge_dir_config: $merge_dir_config,
+         create_server_config: $create_server_config,
+         merge_server_config: $merge_server_config,
+         cmds: unsafe { $cmds as *const $crate::ffi::command_rec },
+         register_hooks: $register_hooks
+      };
    }
 }
 
