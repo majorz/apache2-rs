@@ -1,5 +1,7 @@
 #![allow(non_camel_case_types)]
 
+use std::mem;
+
 use libc::{c_void, c_char, c_uchar, c_short, c_ushort, c_int, c_uint, c_long, c_ulong};
 
 
@@ -385,31 +387,31 @@ pub struct cmd_func {
 }
 impl cmd_func {
    pub unsafe fn no_args(&mut self) -> *mut Option<no_args_fn> {
-     ::std::mem::transmute(&self._bindgen_data_)
+      mem::transmute(&self._bindgen_data_)
    }
 
    pub unsafe fn raw_args(&mut self) -> *mut Option<raw_args_fn> {
-     ::std::mem::transmute(&self._bindgen_data_)
+      mem::transmute(&self._bindgen_data_)
    }
 
    pub unsafe fn take_argv(&mut self) -> *mut Option<take_argv_fn> {
-     ::std::mem::transmute(&self._bindgen_data_)
+      mem::transmute(&self._bindgen_data_)
    }
 
    pub unsafe fn take1(&mut self) -> *mut Option<take1_fn> {
-     ::std::mem::transmute(&self._bindgen_data_)
+      mem::transmute(&self._bindgen_data_)
    }
 
    pub unsafe fn take2(&mut self) -> *mut Option<take2_fn> {
-     ::std::mem::transmute(&self._bindgen_data_)
+      mem::transmute(&self._bindgen_data_)
    }
 
    pub unsafe fn take3(&mut self) -> *mut Option<take3_fn> {
-     ::std::mem::transmute(&self._bindgen_data_)
+      mem::transmute(&self._bindgen_data_)
    }
 
    pub unsafe fn flag(&mut self) -> *mut Option<flag_fn> {
-     ::std::mem::transmute(&self._bindgen_data_)
+      mem::transmute(&self._bindgen_data_)
    }
 }
 
