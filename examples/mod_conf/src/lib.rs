@@ -6,9 +6,24 @@ extern crate libc;
 #[macro_use]
 extern crate apache2;
 
+#[macro_use]
+extern crate lazy_static;
 
 use libc::{c_void, c_char};
 use apache2::{Request, Status, CmdParms, ffi};
+
+
+struct ExampleConfig {
+   pub first_cmd: Option<String>,
+   pub second_cmd: Option<String>
+}
+
+lazy_static! {
+   static ref EXAMPLE_CONFIG: ExampleConfig = ExampleConfig {
+      first_cmd: None,
+      second_cmd: None
+   };
+}
 
 
 fn cmd_process(parms: &mut CmdParms) {
