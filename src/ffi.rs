@@ -417,12 +417,12 @@ impl cmd_func {
 
 #[repr(C)]
 pub struct command_rec {
-    pub name: *const c_char,
-    pub func: cmd_func,
-    pub cmd_data: *mut c_void,
-    pub req_override: c_int,
-    pub args_how: cmd_how,
-    pub errmsg: *const c_char,
+   pub name: *const c_char,
+   pub func: cmd_func,
+   pub cmd_data: *mut c_void,
+   pub req_override: c_int,
+   pub args_how: cmd_how,
+   pub errmsg: *const c_char,
 }
 
 
