@@ -10,10 +10,7 @@ use apache2::{Request, Status, server_banner, server_description, server_built, 
 apache2_module!(info_rs, b"mod_info_rs\0");
 
 fn unwrap_str<'a>(option: Result<&'a str, ()>) -> &'a str {
-   match option {
-      Ok(val) => val,
-      Err(_) => "--"
-   }
+   option.unwrap_or("--")
 }
 
 fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
