@@ -36,11 +36,21 @@ macro_rules! apache2_module {
          $name,
          $mod_name,
          handlers { $handler, $hook, $order },
-         commands {}
+         commands {None, None, None, None, }
       );
    };
 
-   ($name:ident, $mod_name:expr, commands { $( $cmd:expr );* }) => {
+   (
+      $name:ident,
+      $mod_name:expr,
+      commands {
+         $create_dir_config:expr,
+         $merge_dir_config:expr,
+         $create_server_config:expr,
+         $merge_server_config:expr,
+         $($cmd:expr);*
+      }
+   ) => {
       interpolate_idents! {
          apache2_module!(
             $name,
@@ -48,22 +58,38 @@ macro_rules! apache2_module {
             handlers {
                [$name _handler], handler, $crate::HookOrder::MIDDLE
             },
-            commands { $( $cmd );* }
+            commands {
+               $create_dir_config,
+               $merge_dir_config,
+               $create_server_config,
+               $merge_server_config,
+               $($cmd);*
+            }
          );
       }
    };
 
-   ($name:ident, $mod_name:expr, handlers { $handler:ident, $hook:ident, $order:expr }, commands { $( $cmd:expr );* }) => {
+   (
+      $name:ident, $mod_name:expr,
+      handlers { $handler:ident, $hook:ident, $order:expr },
+      commands {
+         $create_dir_config:expr,
+         $merge_dir_config:expr,
+         $create_server_config:expr,
+         $merge_server_config:expr,
+         $($cmd:expr);*
+      }
+   ) => {
       interpolate_idents! {
-         DECLARE_COMMAND_ARRAY!([$name _cmds], { $( $cmd );* });
+         DECLARE_COMMAND_ARRAY!([$name _cmds], { $($cmd);* });
 
          DECLARE_MODULE!(
             [$name _module],
             $mod_name,
-            None,
-            None,
-            None,
-            None,
+            $create_dir_config,
+            $merge_dir_config,
+            $create_server_config,
+            $merge_server_config,
             &[$name _cmds],
             Some([$name _hooks])
          );
@@ -255,10 +281,10 @@ macro_rules! AP_INIT_FLAG {
 
 #[macro_export]
 macro_rules! DECLARE_COMMAND_ARRAY {
-   ($cmds_name:ident, $cmd_count:expr, { $( $cmd:expr );* }) => {
+   ($cmds_name:ident, $cmd_count:expr, { $($cmd:expr);* }) => {
       #[no_mangle]
       pub static mut $cmds_name: [$crate::ffi::command_rec; $cmd_count] = [
-         $( $cmd, )*
+         $($cmd),*,
          NULL_COMMAND_REC!()
       ];
    };
