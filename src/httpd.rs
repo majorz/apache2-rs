@@ -266,6 +266,10 @@ impl<'a> Request<'a> {
       Wrapper::from_raw_ptr(self.raw.connection)
    }
 
+   pub fn server(&self) -> Result<Server, ()> {
+      Wrapper::from_raw_ptr(self.raw.server)
+   }
+
    pub fn the_request(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.the_request)
    }
@@ -678,21 +682,19 @@ pub type Server<'a> = Wrapper<'a, ffi::server_rec>;
 
 
 impl<'a> Server<'a> {
+   pub fn module_config(&self) -> Result<ConfVector, ()> {
+      Wrapper::from_raw_ptr(self.raw.module_config)
+   }
 }
 
 
 pub type CmdParms<'a> = Wrapper<'a, ffi::cmd_parms>;
 
 
-impl<'a> CmdParms<'a> {
-}
-
-
 pub type Module<'a> = Wrapper<'a, ffi::module>;
 
 
-impl<'a> Module<'a> {
-}
+pub type ConfVector<'a> = Wrapper<'a, ffi::ap_conf_vector_t>;
 
 
 pub fn server_banner<'a>() -> Result<&'a str, ()> {
