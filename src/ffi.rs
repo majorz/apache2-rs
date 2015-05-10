@@ -91,6 +91,7 @@ extern "C" {
 
    pub fn apr_pstrmemdup(p: *mut apr_pool_t, s: *const c_char, n: apr_size_t) -> *mut c_char;
    pub fn apr_palloc(p: *mut apr_pool_t, size: apr_size_t) -> *mut c_void;
+   pub fn apr_pcalloc(p: *mut apr_pool_t, size: apr_size_t) -> *mut ::libc::c_void;
 
    pub fn apr_base64_encode_len(len: c_int) -> c_int;
    pub fn apr_base64_encode(coded_dst: *mut c_char, plain_src: *const c_char, len_plain_src: c_int) -> c_int;
