@@ -11,15 +11,42 @@ extern crate lazy_static;
 
 use std::mem;
 use libc::{c_void, c_char};
-use apache2::{Request, Status, ffi};
-use apache2::wrapper::from_char_ptr;
+use apache2::{Request, Status, Server, ffi};
+use apache2::wrapper::{Wrapper, from_char_ptr};
 
 
 #[repr(C)]
-pub struct example_config {
+struct example_config {
    pub first_cmd: *const c_char,
    pub second_cmd: *const c_char
 }
+
+
+type ExampleConfig<'a> = Wrapper<'a, example_config>;
+
+
+macro_rules! config_struct {
+   ($name:ident { $( $fieldname:ident: $ctype:ty ),* }) => {
+      #[repr(C)]
+      interpolate_idents! {
+         struct [$name C] {
+            $(
+               pub $fieldname: $ctype,
+            )*
+         }
+
+         type $name<'a> = apache2::wrapper::Wrapper<'a, [$name C]>;
+      }
+   }
+}
+
+
+config_struct!(
+   NewConfig {
+      first_cmd: *const c_char,
+      second_cmd: *const c_char
+   }
+);
 
 
 #[allow(unused_variables)]
@@ -43,7 +70,7 @@ pub extern "C" fn second_cmd(parms: *mut ffi::cmd_parms, p: *mut c_void, w: *con
 
 
 #[allow(unused_variables)]
-pub extern "C" fn create_server_config(p: *mut ffi::apr_pool_t, s: *mut ffi::server_rec) -> *mut c_void {
+pub extern "C" fn c_create_server_config(p: *mut ffi::apr_pool_t, s: *mut ffi::server_rec) -> *mut c_void {
    let config: *mut example_config = unsafe {
       ffi::apr_pcalloc(p, mem::size_of::<example_config>() as ffi::apr_size_t) as *mut example_config
    };
@@ -52,10 +79,14 @@ pub extern "C" fn create_server_config(p: *mut ffi::apr_pool_t, s: *mut ffi::ser
 }
 
 
+//fn create_server_config(pool: &mut Pool, _: &Server) -> example_config {
+
+//}
+
 apache2_module!(conf, b"mod_conf\0", commands {
    None,
    None,
-   Some(create_server_config),
+   Some(c_create_server_config),
    None,
    AP_INIT_TAKE1!(b"FirstCmd\0", first_cmd, apache2::ffi::RSRC_CONF, b"First cmd description\0");
    AP_INIT_TAKE1!(b"SecondCmd\0", second_cmd, apache2::ffi::RSRC_CONF, b"Second cmd description\0")
