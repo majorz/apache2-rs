@@ -15,16 +15,6 @@ use apache2::{Request, Status, Server, ffi};
 use apache2::wrapper::{Wrapper, from_char_ptr};
 
 
-#[repr(C)]
-struct example_config {
-   pub first_cmd: *const c_char,
-   pub second_cmd: *const c_char
-}
-
-
-type ExampleConfig<'a> = Wrapper<'a, example_config>;
-
-
 macro_rules! config_struct {
    ($name:ident { $( $fieldname:ident: $ctype:ty ),* }) => {
       #[repr(C)]
@@ -42,7 +32,7 @@ macro_rules! config_struct {
 
 
 config_struct!(
-   NewConfig {
+   ExampleConfig {
       first_cmd: *const c_char,
       second_cmd: *const c_char
    }
@@ -51,7 +41,7 @@ config_struct!(
 
 #[allow(unused_variables)]
 pub extern "C" fn first_cmd(parms: *mut ffi::cmd_parms, p: *mut c_void, w: *const c_char) -> *const c_char {
-   let config = unsafe { ffi::ap_get_module_config((*(*parms).server).module_config, &conf_module) as *mut example_config };
+   let config = unsafe { ffi::ap_get_module_config((*(*parms).server).module_config, &conf_module) as *mut ExampleConfigC };
 
    unsafe { (*config).first_cmd = w };
 
@@ -61,7 +51,7 @@ pub extern "C" fn first_cmd(parms: *mut ffi::cmd_parms, p: *mut c_void, w: *cons
 
 #[allow(unused_variables)]
 pub extern "C" fn second_cmd(parms: *mut ffi::cmd_parms, p: *mut c_void, w: *const c_char) -> *const c_char {
-   let config = unsafe { ffi::ap_get_module_config((*(*parms).server).module_config, &conf_module) as *mut example_config };
+   let config = unsafe { ffi::ap_get_module_config((*(*parms).server).module_config, &conf_module) as *mut ExampleConfigC };
 
    unsafe { (*config).second_cmd = w };
 
@@ -71,15 +61,15 @@ pub extern "C" fn second_cmd(parms: *mut ffi::cmd_parms, p: *mut c_void, w: *con
 
 #[allow(unused_variables)]
 pub extern "C" fn c_create_server_config(p: *mut ffi::apr_pool_t, s: *mut ffi::server_rec) -> *mut c_void {
-   let config: *mut example_config = unsafe {
-      ffi::apr_pcalloc(p, mem::size_of::<example_config>() as ffi::apr_size_t) as *mut example_config
+   let config: *mut ExampleConfigC = unsafe {
+      ffi::apr_pcalloc(p, mem::size_of::<ExampleConfigC>() as ffi::apr_size_t) as *mut ExampleConfigC
    };
 
    config as *mut c_void
 }
 
 
-//fn create_server_config(pool: &mut Pool, _: &Server) -> example_config {
+//fn create_server_config(pool: &mut Pool, _: &Server) -> ExampleConfigC {
 
 //}
 
@@ -102,7 +92,7 @@ fn conf_handler(r: &mut Request) -> Result<Status, ()> {
    }
 
 
-   let config = unsafe { ffi::ap_get_module_config(try!(try!(r.server()).module_config()).raw, &conf_module) as *mut example_config };
+   let config = unsafe { ffi::ap_get_module_config(try!(try!(r.server()).module_config()).raw, &conf_module) as *mut ExampleConfigC };
 
    r.set_content_type("text/plain; charset=utf-8");
 
