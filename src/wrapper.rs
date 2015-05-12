@@ -23,7 +23,7 @@ impl<'a, T> Wrapper<'a, T> {
 
 }
 
-trait CType {
+pub trait CType {
    type c_type;
 }
 

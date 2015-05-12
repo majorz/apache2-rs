@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 #![feature(plugin)]
 #![plugin(interpolate_idents)]
 
@@ -12,7 +15,8 @@ extern crate lazy_static;
 use std::mem;
 use libc::{c_void, c_char};
 use apache2::{Request, Status, Server, ffi};
-use apache2::wrapper::{Wrapper, from_char_ptr};
+use apache2::wrapper::{Wrapper, CType, from_char_ptr};
+use apache2::apr::Pool;
 
 
 
@@ -33,30 +37,34 @@ macro_rules! config_struct {
          );
       }
 
-      interpolate_idents! {
-         struct $name<'a> {
-            pub raw: &'a mut [C $name],
-            pub pool: *mut ffi::apr_pool_t
+      struct $name<'a> {
+         pub raw: &'a mut <$name<'a> as CType>::c_type,
+         pub pool: *mut ffi::apr_pool_t
+      }
+
+      impl<'a> $name<'a> {
+         pub fn from_raw_ptr(ptr: *mut <$name<'a> as CType>::c_type, pool: *mut ffi::apr_pool_t) -> Result<Self, ()> {
+            if ptr.is_null() {
+               Err(())
+            } else {
+               let raw: &mut <$name<'a> as CType>::c_type = unsafe { &mut *ptr };
+               Ok(
+                  $name {
+                     raw: raw,
+                     pool: pool
+                  }
+               )
+            }
          }
 
-         impl<'a> $name<'a> {
-            pub fn from_raw_ptr(ptr: *mut [C $name], pool: *mut ffi::apr_pool_t) -> Result<Self, ()> {
-               if ptr.is_null() {
-                  Err(())
-               } else {
-                  let raw: &mut [C $name] = unsafe { &mut *ptr };
-                  Ok(
-                     $name {
-                        raw: raw,
-                        pool: pool
-                     }
-                  )
-               }
-            }
+         $(
+            config_wrapper_method!($field_name, $field_type);
+         )*
+      }
 
-            $(
-               config_wrapper_method!($field_name, $field_type);
-            )*
+      interpolate_idents! {
+         impl<'a> CType for $name<'a> {
+            type c_type = [C $name];
          }
       }
    }
@@ -86,14 +94,6 @@ macro_rules! config_wrapper_method {
       }
    }
 }
-
-config_struct!(
-   ExampleConfig {
-      first_cmd: StringType,
-      second_cmd: StringType
-   }
-);
-
 
 #[allow(unused_variables)]
 pub extern "C" fn first_cmd(parms: *mut ffi::cmd_parms, p: *mut c_void, w: *const c_char) -> *const c_char {
@@ -129,9 +129,17 @@ pub extern "C" fn c_create_server_config(p: *mut ffi::apr_pool_t, s: *mut ffi::s
 }
 
 
-//fn create_server_config(pool: &mut Pool, _: &Server) -> CExampleConfig {
+//fn create_server_config(pool: &mut Pool, server: &Server) -> ExampleConfig {
 
 //}
+
+config_struct!(
+   ExampleConfig {
+      first_cmd: StringType,
+      second_cmd: StringType
+   }
+);
+
 
 apache2_module!(conf, b"mod_conf\0", commands {
    None,
