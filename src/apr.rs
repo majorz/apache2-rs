@@ -98,6 +98,8 @@ impl<'a> AprTable<'a> {
    }
 }
 
+pub type Pool<'a> = Wrapper<'a, ffi::apr_pool_t>;
+
 pub struct AprTableIter<'a> {
    array_header: &'a ffi::apr_array_header_t,
    next_idx: usize,
