@@ -15,35 +15,93 @@ use apache2::{Request, Status, Server, ffi};
 use apache2::wrapper::{Wrapper, from_char_ptr};
 
 
+
+type CStringType = *const c_char;
+type StringType<'a> = &'a str;
+
+
 macro_rules! config_struct {
-   ($name:ident { $( $fieldname:ident: $ctype:ty ),* }) => {
+   ($name:ident { $( $field_name:ident: $field_type:ident ),* }) => {
       #[repr(C)]
       interpolate_idents! {
-         struct [$name C] {
-            $(
-               pub $fieldname: $ctype,
-            )*
+         config_define_c_struct!(
+            [C $name] {
+               $(
+                  $field_name: [C $field_type]
+               ),*
+            }
+         );
+      }
+
+      interpolate_idents! {
+         struct $name<'a> {
+            pub raw: &'a mut [C $name],
+            pub pool: *mut ffi::apr_pool_t
          }
 
-         type $name<'a> = apache2::wrapper::Wrapper<'a, [$name C]>;
+         impl<'a> $name<'a> {
+            pub fn from_raw_ptr(ptr: *mut [C $name], pool: *mut ffi::apr_pool_t) -> Result<Self, ()> {
+               if ptr.is_null() {
+                  Err(())
+               } else {
+                  let raw: &mut [C $name] = unsafe { &mut *ptr };
+                  Ok(
+                     $name {
+                        raw: raw,
+                        pool: pool
+                     }
+                  )
+               }
+            }
+
+            $(
+               config_wrapper_method!($field_name, $field_type);
+            )*
+         }
       }
    }
 }
 
+macro_rules! config_define_c_struct {
+   ($c_name:ident { $( $field_name:ident: $field_type:ident ),* } ) => {
+      #[repr(C)]
+      struct $c_name {
+         $(
+            pub $field_name: $field_type,
+         )*
+      }
+   }
+}
+
+macro_rules! config_wrapper_method {
+   ($field_name:ident, StringType) => {
+      pub fn $field_name(&self) -> Result<StringType, ()> {
+         from_char_ptr(self.raw.$field_name)
+      }
+
+      interpolate_idents! {
+         pub fn [set_ $field_name](&mut self, value: StringType) {
+            self.raw.$field_name = ffi::strdup(self.pool, value);
+         }
+      }
+   }
+}
 
 config_struct!(
    ExampleConfig {
-      first_cmd: *const c_char,
-      second_cmd: *const c_char
+      first_cmd: StringType,
+      second_cmd: StringType
    }
 );
 
 
 #[allow(unused_variables)]
 pub extern "C" fn first_cmd(parms: *mut ffi::cmd_parms, p: *mut c_void, w: *const c_char) -> *const c_char {
-   let config = unsafe { ffi::ap_get_module_config((*(*parms).server).module_config, &conf_module) as *mut ExampleConfigC };
+   let config = unsafe { ffi::ap_get_module_config((*(*parms).server).module_config, &conf_module) as *mut CExampleConfig };
 
-   unsafe { (*config).first_cmd = w };
+   let mut example_config = ExampleConfig::from_raw_ptr(config, unsafe { (*parms).pool }).unwrap();
+
+   example_config.set_first_cmd(from_char_ptr(w).unwrap());
 
    std::ptr::null()
 }
@@ -51,9 +109,11 @@ pub extern "C" fn first_cmd(parms: *mut ffi::cmd_parms, p: *mut c_void, w: *cons
 
 #[allow(unused_variables)]
 pub extern "C" fn second_cmd(parms: *mut ffi::cmd_parms, p: *mut c_void, w: *const c_char) -> *const c_char {
-   let config = unsafe { ffi::ap_get_module_config((*(*parms).server).module_config, &conf_module) as *mut ExampleConfigC };
+   let config = unsafe { ffi::ap_get_module_config((*(*parms).server).module_config, &conf_module) as *mut CExampleConfig };
 
-   unsafe { (*config).second_cmd = w };
+   let mut example_config = ExampleConfig::from_raw_ptr(config, unsafe { (*parms).pool }).unwrap();
+
+   example_config.set_second_cmd(from_char_ptr(w).unwrap());
 
    std::ptr::null()
 }
@@ -61,15 +121,15 @@ pub extern "C" fn second_cmd(parms: *mut ffi::cmd_parms, p: *mut c_void, w: *con
 
 #[allow(unused_variables)]
 pub extern "C" fn c_create_server_config(p: *mut ffi::apr_pool_t, s: *mut ffi::server_rec) -> *mut c_void {
-   let config: *mut ExampleConfigC = unsafe {
-      ffi::apr_pcalloc(p, mem::size_of::<ExampleConfigC>() as ffi::apr_size_t) as *mut ExampleConfigC
+   let config = unsafe {
+      ffi::apr_pcalloc(p, mem::size_of::<CExampleConfig>() as ffi::apr_size_t) as *mut CExampleConfig
    };
 
    config as *mut c_void
 }
 
 
-//fn create_server_config(pool: &mut Pool, _: &Server) -> ExampleConfigC {
+//fn create_server_config(pool: &mut Pool, _: &Server) -> CExampleConfig {
 
 //}
 
@@ -92,7 +152,7 @@ fn conf_handler(r: &mut Request) -> Result<Status, ()> {
    }
 
 
-   let config = unsafe { ffi::ap_get_module_config(try!(try!(r.server()).module_config()).raw, &conf_module) as *mut ExampleConfigC };
+   let config = unsafe { ffi::ap_get_module_config(try!(try!(r.server()).module_config()).raw, &conf_module) as *mut CExampleConfig };
 
    r.set_content_type("text/plain; charset=utf-8");
 
