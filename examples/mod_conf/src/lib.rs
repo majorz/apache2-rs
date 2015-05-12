@@ -43,6 +43,17 @@ macro_rules! config_struct {
       }
 
       impl<'a> $name<'a> {
+         pub fn new(pool: &mut Pool) -> Result<Self, ()> {
+            let c_config = unsafe {
+               ffi::apr_pcalloc(
+                  pool.raw,
+                  mem::size_of::<<$name<'a> as CType>::c_type>() as ffi::apr_size_t
+               ) as *mut <$name<'a> as CType>::c_type
+            };
+
+            $name::from_raw_ptr(c_config, pool.raw)
+         }
+
          pub fn from_raw_ptr(ptr: *mut <$name<'a> as CType>::c_type, pool: *mut ffi::apr_pool_t) -> Result<Self, ()> {
             if ptr.is_null() {
                Err(())
@@ -121,17 +132,16 @@ pub extern "C" fn second_cmd(parms: *mut ffi::cmd_parms, p: *mut c_void, w: *con
 
 #[allow(unused_variables)]
 pub extern "C" fn c_create_server_config(p: *mut ffi::apr_pool_t, s: *mut ffi::server_rec) -> *mut c_void {
-   let config = unsafe {
-      ffi::apr_pcalloc(p, mem::size_of::<CExampleConfig>() as ffi::apr_size_t) as *mut CExampleConfig
-   };
+   let mut pool = Pool::from_raw_ptr(p).unwrap();
+   let config = create_server_config(&mut pool);
 
-   config as *mut c_void
+   config.raw as *mut CExampleConfig as *mut c_void
 }
 
 
-//fn create_server_config(pool: &mut Pool, server: &Server) -> ExampleConfig {
-
-//}
+fn create_server_config<'a>(pool: &mut Pool) -> ExampleConfig<'a> {
+   ExampleConfig::new(pool).unwrap()
+}
 
 config_struct!(
    ExampleConfig {
