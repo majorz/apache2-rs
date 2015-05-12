@@ -23,6 +23,14 @@ impl<'a, T> Wrapper<'a, T> {
 
 }
 
+trait CType {
+   type c_type;
+}
+
+impl<'a, T> CType for Wrapper<'a, T> {
+   type c_type = T;
+}
+
 #[inline]
 pub fn from_char_ptr<'a>(ptr: *const c_char) -> Result<&'a str, ()> {
    if ptr.is_null() {
