@@ -18,7 +18,7 @@ pub use apr::{apr_version_string, apu_version_string, HookOrder, Pool, time_now}
 
 pub use cookie::Cookie;
 
-pub use wrapper::CType;
+pub use wrapper::{CType, from_char_ptr};
 
 pub use ffi::{OR_NONE, OR_LIMIT, OR_OPTIONS, OR_FILEINFO, OR_AUTHCFG, OR_INDEXES, OR_UNSET,
    ACCESS_CONF, RSRC_CONF, EXEC_ON_READ, NONFATAL_OVERRIDE, NONFATAL_UNKNOWN, NONFATAL_ALL, OR_ALL,
@@ -488,7 +488,7 @@ macro_rules! _declare_config_struct_impl {
 macro_rules! _declare_config_wrapper_method {
    ($field_name:ident, StringType) => {
       pub fn $field_name(&self) -> Result<StringType, ()> {
-         from_char_ptr(self.raw.$field_name)
+         $crate::from_char_ptr(self.raw.$field_name)
       }
 
       interpolate_idents! {
@@ -677,6 +677,23 @@ macro_rules! _declare_directive_c_wrapper {
             let mut wrapper = CmdParms::from_raw_ptr(parms).unwrap();
 
             $func(&mut wrapper, on != 0).unwrap();
+
+            std::ptr::null()
+         }
+      }
+   };
+
+   (TAKE1, $func:ident) => {
+      #[no_mangle]
+      interpolate_idents! {
+         extern "C" fn [c_ $func](
+            parms: *mut $crate::ffi::cmd_parms,
+            _: *mut $crate::c_void,
+            w: *const $crate::c_char
+         ) -> *const $crate::c_char {
+            let mut wrapper = CmdParms::from_raw_ptr(parms).unwrap();
+
+            $func(&mut wrapper, $crate::from_char_ptr(w).unwrap()).unwrap();
 
             std::ptr::null()
          }
