@@ -12,22 +12,29 @@ use apache2::{Request, Status, Pool, CmdParms, BoolType, StringType, RSRC_CONF};
 new_module!(
    conf, b"mod_conf\0",
    config {
+      directory {
+         DirectoryConfig {
+            dir_var: StringType
+         },
+         create_directory_config
+      },
       server {
-         ExampleConfig {
+         ServerConfig {
             enabled: BoolType,
             string_var: StringType
          },
-         create_example_server_config
+         create_server_config
       }, [
          (FLAG, b"EnabledVar\0", enabled_var, RSRC_CONF, b"Example flag\0"),
-         (TAKE1, b"StringVar\0", string_var, RSRC_CONF, b"Example string string directive\0")
+         (TAKE1, b"StringVar\0", string_var, RSRC_CONF, b"Example string directive\0"),
+         (TAKE1, b"DirVar\0", dir_var, RSRC_CONF, b"Directory string directive\0")
       ]
    }
 );
 
 
-fn create_example_server_config<'a>(pool: &mut Pool) -> ExampleConfig<'a> {
-   let mut config = ExampleConfig::new(pool).unwrap();
+fn create_server_config<'a>(pool: &mut Pool) -> ServerConfig<'a> {
+   let mut config = ServerConfig::new(pool).unwrap();
 
    config.set_enabled(false);
 
@@ -35,8 +42,13 @@ fn create_example_server_config<'a>(pool: &mut Pool) -> ExampleConfig<'a> {
 }
 
 
-fn enabled_var(parms: &mut CmdParms, on: bool) -> Result<(), ()> {
-   let mut config = get_module_config(
+fn create_directory_config<'a>(pool: &mut Pool, _: &'a str) -> DirectoryConfig<'a> {
+   DirectoryConfig::new(pool).unwrap()
+}
+
+
+fn enabled_var(parms: &mut CmdParms, _: Option<DirectoryConfig>, on: bool) -> Result<(), ()> {
+   let mut config = get_server_config(
       &mut try!(parms.pool()),
       &try!(try!(parms.server()).module_config())
    );
@@ -47,8 +59,8 @@ fn enabled_var(parms: &mut CmdParms, on: bool) -> Result<(), ()> {
 }
 
 
-fn string_var<'a>(parms: &mut CmdParms, w: &'a str) -> Result<(), ()> {
-   let mut config = get_module_config(
+fn string_var<'a>(parms: &mut CmdParms, _: Option<DirectoryConfig>, w: &'a str) -> Result<(), ()> {
+   let mut config = get_server_config(
       &mut try!(parms.pool()),
       &try!(try!(parms.server()).module_config())
    );
@@ -59,12 +71,21 @@ fn string_var<'a>(parms: &mut CmdParms, w: &'a str) -> Result<(), ()> {
 }
 
 
+fn dir_var<'a>(_: &mut CmdParms, mconfig: Option<DirectoryConfig>, w: &'a str) -> Result<(), ()> {
+   let mut config = mconfig.unwrap();
+
+   config.set_dir_var(w);
+
+   Ok(())
+}
+
+
 fn conf_handler(r: &mut Request) -> Result<Status, ()> {
    if try!(r.handler()) != "conf" {
       return Ok(Status::DECLINED)
    }
 
-   let config = get_module_config(
+   let config = get_server_config(
       &mut try!(r.pool()),
       &try!(try!(r.server()).module_config())
    );

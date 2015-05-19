@@ -356,7 +356,7 @@ macro_rules! new_module {
          DECLARE_MODULE!(
             [$name _module],
             $mod_name,
-            None,
+            _extract_dir_config_name!($config),
             None,
             _extract_server_config_name!($config),
             None,
@@ -399,6 +399,16 @@ macro_rules! new_module {
 macro_rules! _declare_config_struct {
    ($name:ident, { server $server:tt, $directives:tt }) => {
       _declare_config_struct_from_server!($name, $server);
+   };
+
+   ($name:ident, { directory $directory:tt, server $server:tt, $directives:tt }) => {
+      _declare_config_struct_from_server!($name, $server);
+
+      _declare_config_struct_from_directory!($name, $directory);
+   };
+
+   ($name:ident, { directory $directory:tt, $directives:tt }) => {
+      _declare_config_struct_from_directory!($name, $directory);
    }
 }
 
@@ -407,6 +417,18 @@ macro_rules! _declare_config_struct {
 macro_rules! _declare_config_struct_from_server {
    ($name:ident, { $config_struct:ident $fields:tt, $create_server_config:ident }) => {
       _declare_config_struct_impl!($name, $config_struct $fields);
+
+      _declare_get_module_config!($name, $config_struct, get_server_config);
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_config_struct_from_directory {
+   ($name:ident, { $config_struct:ident $fields:tt, $create_dir_config:ident }) => {
+      _declare_config_struct_impl!($name, $config_struct $fields);
+
+      _declare_get_module_config!($name, $config_struct, get_directory_config);
    }
 }
 
@@ -467,9 +489,15 @@ macro_rules! _declare_config_struct_impl {
             type c_type = [C $struct_name];
          }
       }
+   }
+}
 
+
+#[macro_export]
+macro_rules! _declare_get_module_config {
+   ($name:ident, $struct_name:ident, $get_config_fn:ident) => {
       interpolate_idents! {
-         pub fn get_module_config<'a>(
+         pub fn $get_config_fn<'a>(
             pool: &mut $crate::Pool,
             conf_vector: &$crate::ConfVector
          ) -> $struct_name<'a> {
@@ -518,9 +546,25 @@ macro_rules! _declare_config_wrapper_method {
 #[macro_export]
 macro_rules! _declare_directives {
    ($directives_name:ident, { server $server:tt, $directives:tt }) => {
+      _declare_directives_impl!($directives_name, $directives, {});
+   };
+
+   ($directives_name:ident, { directory $directory:tt, server $server:tt, $directives:tt }) => {
+      _declare_directives_impl!($directives_name, $directives, $directory);
+   };
+
+   ($directives_name:ident, { directory $directory:tt, $directives:tt }) => {
+      _declare_directives_impl!($directives_name, $directives, $directory);
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_directives_impl {
+   ($directives_name:ident, $directives:tt, $directory:tt) => {
       _declare_directive_array!($directives_name, $directives);
 
-      _declare_directive_wrappers!($directives);
+      _declare_directive_wrappers!($directives, $directory);
    }
 }
 
@@ -529,6 +573,14 @@ macro_rules! _declare_directives {
 macro_rules! _extract_server_config_name {
    ({ server $server:tt, $directives:tt }) => {
       _extract_server_config_name_from_server!($server)
+   };
+
+   ({ directory $directory:tt, server $server:tt, $directives:tt }) => {
+      _extract_server_config_name_from_server!($server)
+   };
+
+   ({ directory $directory:tt, $directives:tt }) => {
+      None
    }
 }
 
@@ -544,9 +596,45 @@ macro_rules! _extract_server_config_name_from_server {
 
 
 #[macro_export]
+macro_rules! _extract_dir_config_name {
+   ({ server $server:tt, $directives:tt }) => {
+      None
+   };
+
+   ({ directory $directory:tt, server $server:tt, $directives:tt }) => {
+      _extract_dir_config_name_from_directory!($directory)
+   };
+
+   ({ directory $directory:tt, $directives:tt }) => {
+      _extract_dir_config_name_from_directory!($directory)
+   }
+}
+
+
+#[macro_export]
+macro_rules! _extract_dir_config_name_from_directory {
+   ({ $config_struct:ident $fields:tt, $create_dir_config:ident }) => {
+      interpolate_idents! {
+         Some([c_ $create_dir_config])
+      }
+   }
+}
+
+
+#[macro_export]
 macro_rules! _declare_create_server_config {
    ($name:ident, { server $server:tt, $directives:tt }) => {
       _declare_create_server_config_from_server!($name, $server);
+   };
+
+   ($name:ident, { directory $directory:tt, server $server:tt, $directives:tt }) => {
+      _declare_create_server_config_from_server!($name, $server);
+
+      _declare_create_dir_config_from_directory!($name, $directory);
+   };
+
+   ($name:ident, { directory $directory:tt, $directives:tt }) => {
+      _declare_create_dir_config_from_directory!($name, $directory);
    }
 }
 
@@ -571,6 +659,35 @@ macro_rules! _declare_create_server_config_impl {
             let mut pool = Pool::from_raw_ptr(p).unwrap();
 
             let config = $create_server_config(&mut pool);
+
+            config.raw as *mut [C $config_struct] as *mut $crate::c_void
+         }
+      }
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_create_dir_config_from_directory {
+   ($name:ident, { $config_struct:ident $fields:tt, $create_dir_config:ident }) => {
+      _declare_create_dir_config_impl!($name, $config_struct, $create_dir_config);
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_create_dir_config_impl {
+   ($name:ident, $config_struct:ident, $create_dir_config:ident) => {
+      #[no_mangle]
+      interpolate_idents! {
+         extern "C" fn [c_ $create_dir_config](
+            p: *mut $crate::ffi::apr_pool_t,
+            dir: *mut $crate::c_char
+         ) -> *mut $crate::c_void {
+            let mut pool = Pool::from_raw_ptr(p).unwrap();
+            let directory = $crate::from_char_ptr(dir).unwrap();
+
+            let config = $create_dir_config(&mut pool, &directory);
 
             config.raw as *mut [C $config_struct] as *mut $crate::c_void
          }
@@ -656,9 +773,9 @@ macro_rules! _declare_c_command_rec {
 
 #[macro_export]
 macro_rules! _declare_directive_wrappers {
-   ([ $(( $args_how:ident, $name:expr, $func:ident, $req_override:expr, $errmsg:expr )),* ]) => {
+   ([ $(( $args_how:ident, $name:expr, $func:ident, $req_override:expr, $errmsg:expr )),* ], $directory:tt) => {
       $(
-         _declare_directive_c_wrapper!($args_how, $func);
+         _declare_directive_c_wrapper!($args_how, $func, $directory);
       )*
    }
 }
@@ -666,37 +783,53 @@ macro_rules! _declare_directive_wrappers {
 
 #[macro_export]
 macro_rules! _declare_directive_c_wrapper {
-   (FLAG, $func:ident) => {
+   (FLAG, $func:ident, $directory:tt) => {
       #[no_mangle]
       interpolate_idents! {
          extern "C" fn [c_ $func](
             parms: *mut $crate::ffi::cmd_parms,
-            _: *mut $crate::c_void,
+            mconfig: *mut $crate::c_void,
             on: $crate::c_int
          ) -> *const $crate::c_char {
             let mut wrapper = CmdParms::from_raw_ptr(parms).unwrap();
+            let mut pool = Pool::from_raw_ptr(unsafe { (*parms).pool }).unwrap();
 
-            $func(&mut wrapper, on != 0).unwrap();
+            _call_config_wrapper!($func, &mut wrapper, &mut pool, mconfig, on != 0, $directory).unwrap();
 
             std::ptr::null()
          }
       }
    };
 
-   (TAKE1, $func:ident) => {
+   (TAKE1, $func:ident, $directory:tt) => {
       #[no_mangle]
       interpolate_idents! {
          extern "C" fn [c_ $func](
             parms: *mut $crate::ffi::cmd_parms,
-            _: *mut $crate::c_void,
+            mconfig: *mut $crate::c_void,
             w: *const $crate::c_char
          ) -> *const $crate::c_char {
             let mut wrapper = CmdParms::from_raw_ptr(parms).unwrap();
+            let mut pool = Pool::from_raw_ptr(unsafe { (*parms).pool }).unwrap();
 
-            $func(&mut wrapper, $crate::from_char_ptr(w).unwrap()).unwrap();
+            _call_config_wrapper!($func, &mut wrapper, &mut pool, mconfig, $crate::from_char_ptr(w).unwrap(), $directory).unwrap();
 
             std::ptr::null()
          }
+      }
+   }
+}
+
+
+#[macro_export]
+macro_rules! _call_config_wrapper {
+   ($func:ident, $parms:expr, $pool:expr, $mconfig:expr, $arg1:expr, {}) => {
+      $func($parms, $arg1)
+   };
+
+   ($func:ident, $parms:expr, $pool:expr, $mconfig:expr, $arg1:expr, { $config_struct:ident $fields:tt, $create_dir_config:ident }) => {
+      interpolate_idents! {
+         $func($parms, $config_struct::from_raw_ptr($pool, $mconfig as *mut [C $config_struct]).ok(), $arg1)
       }
    }
 }
