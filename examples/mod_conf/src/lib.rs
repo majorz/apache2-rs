@@ -10,7 +10,7 @@ use apache2::{Request, Status, Pool, CmdParms, BoolType, StringType, RSRC_CONF};
 
 
 new_module!(
-   conf_new, b"mod_conf_new\0",
+   conf, b"mod_conf\0",
    config {
       server {
          ExampleConfig {
@@ -59,7 +59,7 @@ fn string_var<'a>(parms: &mut CmdParms, w: &'a str) -> Result<(), ()> {
 }
 
 
-fn conf_new_handler(r: &mut Request) -> Result<Status, ()> {
+fn conf_handler(r: &mut Request) -> Result<Status, ()> {
    if try!(r.handler()) != "conf" {
       return Ok(Status::DECLINED)
    }
