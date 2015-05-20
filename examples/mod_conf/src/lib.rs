@@ -14,7 +14,7 @@ new_module!(
          DirectoryConfig {
             dir_var: StringType
          },
-         create_directory_config
+         create_dir_config
       },
       server {
          ServerConfig {
@@ -40,7 +40,7 @@ fn create_server_config<'a>(pool: &mut Pool) -> ServerConfig<'a> {
 }
 
 
-fn create_directory_config<'a>(pool: &mut Pool, _: Option<&'a str>) -> DirectoryConfig<'a> {
+fn create_dir_config<'a>(pool: &mut Pool, _: Option<&'a str>) -> DirectoryConfig<'a> {
    DirectoryConfig::new(pool).unwrap()
 }
 
