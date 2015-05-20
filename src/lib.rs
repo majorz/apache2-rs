@@ -347,18 +347,18 @@ pub type CBoolType = c_int;
 macro_rules! new_module {
    ($name:ident, $mod_name:expr, config $config:tt) => {
       interpolate_idents! {
-         _declare_config_struct!($name, $config);
-
          _declare_directives!([$name _directives], $config);
 
-         _declare_create_server_config!($name, $config);
+         _declare_config_struct!($name, $config);
+
+         _declare_config_wrappers!($name, $config);
 
          DECLARE_MODULE!(
             [$name _module],
             $mod_name,
-            _extract_dir_config_name!($config),
-            None,
-            _extract_server_config_name!($config),
+            _extract_create_dir_config_name!($config),
+            _extract_merge_dir_config_name!($config),
+            _extract_create_server_config_name!($config),
             None,
             &[$name _directives],
             Some([$name _hooks])
@@ -426,6 +426,12 @@ macro_rules! _declare_config_struct_from_server {
 #[macro_export]
 macro_rules! _declare_config_struct_from_directory {
    ($name:ident, { $config_struct:ident $fields:tt, $create_dir_config:ident }) => {
+      _declare_config_struct_impl!($name, $config_struct $fields);
+
+      _declare_get_module_config!($name, $config_struct, get_dir_config);
+   };
+
+   ($name:ident, { $config_struct:ident $fields:tt, $create_dir_config:ident, $merge_dir_config:ident }) => {
       _declare_config_struct_impl!($name, $config_struct $fields);
 
       _declare_get_module_config!($name, $config_struct, get_dir_config);
@@ -570,13 +576,13 @@ macro_rules! _declare_directives_impl {
 
 
 #[macro_export]
-macro_rules! _extract_server_config_name {
+macro_rules! _extract_create_server_config_name {
    ({ server $server:tt, $directives:tt }) => {
-      _extract_server_config_name_from_server!($server)
+      _extract_create_server_config_name_from_server!($server)
    };
 
    ({ directory $directory:tt, server $server:tt, $directives:tt }) => {
-      _extract_server_config_name_from_server!($server)
+      _extract_create_server_config_name_from_server!($server)
    };
 
    ({ directory $directory:tt, $directives:tt }) => {
@@ -586,7 +592,7 @@ macro_rules! _extract_server_config_name {
 
 
 #[macro_export]
-macro_rules! _extract_server_config_name_from_server {
+macro_rules! _extract_create_server_config_name_from_server {
    ({ $config_struct:ident $fields:tt, $create_server_config:ident }) => {
       interpolate_idents! {
          Some([c_ $create_server_config])
@@ -596,59 +602,93 @@ macro_rules! _extract_server_config_name_from_server {
 
 
 #[macro_export]
-macro_rules! _extract_dir_config_name {
+macro_rules! _extract_create_dir_config_name {
    ({ server $server:tt, $directives:tt }) => {
       None
    };
 
    ({ directory $directory:tt, server $server:tt, $directives:tt }) => {
-      _extract_dir_config_name_from_directory!($directory)
+      _extract_create_dir_config_name_from_directory!($directory)
    };
 
    ({ directory $directory:tt, $directives:tt }) => {
-      _extract_dir_config_name_from_directory!($directory)
+      _extract_create_dir_config_name_from_directory!($directory)
    }
 }
 
 
 #[macro_export]
-macro_rules! _extract_dir_config_name_from_directory {
+macro_rules! _extract_create_dir_config_name_from_directory {
    ({ $config_struct:ident $fields:tt, $create_dir_config:ident }) => {
       interpolate_idents! {
          Some([c_ $create_dir_config])
+      }
+   };
+
+   ({ $config_struct:ident $fields:tt, $create_dir_config:ident, $merge_dir_config:ident }) => {
+      _extract_create_dir_config_name_from_directory!({$config_struct $fields, $create_dir_config});
+   }
+}
+
+
+#[macro_export]
+macro_rules! _extract_merge_dir_config_name {
+   ({ server $server:tt, $directives:tt }) => {
+      None
+   };
+
+   ({ directory $directory:tt, server $server:tt, $directives:tt }) => {
+      _extract_merge_dir_config_name_from_directory!($directory)
+   };
+
+   ({ directory $directory:tt, $directives:tt }) => {
+      _extract_merge_dir_config_name_from_directory!($directory)
+   }
+}
+
+
+#[macro_export]
+macro_rules! _extract_merge_dir_config_name_from_directory {
+   ({ $config_struct:ident $fields:tt, $create_dir_config:ident }) => {
+      None
+   };
+
+   ({ $config_struct:ident $fields:tt, $create_dir_config:ident, $merge_dir_config:ident }) => {
+      interpolate_idents! {
+         Some([c_ $merge_dir_config])
       }
    }
 }
 
 
 #[macro_export]
-macro_rules! _declare_create_server_config {
+macro_rules! _declare_config_wrappers {
    ($name:ident, { server $server:tt, $directives:tt }) => {
-      _declare_create_server_config_from_server!($name, $server);
+      _declare_server_config_wrappers_from_server!($name, $server);
    };
 
    ($name:ident, { directory $directory:tt, server $server:tt, $directives:tt }) => {
-      _declare_create_server_config_from_server!($name, $server);
+      _declare_server_config_wrappers_from_server!($name, $server);
 
-      _declare_create_dir_config_from_directory!($name, $directory);
+      _declare_dir_config_wrappers_from_directory!($name, $directory);
    };
 
    ($name:ident, { directory $directory:tt, $directives:tt }) => {
-      _declare_create_dir_config_from_directory!($name, $directory);
+      _declare_dir_config_wrappers_from_directory!($name, $directory);
    }
 }
 
 
 #[macro_export]
-macro_rules! _declare_create_server_config_from_server {
+macro_rules! _declare_server_config_wrappers_from_server {
    ($name:ident, { $config_struct:ident $fields:tt, $create_server_config:ident }) => {
-      _declare_create_server_config_impl!($name, $config_struct, $create_server_config);
+      _declare_create_server_config!($name, $config_struct, $create_server_config);
    }
 }
 
 
 #[macro_export]
-macro_rules! _declare_create_server_config_impl {
+macro_rules! _declare_create_server_config {
    ($name:ident, $config_struct:ident, $create_server_config:ident) => {
       #[no_mangle]
       interpolate_idents! {
@@ -668,15 +708,21 @@ macro_rules! _declare_create_server_config_impl {
 
 
 #[macro_export]
-macro_rules! _declare_create_dir_config_from_directory {
+macro_rules! _declare_dir_config_wrappers_from_directory {
    ($name:ident, { $config_struct:ident $fields:tt, $create_dir_config:ident }) => {
-      _declare_create_dir_config_impl!($name, $config_struct, $create_dir_config);
+      _declare_create_dir_config!($name, $config_struct, $create_dir_config);
+   };
+
+   ($name:ident, { $config_struct:ident $fields:tt, $create_dir_config:ident, $merge_dir_config:ident }) => {
+      _declare_create_dir_config!($name, $config_struct, $create_dir_config);
+
+      _declare_merge_dir_config!($name, $config_struct, $merge_dir_config);
    }
 }
 
 
 #[macro_export]
-macro_rules! _declare_create_dir_config_impl {
+macro_rules! _declare_create_dir_config {
    ($name:ident, $config_struct:ident, $create_dir_config:ident) => {
       #[no_mangle]
       interpolate_idents! {
@@ -688,6 +734,29 @@ macro_rules! _declare_create_dir_config_impl {
             let directory = $crate::from_char_ptr(dir).ok();
 
             let config = $create_dir_config(&mut pool, directory);
+
+            config.raw as *mut [C $config_struct] as *mut $crate::c_void
+         }
+      }
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_merge_dir_config {
+   ($name:ident, $config_struct:ident, $merge_dir_config:ident) => {
+      #[no_mangle]
+      interpolate_idents! {
+         extern "C" fn [c_ $merge_dir_config](
+            p: *mut $crate::ffi::apr_pool_t,
+            base_conf: *mut $crate::c_void,
+            new_conf: *mut $crate::c_void
+         ) -> *mut $crate::c_void {
+            let mut pool = Pool::from_raw_ptr(p).unwrap();
+            let base_conf = $config_struct::from_raw_ptr(&mut pool, base_conf as *mut [C $config_struct]).unwrap();
+            let new_conf = $config_struct::from_raw_ptr(&mut pool, new_conf as *mut [C $config_struct]).unwrap();
+
+            let config = $merge_dir_config(&mut pool, &base_conf, &new_conf);
 
             config.raw as *mut [C $config_struct] as *mut $crate::c_void
          }
@@ -831,5 +900,9 @@ macro_rules! _call_config_wrapper {
       interpolate_idents! {
          $func($parms, $config_struct::from_raw_ptr($pool, $mconfig as *mut [C $config_struct]).ok(), $arg1)
       }
+   };
+
+   ($func:ident, $parms:expr, $pool:expr, $mconfig:expr, $arg1:expr, { $config_struct:ident $fields:tt, $create_dir_config:ident, $merge_dir_config:ident }) => {
+      _call_config_wrapper!($func, $parms, $pool, $mconfig, $arg1, { $config_struct $fields, $create_dir_config })
    }
 }

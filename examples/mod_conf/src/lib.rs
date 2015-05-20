@@ -1,3 +1,4 @@
+#![feature(convert)]
 #![feature(plugin)]
 #![plugin(interpolate_idents)]
 
@@ -14,7 +15,8 @@ new_module!(
          DirectoryConfig {
             dir_var: StringType
          },
-         create_dir_config
+         create_dir_config,
+         merge_dir_config
       },
       server {
          ServerConfig {
@@ -42,6 +44,28 @@ fn create_server_config<'a>(pool: &mut Pool) -> ServerConfig<'a> {
 
 fn create_dir_config<'a>(pool: &mut Pool, _: Option<&'a str>) -> DirectoryConfig<'a> {
    DirectoryConfig::new(pool).unwrap()
+}
+
+
+fn merge_dir_config<'a>(pool: &mut Pool, base_conf: &'a DirectoryConfig, new_conf: &'a DirectoryConfig) -> DirectoryConfig<'a> {
+   let mut config = create_dir_config(pool, None);
+
+   if base_conf.dir_var().is_err() {
+      if  new_conf.dir_var().is_err() {
+         return config;
+      }
+
+      config.set_dir_var(new_conf.dir_var().unwrap());
+
+      return config;
+   }
+
+   let base_dir_var = base_conf.dir_var().unwrap();
+   let new_dir_var = new_conf.dir_var().unwrap();
+
+   config.set_dir_var(format!("{}{}", base_dir_var, new_dir_var).as_str());
+
+   config
 }
 
 
