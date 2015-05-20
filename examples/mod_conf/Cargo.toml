@@ -8,9 +8,7 @@ name = "mod_conf"
 crate-type = ["dylib"]
 
 [dependencies]
-libc = "*"
 interpolate_idents = "*"
-lazy_static = "*"
 
 [dependencies.apache2]
 path = "../.."

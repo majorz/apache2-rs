@@ -1,8 +1,6 @@
 #![feature(plugin)]
 #![plugin(interpolate_idents)]
 
-extern crate libc;
-
 #[macro_use]
 extern crate apache2;
 
