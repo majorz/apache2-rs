@@ -685,9 +685,9 @@ macro_rules! _declare_create_dir_config_impl {
             dir: *mut $crate::c_char
          ) -> *mut $crate::c_void {
             let mut pool = Pool::from_raw_ptr(p).unwrap();
-            let directory = $crate::from_char_ptr(dir).unwrap();
+            let directory = $crate::from_char_ptr(dir).ok();
 
-            let config = $create_dir_config(&mut pool, &directory);
+            let config = $create_dir_config(&mut pool, directory);
 
             config.raw as *mut [C $config_struct] as *mut $crate::c_void
          }

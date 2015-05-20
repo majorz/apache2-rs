@@ -6,7 +6,7 @@ extern crate libc;
 #[macro_use]
 extern crate apache2;
 
-use apache2::{Request, Status, Pool, CmdParms, BoolType, StringType, RSRC_CONF};
+use apache2::{Request, Status, Pool, CmdParms, BoolType, StringType, RSRC_CONF, ACCESS_CONF};
 
 
 new_module!(
@@ -27,7 +27,7 @@ new_module!(
       }, [
          (FLAG, b"EnabledVar\0", enabled_var, RSRC_CONF, b"Example flag\0"),
          (TAKE1, b"StringVar\0", string_var, RSRC_CONF, b"Example string directive\0"),
-         (TAKE1, b"DirVar\0", dir_var, RSRC_CONF, b"Directory string directive\0")
+         (TAKE1, b"DirVar\0", dir_var, ACCESS_CONF, b"Directory string directive\0")
       ]
    }
 );
@@ -42,7 +42,7 @@ fn create_server_config<'a>(pool: &mut Pool) -> ServerConfig<'a> {
 }
 
 
-fn create_directory_config<'a>(pool: &mut Pool, _: &'a str) -> DirectoryConfig<'a> {
+fn create_directory_config<'a>(pool: &mut Pool, _: Option<&'a str>) -> DirectoryConfig<'a> {
    DirectoryConfig::new(pool).unwrap()
 }
 
