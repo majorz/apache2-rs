@@ -428,7 +428,7 @@ macro_rules! _declare_config_struct_from_directory {
    ($name:ident, { $config_struct:ident $fields:tt, $create_dir_config:ident }) => {
       _declare_config_struct_impl!($name, $config_struct $fields);
 
-      _declare_get_module_config!($name, $config_struct, get_directory_config);
+      _declare_get_module_config!($name, $config_struct, get_dir_config);
    }
 }
 
