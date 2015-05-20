@@ -83,18 +83,26 @@ fn conf_handler(r: &mut Request) -> Result<Status, ()> {
       return Ok(Status::DECLINED)
    }
 
-   let config = get_server_config(
+   let server_config = get_server_config(
       &mut try!(r.pool()),
       &try!(try!(r.server()).module_config())
    );
 
    r.set_content_type("text/plain; charset=utf-8");
 
-   let enabled = try!(config.enabled());
+   let enabled = try!(server_config.enabled());
    try!(r.write(format!("EnabledVar: {:?}\n", enabled)));
 
-   let string_var = try!(config.string_var());
+   let string_var = try!(server_config.string_var());
    try!(r.write(format!("StringVar: {:?}\n", string_var)));
+
+   let dir_config = get_dir_config(
+      &mut try!(r.pool()),
+      &try!(r.per_dir_config())
+   );
+
+   let dir_var = try!(dir_config.dir_var());
+   try!(r.write(format!("DirVar: {:?}\n", dir_var)));
 
    Ok(Status::OK)
 }
