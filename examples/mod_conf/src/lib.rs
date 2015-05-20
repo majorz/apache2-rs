@@ -23,7 +23,8 @@ new_module!(
             enabled: BoolType,
             string_var: StringType
          },
-         create_server_config
+         create_server_config,
+         merge_server_config
       }, [
          (FLAG, b"EnabledVar\0", enabled_var, RSRC_CONF, b"Example flag\0"),
          (TAKE1, b"StringVar\0", string_var, RSRC_CONF, b"Example string directive\0"),
@@ -42,6 +43,25 @@ fn create_server_config<'a>(pool: &mut Pool) -> ServerConfig<'a> {
 }
 
 
+fn merge_server_config<'a>(pool: &mut Pool, base_conf: &'a ServerConfig, new_conf: &'a ServerConfig) -> ServerConfig<'a> {
+   let mut config = create_server_config(pool);
+
+   config.set_enabled(
+      new_conf.enabled().unwrap_or(
+         base_conf.enabled().unwrap_or(false)
+      )
+   );
+
+   config.set_string_var(
+      new_conf.string_var().unwrap_or(
+         base_conf.string_var().unwrap_or("")
+      )
+   );
+
+   config
+}
+
+
 fn create_dir_config<'a>(pool: &mut Pool, _: Option<&'a str>) -> DirectoryConfig<'a> {
    DirectoryConfig::new(pool).unwrap()
 }
@@ -50,20 +70,11 @@ fn create_dir_config<'a>(pool: &mut Pool, _: Option<&'a str>) -> DirectoryConfig
 fn merge_dir_config<'a>(pool: &mut Pool, base_conf: &'a DirectoryConfig, new_conf: &'a DirectoryConfig) -> DirectoryConfig<'a> {
    let mut config = create_dir_config(pool, None);
 
-   if base_conf.dir_var().is_err() {
-      if  new_conf.dir_var().is_err() {
-         return config;
-      }
-
-      config.set_dir_var(new_conf.dir_var().unwrap());
-
-      return config;
-   }
-
-   let base_dir_var = base_conf.dir_var().unwrap();
-   let new_dir_var = new_conf.dir_var().unwrap();
-
-   config.set_dir_var(format!("{}{}", base_dir_var, new_dir_var).as_str());
+   config.set_dir_var(
+      format!(
+         "{}{}", base_conf.dir_var().unwrap_or(""), new_conf.dir_var().unwrap_or("")
+      ).as_str()
+   );
 
    config
 }
