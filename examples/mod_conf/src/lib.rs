@@ -78,6 +78,11 @@ fn dir_var<'a>(_: &mut CmdParms, mconfig: Option<DirectoryConfig>, w: &'a str) -
 }
 
 
+fn unwrap_str<'a>(wrapped: Result<&'a str, ()>) -> &'a str {
+   wrapped.unwrap_or("--")
+}
+
+
 fn conf_handler(r: &mut Request) -> Result<Status, ()> {
    if try!(r.handler()) != "conf" {
       return Ok(Status::DECLINED)
@@ -91,18 +96,18 @@ fn conf_handler(r: &mut Request) -> Result<Status, ()> {
    r.set_content_type("text/plain; charset=utf-8");
 
    let enabled = try!(server_config.enabled());
-   try!(r.write(format!("EnabledVar: {:?}\n", enabled)));
+   try!(r.write(format!("EnabledVar: {}\n", enabled)));
 
-   let string_var = try!(server_config.string_var());
-   try!(r.write(format!("StringVar: {:?}\n", string_var)));
+   let string_var = unwrap_str(server_config.string_var());
+   try!(r.write(format!("StringVar: {}\n", string_var)));
 
    let dir_config = get_dir_config(
       &mut try!(r.pool()),
       &try!(r.per_dir_config())
    );
 
-   let dir_var = try!(dir_config.dir_var());
-   try!(r.write(format!("DirVar: {:?}\n", dir_var)));
+   let dir_var = unwrap_str(dir_config.dir_var());
+   try!(r.write(format!("DirVar: {}\n", dir_var)));
 
    Ok(Status::OK)
 }
