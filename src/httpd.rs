@@ -420,6 +420,14 @@ impl<'a> Request<'a> {
       from_char_ptr(self.raw.args)
    }
 
+   pub fn per_dir_config(&self) -> Result<ConfVector, ()> {
+      Wrapper::from_raw_ptr(self.raw.per_dir_config)
+   }
+
+   pub fn request_config(&self) -> Result<ConfVector, ()> {
+      Wrapper::from_raw_ptr(self.raw.request_config)
+   }
+
    pub fn log_id(&self) -> Result<&'a str, ()> {
       from_char_ptr(self.raw.log_id)
    }
