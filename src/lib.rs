@@ -26,114 +26,66 @@ pub use ffi::{OR_NONE, OR_LIMIT, OR_OPTIONS, OR_FILEINFO, OR_AUTHCFG, OR_INDEXES
    TAKE13, TAKE_ARGV};
 
 
+pub type StringType<'a> = &'a str;
+pub type CStringType = *const c_char;
+
+pub type BoolType = bool;
+pub type CBoolType = c_int;
+
+
 #[macro_export]
 macro_rules! apache2_module {
    ($name:ident, $mod_name:expr) => {
+      apache2_module!($name, $mod_name, config {});
+   };
+
+   ($name:ident, $mod_name:expr, config $config:tt) => {
       interpolate_idents! {
-         apache2_module!(
-            $name,
-            $mod_name,
-            handlers {
-               [$name _handler], handler, $crate::HookOrder::MIDDLE
-            }
-         );
+         apache2_module!($name, $mod_name, config $config, handlers {
+            [$name _handler], handler, $crate::HookOrder::MIDDLE
+         });
       }
    };
 
-   ($name:ident, $mod_name:expr, handlers { $handler:ident, $hook:ident, $order:expr }) => {
-      apache2_module!(
-         $name,
-         $mod_name,
-         handlers { $handler, $hook, $order },
-         commands {None, None, None, None, }
-      );
+   ($name:ident, $mod_name:expr, handlers $handlers:tt) => {
+      apache2_module!($name, $mod_name, config {}, handlers $handlers);
    };
 
-   (
-      $name:ident,
-      $mod_name:expr,
-      commands {
-         $create_dir_config:expr,
-         $merge_dir_config:expr,
-         $create_server_config:expr,
-         $merge_server_config:expr,
-         $($cmd:expr);*
-      }
-   ) => {
-      interpolate_idents! {
-         apache2_module!(
-            $name,
-            $mod_name,
-            handlers {
-               [$name _handler], handler, $crate::HookOrder::MIDDLE
-            },
-            commands {
-               $create_dir_config,
-               $merge_dir_config,
-               $create_server_config,
-               $merge_server_config,
-               $($cmd);*
-            }
-         );
-      }
-   };
+   ($name:ident, $mod_name:expr, config $config:tt, handlers $handlers:tt) => {
+      _declare_config_struct!($name, $config);
 
-   (
-      $name:ident, $mod_name:expr,
-      handlers { $handler:ident, $hook:ident, $order:expr },
-      commands {
-         $create_dir_config:expr,
-         $merge_dir_config:expr,
-         $create_server_config:expr,
-         $merge_server_config:expr,
-         $($cmd:expr);*
-      }
-   ) => {
-      interpolate_idents! {
-         DECLARE_COMMAND_ARRAY!([$name _cmds], { $($cmd);* });
+      _declare_config_wrappers!($name, $config);
 
-         DECLARE_MODULE!(
+      _declare_directives!($name, $config);
+
+      _declare_module!($name, $mod_name, $config);
+
+      _declare_handlers!($name, $handlers);
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_module {
+   ($name:ident, $mod_name:expr, $config:tt) => {
+      interpolate_idents! {
+         _declare_module_impl!(
             [$name _module],
             $mod_name,
-            $create_dir_config,
-            $merge_dir_config,
-            $create_server_config,
-            $merge_server_config,
-            &[$name _cmds],
+            _extract_create_dir_config_name!($config),
+            _extract_merge_dir_config_name!($config),
+            _extract_create_server_config_name!($config),
+            _extract_merge_server_config_name!($config),
+            &[$name _directives],
             Some([$name _hooks])
          );
-
-         extern "C" fn [$name _hooks](_: *mut $crate::ffi::apr_pool_t) {
-            unsafe {
-               $crate::ffi::[ap_hook_ $hook](
-                  Some([c_ $name _handler]),
-                  std::ptr::null(),
-                  std::ptr::null(),
-                  $order.into()
-               );
-            }
-         }
-      }
-
-
-      #[no_mangle]
-      interpolate_idents! {
-         pub extern "C" fn [c_ $name _handler](r: *mut $crate::ffi::request_rec) -> $crate::c_int {
-            match $crate::httpd::Request::from_raw_ptr(r) {
-               Err(_) => $crate::httpd::Status::DECLINED.into(),
-               Ok(mut request) => match $handler(&mut request) {
-                  Ok(status) => status,
-                  Err(_) => $crate::httpd::Status::HTTP_INTERNAL_SERVER_ERROR
-               }.into()
-            }
-         }
       }
    }
 }
 
 
 #[macro_export]
-macro_rules! DECLARE_MODULE {
+macro_rules! _declare_module_impl {
    (
       $module:ident,
       $mod_name:expr,
@@ -167,236 +119,9 @@ macro_rules! DECLARE_MODULE {
 
 
 #[macro_export]
-macro_rules! DECLARE_COMMAND_REC {
-   (
-      $name:expr,
-      $func:expr,
-      $cmd_data:expr,
-      $req_override:expr,
-      $args_how:expr,
-      $errmsg:expr
-   ) => {
-      $crate::ffi::command_rec {
-         name: $name as *const u8 as *const $crate::c_char,
-         func: $crate::ffi::cmd_func {
-            _bindgen_data_: [$func as u64]
-         },
-         cmd_data: $cmd_data as *mut $crate::c_void,
-         req_override: $req_override,
-         args_how: $args_how,
-         errmsg: $errmsg as *const u8 as *const $crate::c_char
-      }
-   }
-}
-
-
-#[macro_export]
-macro_rules! NULL_COMMAND_REC {
-   () => {
-      DECLARE_COMMAND_REC!(0, 0, 0, 0, 0, 0)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_NO_ARGS {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::NO_ARGS, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_RAW_ARGS {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::RAW_ARGS, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_TAKE_ARGV {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE_ARGV, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_TAKE1 {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE1, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_ITERATE {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::ITERATE, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_TAKE2 {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE2, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_TAKE12 {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE12, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_ITERATE2 {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::ITERATE2, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_TAKE13 {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE13, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_TAKE23 {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE23, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_TAKE123 {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE123, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_TAKE3 {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::TAKE3, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! AP_INIT_FLAG {
-   ($name:expr, $func:expr, $req_override:expr, $errmsg:expr) => {
-      DECLARE_COMMAND_REC!($name, $func, 0, $req_override, $crate::ffi::FLAG, $errmsg)
-   }
-}
-
-#[macro_export]
-macro_rules! DECLARE_COMMAND_ARRAY {
-   ($cmds_name:ident, $cmd_count:expr, { $($cmd:expr);* }) => {
-      #[no_mangle]
-      pub static mut $cmds_name: [$crate::ffi::command_rec; $cmd_count] = [
-         $($cmd),*,
-         NULL_COMMAND_REC!()
-      ];
-   };
-
-   ($cmds_name:ident, {}) => {
-      DECLARE_COMMAND_ARRAY!($cmds_name, 1, {});
-   };
-
-   ($cmds_name:ident, { $cmd1:expr }) => {
-      DECLARE_COMMAND_ARRAY!($cmds_name, 2, { $cmd1 });
-   };
-
-   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr }) => {
-      DECLARE_COMMAND_ARRAY!($cmds_name, 3, { $cmd1; $cmd2 });
-   };
-
-   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr; $cmd3:expr }) => {
-      DECLARE_COMMAND_ARRAY!($cmds_name, 4, { $cmd1; $cmd2; $cmd3 });
-   };
-
-   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr; $cmd3:expr; $cmd4:expr }) => {
-      DECLARE_COMMAND_ARRAY!($cmds_name, 5, { $cmd1; $cmd2; $cmd3; $cmd4 });
-   };
-
-   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr; $cmd3:expr; $cmd4:expr; $cmd5:expr }) => {
-      DECLARE_COMMAND_ARRAY!($cmds_name, 6, { $cmd1; $cmd2; $cmd3; $cmd4; $cmd5 });
-   };
-
-   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr; $cmd3:expr; $cmd4:expr; $cmd5:expr; $cmd6:expr }) => {
-      DECLARE_COMMAND_ARRAY!($cmds_name, 7, { $cmd1; $cmd2; $cmd3; $cmd4; $cmd5; $cmd6 });
-   };
-
-   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr; $cmd3:expr; $cmd4:expr; $cmd5:expr; $cmd6:expr; $cmd7:expr }) => {
-      DECLARE_COMMAND_ARRAY!($cmds_name, 8, { $cmd1; $cmd2; $cmd3; $cmd4; $cmd5; $cmd6; $cmd7 });
-   };
-
-   ($cmds_name:ident, { $cmd1:expr; $cmd2:expr; $cmd3:expr; $cmd4:expr; $cmd5:expr; $cmd6:expr; $cmd7:expr; $cmd8:expr }) => {
-      DECLARE_COMMAND_ARRAY!($cmds_name, 9, { $cmd1; $cmd2; $cmd3; $cmd4; $cmd5; $cmd6; $cmd7; $cmd8 });
-   };
-}
-
-
-pub type StringType<'a> = &'a str;
-pub type CStringType = *const c_char;
-
-pub type BoolType = bool;
-pub type CBoolType = c_int;
-
-
-#[macro_export]
-macro_rules! new_module {
-   ($name:ident, $mod_name:expr, config $config:tt) => {
-      interpolate_idents! {
-         _declare_directives!([$name _directives], $config);
-
-         _declare_config_struct!($name, $config);
-
-         _declare_config_wrappers!($name, $config);
-
-         DECLARE_MODULE!(
-            [$name _module],
-            $mod_name,
-            _extract_create_dir_config_name!($config),
-            _extract_merge_dir_config_name!($config),
-            _extract_create_server_config_name!($config),
-            _extract_merge_server_config_name!($config),
-            &[$name _directives],
-            Some([$name _hooks])
-         );
-      }
-
-      #[no_mangle]
-      interpolate_idents! {
-         extern "C" fn [$name _hooks](_: *mut $crate::ffi::apr_pool_t) {
-            unsafe {
-               $crate::ffi::ap_hook_handler(
-                  Some([c_ $name _handler]),
-                  std::ptr::null(),
-                  std::ptr::null(),
-                  $crate::HookOrder::MIDDLE.into()
-               );
-            }
-         }
-      }
-
-      #[no_mangle]
-      interpolate_idents! {
-         pub extern "C" fn [c_ $name _handler](r: *mut $crate::ffi::request_rec) -> $crate::c_int {
-            match $crate::httpd::Request::from_raw_ptr(r) {
-               Err(_) => $crate::httpd::Status::DECLINED.into(),
-               Ok(mut request) => match [$name _handler](&mut request) {
-                  Ok(status) => status,
-                  Err(_) => $crate::httpd::Status::HTTP_INTERNAL_SERVER_ERROR
-               }.into()
-            }
-         }
-      }
-   }
-}
-
-
-#[macro_export]
 macro_rules! _declare_config_struct {
+   ($name:ident, {}) => {};
+
    ($name:ident, { server $server:tt, $directives:tt }) => {
       _declare_config_struct_from_server!($name, $server);
    };
@@ -550,35 +275,12 @@ macro_rules! _declare_config_wrapper_method {
    }
 }
 
-
-#[macro_export]
-macro_rules! _declare_directives {
-   ($directives_name:ident, { server $server:tt, $directives:tt }) => {
-      _declare_directives_impl!($directives_name, $directives, {});
-   };
-
-   ($directives_name:ident, { directory $directory:tt, server $server:tt, $directives:tt }) => {
-      _declare_directives_impl!($directives_name, $directives, $directory);
-   };
-
-   ($directives_name:ident, { directory $directory:tt, $directives:tt }) => {
-      _declare_directives_impl!($directives_name, $directives, $directory);
-   }
-}
-
-
-#[macro_export]
-macro_rules! _declare_directives_impl {
-   ($directives_name:ident, $directives:tt, $directory:tt) => {
-      _declare_directive_array!($directives_name, $directives);
-
-      _declare_directive_wrappers!($directives, $directory);
-   }
-}
-
-
 #[macro_export]
 macro_rules! _extract_create_server_config_name {
+   ({}) => {
+      None
+   };
+
    ({ server $server:tt, $directives:tt }) => {
       _extract_create_server_config_name_from_server!($server)
    };
@@ -609,6 +311,10 @@ macro_rules! _extract_create_server_config_name_from_server {
 
 #[macro_export]
 macro_rules! _extract_merge_server_config_name {
+   ({}) => {
+      None
+   };
+
    ({ server $server:tt, $directives:tt }) => {
       _extract_merge_server_config_name_from_server!($server)
    };
@@ -639,6 +345,10 @@ macro_rules! _extract_merge_server_config_name_from_server {
 
 #[macro_export]
 macro_rules! _extract_create_dir_config_name {
+   ({}) => {
+      None
+   };
+
    ({ server $server:tt, $directives:tt }) => {
       None
    };
@@ -669,6 +379,10 @@ macro_rules! _extract_create_dir_config_name_from_directory {
 
 #[macro_export]
 macro_rules! _extract_merge_dir_config_name {
+   ({}) => {
+      None
+   };
+
    ({ server $server:tt, $directives:tt }) => {
       None
    };
@@ -698,7 +412,47 @@ macro_rules! _extract_merge_dir_config_name_from_directory {
 
 
 #[macro_export]
+macro_rules! _declare_directives {
+   ($name:ident, {}) => {
+      _declare_directives_impl!($name);
+   };
+
+   ($name:ident, { server $server:tt, $directives:tt }) => {
+      _declare_directives_impl!($name, {}, $directives);
+   };
+
+   ($name:ident, { directory $directory:tt, server $server:tt, $directives:tt }) => {
+      _declare_directives_impl!($name, $directory, $directives);
+   };
+
+   ($name:ident, { directory $directory:tt, $directives:tt }) => {
+      _declare_directives_impl!($name, $directory, $directives);
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_directives_impl {
+   ($name:ident) => {
+      interpolate_idents! {
+         _declare_directive_array!([$name _directives]);
+      }
+   };
+
+   ($name:ident, $directory:tt, $directives:tt) => {
+      interpolate_idents! {
+         _declare_directive_array!([$name _directives], $directives);
+      }
+
+      _declare_directive_wrappers!($directory, $directives);
+   }
+}
+
+
+#[macro_export]
 macro_rules! _declare_config_wrappers {
+   ($name:ident, {}) => {};
+
    ($name:ident, { server $server:tt, $directives:tt }) => {
       _declare_server_config_wrappers_from_server!($name, $server);
    };
@@ -809,16 +563,15 @@ macro_rules! _declare_merge_config {
 
 #[macro_export]
 macro_rules! _declare_directive_array {
-   ($directives_name:ident, $cmd_count:expr, [ $($cmd:tt),* ]) => {
-      #[no_mangle]
-      pub static mut $directives_name: [$crate::ffi::command_rec; $cmd_count] = [
-         $( _declare_command_rec!($cmd) ),*,
-         NULL_COMMAND_REC!()
-      ];
+   ($directives_name:ident) => {
+      _declare_directive_array!($directives_name, [ ]);
    };
 
-   ($directives_name:ident, []) => {
-      _declare_directive_array!($directives_name, 1, []);
+   ($directives_name:ident, [ ]) => {
+      #[no_mangle]
+      pub static mut $directives_name: [$crate::ffi::command_rec; 1] = [
+         _null_command_rec!()
+      ];
    };
 
    ($directives_name:ident, [ $cmd1:tt ]) => {
@@ -851,6 +604,22 @@ macro_rules! _declare_directive_array {
 
    ($directives_name:ident, [ $cmd1:tt, $cmd2:tt, $cmd3:tt, $cmd4:tt, $cmd5:tt, $cmd6:tt, $cmd7:tt, $cmd8:tt ]) => {
       _declare_directive_array!($directives_name, 9, [ $cmd1, $cmd2, $cmd3, $cmd4, $cmd5, $cmd6, $cmd7, $cmd8 ]);
+   };
+
+   ($directives_name:ident, $cmd_count:expr, [ $($cmd:tt),* ]) => {
+      #[no_mangle]
+      pub static mut $directives_name: [$crate::ffi::command_rec; $cmd_count] = [
+         $( _declare_command_rec!($cmd) ),*,
+         _null_command_rec!()
+      ];
+   }
+}
+
+
+#[macro_export]
+macro_rules! _null_command_rec {
+   () => {
+      _declare_c_command_rec!(0, 0, 0, 0, 0)
    }
 }
 
@@ -859,7 +628,7 @@ macro_rules! _declare_directive_array {
 macro_rules! _declare_command_rec {
    (($args_how:ident, $name:expr, $func:ident, $req_override:expr, $errmsg:expr)) => {
       interpolate_idents! {
-         _declare_c_command_rec!($args_how, $name, [c_ $func], $req_override, $errmsg)
+         _declare_c_command_rec!($crate::$args_how, $name, [c_ $func], $req_override, $errmsg)
       }
    }
 }
@@ -867,7 +636,7 @@ macro_rules! _declare_command_rec {
 
 #[macro_export]
 macro_rules! _declare_c_command_rec {
-   ($args_how:ident, $name:expr, $cfunc:ident, $req_override:expr, $errmsg:expr) => {
+   ($args_how:expr, $name:expr, $cfunc:expr, $req_override:expr, $errmsg:expr) => {
       $crate::ffi::command_rec {
          name: $name as *const u8 as *const $crate::c_char,
          func: $crate::ffi::cmd_func {
@@ -875,7 +644,7 @@ macro_rules! _declare_c_command_rec {
          },
          cmd_data: 0 as *mut $crate::c_void,
          req_override: $req_override,
-         args_how: $crate::$args_how,
+         args_how: $args_how,
          errmsg: $errmsg as *const u8 as *const $crate::c_char
       }
    }
@@ -884,7 +653,7 @@ macro_rules! _declare_c_command_rec {
 
 #[macro_export]
 macro_rules! _declare_directive_wrappers {
-   ([ $(( $args_how:ident, $name:expr, $func:ident, $req_override:expr, $errmsg:expr )),* ], $directory:tt) => {
+   ($directory:tt, [ $(( $args_how:ident, $name:expr, $func:ident, $req_override:expr, $errmsg:expr )),* ]) => {
       $(
          _declare_directive_c_wrapper!($args_how, $func, $directory);
       )*
@@ -946,5 +715,37 @@ macro_rules! _call_config_wrapper {
 
    ($func:ident, $parms:expr, $pool:expr, $mconfig:expr, $arg1:expr, { $config_struct:ident $fields:tt, $create_dir_config:ident, $merge_dir_config:ident }) => {
       _call_config_wrapper!($func, $parms, $pool, $mconfig, $arg1, { $config_struct $fields, $create_dir_config })
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_handlers {
+   ($name:ident, { $handler:ident, $hook:ident, $order:expr }) => {
+      interpolate_idents! {
+         extern "C" fn [$name _hooks](_: *mut $crate::ffi::apr_pool_t) {
+            unsafe {
+               $crate::ffi::[ap_hook_ $hook](
+                  Some([c_ $name _handler]),
+                  std::ptr::null(),
+                  std::ptr::null(),
+                  $order.into()
+               );
+            }
+         }
+      }
+
+      #[no_mangle]
+      interpolate_idents! {
+         pub extern "C" fn [c_ $name _handler](r: *mut $crate::ffi::request_rec) -> $crate::c_int {
+            match $crate::httpd::Request::from_raw_ptr(r) {
+               Err(_) => $crate::httpd::Status::DECLINED.into(),
+               Ok(mut request) => match $handler(&mut request) {
+                  Ok(status) => status,
+                  Err(_) => $crate::httpd::Status::HTTP_INTERNAL_SERVER_ERROR
+               }.into()
+            }
+         }
+      }
    }
 }

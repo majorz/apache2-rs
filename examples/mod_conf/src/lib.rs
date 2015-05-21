@@ -8,7 +8,7 @@ extern crate apache2;
 use apache2::{Request, Status, Pool, CmdParms, BoolType, StringType, RSRC_CONF, ACCESS_CONF};
 
 
-new_module!(
+apache2_module!(
    conf, b"mod_conf\0",
    config {
       directory {
