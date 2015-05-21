@@ -8,7 +8,7 @@ extern crate apache2;
 use apache2::{HookOrder, Request, Status};
 
 apache2_module!(https_www, b"mod_https_www\0", handlers {
-   https_www_handler, translate_name, HookOrder::MIDDLE
+   (https_www_handler, translate_name, HookOrder::MIDDLE)
 });
 
 
