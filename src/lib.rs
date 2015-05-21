@@ -42,7 +42,7 @@ macro_rules! apache2_module {
    ($name:ident, $mod_name:expr, config $config:tt) => {
       interpolate_idents! {
          apache2_module!($name, $mod_name, config $config, handlers {
-            [$name _handler], handler, $crate::HookOrder::MIDDLE
+            ([$name _handler], handler, $crate::HookOrder::MIDDLE)
          });
       }
    };
@@ -721,23 +721,56 @@ macro_rules! _call_config_wrapper {
 
 #[macro_export]
 macro_rules! _declare_handlers {
-   ($name:ident, { $handler:ident, $hook:ident, $order:expr }) => {
+   ($name:ident, $handlers:tt) => {
+      _declare_hooks_entrypoint!($name, $handlers);
+
+      _declare_handler_wrappers!($handlers);
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_hooks_entrypoint {
+   ($name:ident, { $( $handler_data:tt ),* }) => {
       interpolate_idents! {
          extern "C" fn [$name _hooks](_: *mut $crate::ffi::apr_pool_t) {
-            unsafe {
-               $crate::ffi::[ap_hook_ $hook](
-                  Some([c_ $name _handler]),
-                  std::ptr::null(),
-                  std::ptr::null(),
-                  $order.into()
-               );
-            }
+            $(
+               _declare_single_hook_entrypoint!($handler_data);
+            )*
          }
       }
+   }
+}
 
+
+#[macro_export]
+macro_rules! _declare_single_hook_entrypoint {
+   (( $handler:ident, $hook:ident, $order:expr )) => {
+      interpolate_idents! {
+         unsafe {
+            $crate::ffi::[ap_hook_ $hook](Some([c_ $handler]), std::ptr::null(), std::ptr::null(), $order.into());
+         }
+      }
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_handler_wrappers {
+   ({ $( $handler_data:tt ),* }) => {
+      $(
+         _declare_single_handler_wrapper!($handler_data);
+      )*
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_single_handler_wrapper {
+   (( $handler:ident, $hook:ident, $order:expr )) => {
       #[no_mangle]
       interpolate_idents! {
-         pub extern "C" fn [c_ $name _handler](r: *mut $crate::ffi::request_rec) -> $crate::c_int {
+         pub extern "C" fn [c_ $handler](r: *mut $crate::ffi::request_rec) -> $crate::c_int {
             match $crate::httpd::Request::from_raw_ptr(r) {
                Err(_) => $crate::httpd::Status::DECLINED.into(),
                Ok(mut request) => match $handler(&mut request) {
