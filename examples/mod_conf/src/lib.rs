@@ -5,7 +5,7 @@
 #[macro_use]
 extern crate apache2;
 
-use apache2::{Request, Status, Pool, CmdParms, BoolType, StringType, RSRC_CONF, ACCESS_CONF};
+use apache2::{Request, Status, AprPool, CmdParms, BoolType, StringType, RSRC_CONF, ACCESS_CONF};
 
 
 apache2_module!(
@@ -34,7 +34,7 @@ apache2_module!(
 );
 
 
-fn create_server_config<'a>(pool: &mut Pool) -> ServerConfig<'a> {
+fn create_server_config<'a>(pool: &mut AprPool) -> ServerConfig<'a> {
    let mut config = ServerConfig::new(pool).unwrap();
 
    config.set_enabled(false);
@@ -43,7 +43,7 @@ fn create_server_config<'a>(pool: &mut Pool) -> ServerConfig<'a> {
 }
 
 
-fn merge_server_config<'a>(pool: &mut Pool, base_conf: &'a ServerConfig, new_conf: &'a ServerConfig) -> ServerConfig<'a> {
+fn merge_server_config<'a>(pool: &mut AprPool, base_conf: &'a ServerConfig, new_conf: &'a ServerConfig) -> ServerConfig<'a> {
    let mut config = create_server_config(pool);
 
    config.set_enabled(
@@ -62,12 +62,12 @@ fn merge_server_config<'a>(pool: &mut Pool, base_conf: &'a ServerConfig, new_con
 }
 
 
-fn create_dir_config<'a>(pool: &mut Pool, _: Option<&'a str>) -> DirectoryConfig<'a> {
+fn create_dir_config<'a>(pool: &mut AprPool, _: Option<&'a str>) -> DirectoryConfig<'a> {
    DirectoryConfig::new(pool).unwrap()
 }
 
 
-fn merge_dir_config<'a>(pool: &mut Pool, base_conf: &'a DirectoryConfig, new_conf: &'a DirectoryConfig) -> DirectoryConfig<'a> {
+fn merge_dir_config<'a>(pool: &mut AprPool, base_conf: &'a DirectoryConfig, new_conf: &'a DirectoryConfig) -> DirectoryConfig<'a> {
    let mut config = create_dir_config(pool, None);
 
    config.set_dir_var(

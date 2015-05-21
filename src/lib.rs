@@ -14,7 +14,7 @@ pub use libc::{c_void, c_char, c_int};
 pub use httpd::{Request, Status, ProxyReq, CmdParms, Server, server_banner, server_description,
    server_built, show_mpm, ConfVector};
 
-pub use apr::{apr_version_string, apu_version_string, HookOrder, Pool, time_now};
+pub use apr::{apr_version_string, apu_version_string, HookOrder, AprPool, time_now};
 
 pub use cookie::Cookie;
 
@@ -184,7 +184,7 @@ macro_rules! _declare_config_struct_impl {
       }
 
       impl<'a> $struct_name<'a> {
-         pub fn new(pool: &mut Pool) -> Result<Self, ()> {
+         pub fn new(pool: &mut AprPool) -> Result<Self, ()> {
             let c_config = unsafe {
                $crate::ffi::apr_pcalloc(
                   pool.raw,
@@ -196,7 +196,7 @@ macro_rules! _declare_config_struct_impl {
          }
 
          pub fn from_raw_ptr(
-            pool: &mut Pool,
+            pool: &mut AprPool,
             ptr: *mut <$struct_name<'a> as $crate::CType>::c_type
          ) -> Result<Self, ()> {
             if ptr.is_null() {
@@ -231,7 +231,7 @@ macro_rules! _declare_get_module_config {
    ($name:ident, $struct_name:ident, $get_config_fn:ident) => {
       interpolate_idents! {
          pub fn $get_config_fn<'a>(
-            pool: &mut $crate::Pool,
+            pool: &mut $crate::AprPool,
             conf_vector: &$crate::ConfVector
          ) -> $struct_name<'a> {
             let config = unsafe {
@@ -492,7 +492,7 @@ macro_rules! _declare_create_server_config {
             p: *mut $crate::ffi::apr_pool_t,
             _: *mut $crate::ffi::server_rec
          ) -> *mut $crate::c_void {
-            let mut pool = Pool::from_raw_ptr(p).unwrap();
+            let mut pool = AprPool::from_raw_ptr(p).unwrap();
 
             let config = $create_server_config(&mut pool);
 
@@ -526,7 +526,7 @@ macro_rules! _declare_create_dir_config {
             p: *mut $crate::ffi::apr_pool_t,
             dir: *mut $crate::c_char
          ) -> *mut $crate::c_void {
-            let mut pool = Pool::from_raw_ptr(p).unwrap();
+            let mut pool = AprPool::from_raw_ptr(p).unwrap();
             let directory = $crate::from_char_ptr(dir).ok();
 
             let config = $create_dir_config(&mut pool, directory);
@@ -548,7 +548,7 @@ macro_rules! _declare_merge_config {
             base_conf: *mut $crate::c_void,
             new_conf: *mut $crate::c_void
          ) -> *mut $crate::c_void {
-            let mut pool = Pool::from_raw_ptr(p).unwrap();
+            let mut pool = AprPool::from_raw_ptr(p).unwrap();
             let base_conf = $config_struct::from_raw_ptr(&mut pool, base_conf as *mut [C $config_struct]).unwrap();
             let new_conf = $config_struct::from_raw_ptr(&mut pool, new_conf as *mut [C $config_struct]).unwrap();
 
@@ -672,7 +672,7 @@ macro_rules! _declare_directive_c_wrapper {
             on: $crate::c_int
          ) -> *const $crate::c_char {
             let mut wrapper = CmdParms::from_raw_ptr(parms).unwrap();
-            let mut pool = Pool::from_raw_ptr(unsafe { (*parms).pool }).unwrap();
+            let mut pool = AprPool::from_raw_ptr(unsafe { (*parms).pool }).unwrap();
 
             _call_config_wrapper!($func, &mut wrapper, &mut pool, mconfig, on != 0, $directory).unwrap();
 
@@ -690,7 +690,7 @@ macro_rules! _declare_directive_c_wrapper {
             w: *const $crate::c_char
          ) -> *const $crate::c_char {
             let mut wrapper = CmdParms::from_raw_ptr(parms).unwrap();
-            let mut pool = Pool::from_raw_ptr(unsafe { (*parms).pool }).unwrap();
+            let mut pool = AprPool::from_raw_ptr(unsafe { (*parms).pool }).unwrap();
 
             _call_config_wrapper!($func, &mut wrapper, &mut pool, mconfig, $crate::from_char_ptr(w).unwrap(), $directory).unwrap();
 

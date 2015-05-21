@@ -8,7 +8,7 @@ use std::fmt;
 
 use wrapper::{Wrapper, from_char_ptr};
 
-use apr::{AprTable, Pool};
+use apr::{AprTable, AprPool};
 use cookie::Cookie;
 
 
@@ -262,7 +262,7 @@ pub type Request<'a> = Wrapper<'a, ffi::request_rec>;
 
 
 impl<'a> Request<'a> {
-   pub fn pool(&self) -> Result<Pool, ()> {
+   pub fn pool(&self) -> Result<AprPool, ()> {
       Wrapper::from_raw_ptr(self.raw.pool)
    }
 
@@ -708,7 +708,7 @@ impl<'a> CmdParms<'a> {
       Wrapper::from_raw_ptr(self.raw.server)
    }
 
-   pub fn pool(&self) -> Result<Pool, ()> {
+   pub fn pool(&self) -> Result<AprPool, ()> {
       Wrapper::from_raw_ptr(self.raw.pool)
    }
 }
