@@ -18,7 +18,7 @@ pub use apr::{apr_version_string, apu_version_string, HookOrder, AprPool, time_n
 
 pub use cookie::Cookie;
 
-pub use wrapper::{CType, from_char_ptr};
+pub use wrapper::{CType, from_char_ptr, FromRaw};
 
 pub use ffi::{OR_NONE, OR_LIMIT, OR_OPTIONS, OR_FILEINFO, OR_AUTHCFG, OR_INDEXES, OR_UNSET,
    ACCESS_CONF, RSRC_CONF, EXEC_ON_READ, NONFATAL_OVERRIDE, NONFATAL_UNKNOWN, NONFATAL_ALL, OR_ALL,
@@ -52,6 +52,8 @@ macro_rules! apache2_module {
    };
 
    ($name:ident, $mod_name:expr, config $config:tt, handlers $handlers:tt) => {
+      use $crate::wrapper::FromRaw;
+
       _declare_config_struct!($name, $config);
 
       _declare_config_wrappers!($name, $config);
@@ -767,7 +769,7 @@ macro_rules! _declare_handler_wrappers {
 
 #[macro_export]
 macro_rules! _declare_single_handler_wrapper {
-   (( $handler:ident, $hook:ident, $order:expr )) => {
+   (( $handler:ident, handler, $order:expr )) => {
       #[no_mangle]
       interpolate_idents! {
          pub extern "C" fn [c_ $handler](r: *mut $crate::ffi::request_rec) -> $crate::c_int {
@@ -776,6 +778,27 @@ macro_rules! _declare_single_handler_wrapper {
                Ok(mut request) => match $handler(&mut request) {
                   Ok(status) => status,
                   Err(_) => $crate::httpd::Status::HTTP_INTERNAL_SERVER_ERROR
+               }.into()
+            }
+         }
+      }
+   };
+
+   (( $handler:ident, post_config, $order:expr )) => {
+      #[no_mangle]
+      interpolate_idents! {
+         pub extern "C" fn [c_ $handler](conf: *mut $crate::ffi::apr_pool_t, log: *mut $crate::ffi::apr_pool_t, temp: *mut $crate::ffi::apr_pool_t, s: *mut $crate::ffi::server_rec) -> $crate::c_int {
+            let conf = $crate::AprPool::from_raw(conf);
+            let log = $crate::AprPool::from_raw(log);
+            let temp = $crate::AprPool::from_raw(temp);
+            let s = $crate::Server::from_raw(s);
+
+            if conf.is_none() || log.is_none() || temp.is_none() || s.is_none() {
+               $crate::httpd::Status::DECLINED.into()
+            } else {
+               match $handler(conf.unwrap(), log.unwrap(), temp.unwrap(), s.unwrap()) {
+                  Ok(status) => status,
+                  Err(_) => $crate::Status::HTTP_INTERNAL_SERVER_ERROR
                }.into()
             }
          }

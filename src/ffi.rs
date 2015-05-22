@@ -495,10 +495,10 @@ pub type take3_fn = extern "C" fn(parms: *mut cmd_parms, mconfig: *mut c_void, w
 pub type flag_fn = extern "C" fn(parms: *mut cmd_parms, mconfig: *mut c_void, on: c_int) -> *const c_char;
 
 pub type hook_handler_fn = extern "C" fn(r: *mut request_rec) -> c_int;
-pub type hook_pre_config_fn = extern "C" fn(conf: *const apr_pool_t, log: *const apr_pool_t, temp: *const apr_pool_t) -> c_int;
-pub type hook_check_config_fn = extern "C" fn(conf: *const apr_pool_t, log: *const apr_pool_t, temp: *const apr_pool_t, s: *const server_rec) -> c_int;
-pub type hook_test_config_fn = extern "C" fn(conf: *const apr_pool_t, s: *const server_rec) -> c_int;
-pub type hook_post_config_fn = extern "C" fn(conf: *const apr_pool_t, log: *const apr_pool_t, temp: *const apr_pool_t, s: *const server_rec) -> c_int;
+pub type hook_pre_config_fn = extern "C" fn(conf: *mut apr_pool_t, log: *mut apr_pool_t, temp: *mut apr_pool_t) -> c_int;
+pub type hook_check_config_fn = extern "C" fn(conf: *mut apr_pool_t, log: *mut apr_pool_t, temp: *mut apr_pool_t, s: *mut server_rec) -> c_int;
+pub type hook_test_config_fn = extern "C" fn(conf: *mut apr_pool_t, s: *mut server_rec) -> c_int;
+pub type hook_post_config_fn = extern "C" fn(conf: *mut apr_pool_t, log: *mut apr_pool_t, temp: *mut apr_pool_t, s: *mut server_rec) -> c_int;
 
 
 extern "C" {
