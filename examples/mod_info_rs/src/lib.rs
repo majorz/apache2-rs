@@ -9,12 +9,12 @@ use apache2::{Request, Status, server_banner, server_description, server_built, 
 
 apache2_module!(info_rs, b"mod_info_rs\0");
 
-fn unwrap_str<'a>(wrapped: Result<&'a str, ()>) -> &'a str {
+fn unwrap_str<'a>(wrapped: Option<&'a str>) -> &'a str {
    wrapped.unwrap_or("--")
 }
 
 fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
-   if try!(r.handler()) != "server-info-rs" {
+   if get!(r.handler()) != "server-info-rs" {
       return Ok(Status::DECLINED)
    }
 
@@ -26,13 +26,13 @@ fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
 
    try!(r.write("<h1>Apache Server Information</h1>"));
 
-   let server_name = unwrap_str(
+   let server_name = try!(
       r.escape_html(
          unwrap_str(r.server_name())
       )
    );
    let server_port = r.server_port();
-   let local_ip = unwrap_str(try!(r.connection()).local_ip());
+   let local_ip = unwrap_str(get!(r.connection()).local_ip());
    try!(r.write(format!("<p>Server: {}:{} (via {})</p>", server_name, server_port, local_ip)));
 
    let description = unwrap_str(server_description());
@@ -58,7 +58,7 @@ fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
 
    try!(r.write("<h2>Current Request Information</h2>"));
 
-   let client_ip = unwrap_str(try!(r.connection()).client_ip());
+   let client_ip = unwrap_str(get!(r.connection()).client_ip());
    try!(r.write(format!("<p>Client IP: {}</p>", client_ip)));
 
    let useragent_ip = unwrap_str(r.useragent_ip());
@@ -121,10 +121,10 @@ fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
    let canonical_filename = unwrap_str(r.canonical_filename());
    try!(r.write(format!("<p>Canonical Filename: {}</p>", canonical_filename)));
 
-   let request_time = unwrap_str(r.rfc822_date(r.request_time()));
+   let request_time = try!(r.rfc822_date(r.request_time()));
    try!(r.write(format!("<p>Request Time: {} / {}</p>", request_time, r.request_time())));
 
-   let mtime = unwrap_str(r.rfc822_date(r.mtime()));
+   let mtime = try!(r.rfc822_date(r.mtime()));
    try!(r.write(format!("<p>Last modified time: {} / {}</p>", mtime, r.mtime())));
 
    let log_id = unwrap_str(r.log_id());
@@ -151,21 +151,21 @@ fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
    let key = "sample_cookie";
    let val = "info_rs";
    match r.cookie(key) {
-      Err(_) => {
+      None => {
          let mut cookie = Cookie::new(key, val);
          cookie.expires = Some(time_now() + 1000000 * 30);
 
          r.set_cookie(cookie);
          try!(r.write(format!("<p>New Cookie – {}: {}</p>", key, val)));
       },
-      Ok(stored) => {
+      Some(stored) => {
          try!(r.write(format!("<p>Cookie – {}: {}</p>", key, stored)));
       }
    };
 
    try!(r.write("<h3>Request Headers</h3>"));
 
-   let headers_in = try!(r.headers_in());
+   let headers_in = get!(r.headers_in());
 
    for (key, val) in headers_in.iter() {
       try!(r.write(format!("<p>{}: {}</p>", key, unwrap_str(val))));
@@ -173,7 +173,7 @@ fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
 
    try!(r.write("<h3>Headers Out</h3>"));
 
-   let headers_out = try!(r.headers_out());
+   let headers_out = get!(r.headers_out());
 
    for (key, val) in headers_out.iter() {
       try!(r.write(format!("<p>{}: {}</p>", key, unwrap_str(val))));
@@ -181,7 +181,7 @@ fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
 
    try!(r.write("<h3>Err Headers Out</h3>"));
 
-   let err_headers_out = try!(r.err_headers_out());
+   let err_headers_out = get!(r.err_headers_out());
 
    for (key, val) in err_headers_out.iter() {
       try!(r.write(format!("<p>{}: {}</p>", key, unwrap_str(val))));
@@ -189,7 +189,7 @@ fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
 
    try!(r.write("<h3>Notes</h3>"));
 
-   let notes = try!(r.notes());
+   let notes = get!(r.notes());
 
    for (key, val) in notes.iter() {
       try!(r.write(format!("<p>{}: {}</p>", key, unwrap_str(val))));
@@ -197,7 +197,7 @@ fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
 
    try!(r.write("<h3>Subprocess Environment</h3>"));
 
-   let subprocess_env = try!(r.subprocess_env());
+   let subprocess_env = get!(r.subprocess_env());
 
    for (key, val) in subprocess_env.iter() {
       try!(r.write(format!("<p>{}: {}</p>", key, unwrap_str(val))));
@@ -219,7 +219,7 @@ fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
    try!(r.write(format!("<p>Encoded URL: {}</p>", encoded_url)));
    try!(r.write(format!("<p>Decoded URL: {}</p>", plain_url)));
 
-   let date = unwrap_str(r.rfc822_date(0));
+   let date = try!(r.rfc822_date(0));
    try!(r.write(format!("<p>RFC 822 Date: {}</p>", date)));
 
    try!(r.write("</body></html>"));

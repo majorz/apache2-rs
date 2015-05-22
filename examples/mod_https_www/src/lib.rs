@@ -13,8 +13,8 @@ apache2_module!(https_www, b"mod_https_www\0", handlers {
 
 
 fn https_www_handler(r: &mut Request) -> Result<Status, ()> {
-   let scheme = try!(r.http_scheme());
-   let hostname = try!(r.hostname());
+   let scheme = r.http_scheme().unwrap();
+   let hostname = r.hostname().unwrap();
 
    let already_www = &hostname[..4] == "www.";
    let already_https = scheme == "https";
@@ -29,12 +29,12 @@ fn https_www_handler(r: &mut Request) -> Result<Status, ()> {
       format!("www.{}", hostname)
    };
 
-   let uri = try!(r.unparsed_uri());
+   let uri = r.unparsed_uri().unwrap();
 
    let location = format!("https://{}{}", full_hostname, uri);
 
    try!(
-      try!(r.headers_out()).set("Location", location)
+      r.headers_out().unwrap().set("Location", location)
    );
 
    r.set_status(apache2::Status::HTTP_MOVED_PERMANENTLY);

@@ -76,7 +76,7 @@ macro_rules! html_template {() => ("<!doctype html>
 
 
 fn coming_soon_handler(r: &mut Request) -> Result<Status, ()> {
-   if try!(r.handler()) != "coming-soon" || try!(r.uri()) != "/" {
+   if get!(r.handler()) != "coming-soon" || get!(r.uri()) != "/" {
       return Ok(Status::DECLINED)
    }
 

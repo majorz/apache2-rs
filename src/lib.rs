@@ -34,6 +34,17 @@ pub type CBoolType = c_int;
 
 
 #[macro_export]
+macro_rules! get {
+   ($expr:expr) => (match $expr {
+      Some(val) => val,
+      None => {
+         return std::result::Result::Err(std::convert::From::from(()))
+      }
+   })
+}
+
+
+#[macro_export]
 macro_rules! apache2_module {
    ($name:ident, $mod_name:expr) => {
       apache2_module!($name, $mod_name, config {});
@@ -186,7 +197,7 @@ macro_rules! _declare_config_struct_impl {
       }
 
       impl<'a> $struct_name<'a> {
-         pub fn new(pool: &mut Pool) -> Result<Self, ()> {
+         pub fn new(pool: &mut Pool) -> Option<Self> {
             let c_config = unsafe {
                $crate::ffi::apr_pcalloc(
                   pool.raw,
@@ -194,18 +205,18 @@ macro_rules! _declare_config_struct_impl {
                ) as *mut <$struct_name<'a> as $crate::CType>::c_type
             };
 
-            $struct_name::from_raw_ptr(pool, c_config)
+            $struct_name::from_raw(pool, c_config)
          }
 
-         pub fn from_raw_ptr(
+         pub fn from_raw(
             pool: &mut Pool,
             ptr: *mut <$struct_name<'a> as $crate::CType>::c_type
-         ) -> Result<Self, ()> {
+         ) -> Option<Self> {
             if ptr.is_null() {
-               Err(())
+               None
             } else {
                let raw: &mut <$struct_name<'a> as $crate::CType>::c_type = unsafe { &mut *ptr };
-               Ok(
+               Some(
                   $struct_name {
                      raw: raw,
                      pool: pool.raw
@@ -240,7 +251,7 @@ macro_rules! _declare_get_module_config {
                $crate::ffi::ap_get_module_config(conf_vector.raw, &[$name _module]) as *mut [C $struct_name]
             };
 
-            $struct_name::from_raw_ptr(pool, config).unwrap()
+            $struct_name::from_raw(pool, config).unwrap()
          }
       }
    }
@@ -250,7 +261,7 @@ macro_rules! _declare_get_module_config {
 #[macro_export]
 macro_rules! _declare_config_wrapper_method {
    ($field_name:ident, StringType) => {
-      pub fn $field_name(&self) -> Result<StringType, ()> {
+      pub fn $field_name(&self) -> Option<StringType> {
          $crate::from_char_ptr(self.raw.$field_name)
       }
 
@@ -262,8 +273,8 @@ macro_rules! _declare_config_wrapper_method {
    };
 
    ($field_name:ident, BoolType) => {
-      pub fn $field_name(&self) -> Result<BoolType, ()> {
-         Ok(self.raw.$field_name != 0)
+      pub fn $field_name(&self) -> BoolType {
+         self.raw.$field_name != 0
       }
 
       interpolate_idents! {
@@ -494,7 +505,7 @@ macro_rules! _declare_create_server_config {
             p: *mut $crate::ffi::apr_pool_t,
             _: *mut $crate::ffi::server_rec
          ) -> *mut $crate::c_void {
-            let mut pool = Pool::from_raw_ptr(p).unwrap();
+            let mut pool = Pool::from_raw(p).unwrap();
 
             let config = $create_server_config(&mut pool);
 
@@ -528,8 +539,8 @@ macro_rules! _declare_create_dir_config {
             p: *mut $crate::ffi::apr_pool_t,
             dir: *mut $crate::c_char
          ) -> *mut $crate::c_void {
-            let mut pool = Pool::from_raw_ptr(p).unwrap();
-            let directory = $crate::from_char_ptr(dir).ok();
+            let mut pool = Pool::from_raw(p).unwrap();
+            let directory = $crate::from_char_ptr(dir);
 
             let config = $create_dir_config(&mut pool, directory);
 
@@ -550,9 +561,9 @@ macro_rules! _declare_merge_config {
             base_conf: *mut $crate::c_void,
             new_conf: *mut $crate::c_void
          ) -> *mut $crate::c_void {
-            let mut pool = Pool::from_raw_ptr(p).unwrap();
-            let base_conf = $config_struct::from_raw_ptr(&mut pool, base_conf as *mut [C $config_struct]).unwrap();
-            let new_conf = $config_struct::from_raw_ptr(&mut pool, new_conf as *mut [C $config_struct]).unwrap();
+            let mut pool = Pool::from_raw(p).unwrap();
+            let base_conf = $config_struct::from_raw(&mut pool, base_conf as *mut [C $config_struct]).unwrap();
+            let new_conf = $config_struct::from_raw(&mut pool, new_conf as *mut [C $config_struct]).unwrap();
 
             let config = $merge_config(&mut pool, &base_conf, &new_conf);
 
@@ -673,8 +684,8 @@ macro_rules! _declare_directive_c_wrapper {
             mconfig: *mut $crate::c_void,
             on: $crate::c_int
          ) -> *const $crate::c_char {
-            let mut wrapper = CmdParms::from_raw_ptr(parms).unwrap();
-            let mut pool = Pool::from_raw_ptr(unsafe { (*parms).pool }).unwrap();
+            let mut wrapper = CmdParms::from_raw(parms).unwrap();
+            let mut pool = Pool::from_raw(unsafe { (*parms).pool }).unwrap();
 
             _call_config_wrapper!($func, &mut wrapper, &mut pool, mconfig, on != 0, $directory).unwrap();
 
@@ -691,8 +702,8 @@ macro_rules! _declare_directive_c_wrapper {
             mconfig: *mut $crate::c_void,
             w: *const $crate::c_char
          ) -> *const $crate::c_char {
-            let mut wrapper = CmdParms::from_raw_ptr(parms).unwrap();
-            let mut pool = Pool::from_raw_ptr(unsafe { (*parms).pool }).unwrap();
+            let mut wrapper = CmdParms::from_raw(parms).unwrap();
+            let mut pool = Pool::from_raw(unsafe { (*parms).pool }).unwrap();
 
             _call_config_wrapper!($func, &mut wrapper, &mut pool, mconfig, $crate::from_char_ptr(w).unwrap(), $directory).unwrap();
 
@@ -711,7 +722,7 @@ macro_rules! _call_config_wrapper {
 
    ($func:ident, $parms:expr, $pool:expr, $mconfig:expr, $arg1:expr, { $config_struct:ident $fields:tt, $create_dir_config:ident }) => {
       interpolate_idents! {
-         $func($parms, $config_struct::from_raw_ptr($pool, $mconfig as *mut [C $config_struct]).ok(), $arg1)
+         $func($parms, $config_struct::from_raw($pool, $mconfig as *mut [C $config_struct]), $arg1)
       }
    };
 
@@ -770,21 +781,41 @@ macro_rules! _declare_handler_wrappers {
 #[macro_export]
 macro_rules! _declare_single_handler_wrapper {
    (( $handler:ident, handler, $order:expr )) => {
+      _declare_hook_handler_wrapper!($handler, $order);
+   };
+
+   (( $handler:ident, translate_name, $order:expr )) => {
+      _declare_hook_handler_wrapper!($handler, $order);
+   };
+
+   (( $handler:ident, post_config, $order:expr )) => {
+      _declare_hook_post_config_wrapper!($handler, $order);
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_hook_handler_wrapper {
+   ($handler:ident, $order:expr) => {
       #[no_mangle]
       interpolate_idents! {
          pub extern "C" fn [c_ $handler](r: *mut $crate::ffi::request_rec) -> $crate::c_int {
-            match $crate::httpd::Request::from_raw_ptr(r) {
-               Err(_) => $crate::httpd::Status::DECLINED.into(),
-               Ok(mut request) => match $handler(&mut request) {
+            match $crate::httpd::Request::from_raw(r) {
+               None => $crate::httpd::Status::DECLINED.into(),
+               Some(mut request) => match $handler(&mut request) {
                   Ok(status) => status,
                   Err(_) => $crate::httpd::Status::HTTP_INTERNAL_SERVER_ERROR
                }.into()
             }
          }
       }
-   };
+   }
+}
 
-   (( $handler:ident, post_config, $order:expr )) => {
+
+#[macro_export]
+macro_rules! _declare_hook_post_config_wrapper {
+   ($handler:ident, $order:expr) => {
       #[no_mangle]
       interpolate_idents! {
          pub extern "C" fn [c_ $handler](conf: *mut $crate::ffi::apr_pool_t, log: *mut $crate::ffi::apr_pool_t, temp: *mut $crate::ffi::apr_pool_t, s: *mut $crate::ffi::server_rec) -> $crate::c_int {

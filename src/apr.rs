@@ -32,10 +32,10 @@ pub type Table<'a> = Wrapper<'a, ffi::apr_table_t>;
 
 
 impl<'a> Table<'a> {
-   pub fn get<T: Into<Vec<u8>>>(&self, key: T) -> Result<&'a str, ()> {
+   pub fn get<T: Into<Vec<u8>>>(&self, key: T) -> Option<&'a str> {
       let key = match CString::new(key) {
          Ok(s) => s,
-         Err(_) => return Err(())
+         Err(_) => return None
       };
 
       from_char_ptr(
@@ -106,9 +106,9 @@ pub struct TableIter<'a> {
 }
 
 impl<'a> Iterator for TableIter<'a> {
-   type Item = (&'a str, Result<&'a str, ()>);
+   type Item = (&'a str, Option<&'a str>);
 
-   fn next(&mut self) -> Option<(&'a str, Result<&'a str, ()>)> {
+   fn next(&mut self) -> Option<(&'a str, Option<&'a str>)> {
       if self.next_idx != self.array_header.nelts as usize {
          let mut elts = self.array_header.elts as *const ffi::apr_table_entry_t;
 
@@ -130,13 +130,13 @@ impl<'a> Iterator for TableIter<'a> {
    }
 }
 
-pub fn apr_version_string<'a>() -> Result<&'a str, ()> {
+pub fn apr_version_string<'a>() -> Option<&'a str> {
    from_char_ptr(
       unsafe { ffi::apr_version_string() }
    )
 }
 
-pub fn apu_version_string<'a>() -> Result<&'a str, ()> {
+pub fn apu_version_string<'a>() -> Option<&'a str> {
    from_char_ptr(
       unsafe { ffi::apu_version_string() }
    )

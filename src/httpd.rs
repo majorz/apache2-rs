@@ -6,7 +6,7 @@ use std::ffi::CString;
 use ffi;
 use std::fmt;
 
-use wrapper::{Wrapper, from_char_ptr};
+use wrapper::{Wrapper, from_char_ptr, FromRaw};
 
 use apr::{Table, Pool};
 use cookie::Cookie;
@@ -262,19 +262,19 @@ pub type Request<'a> = Wrapper<'a, ffi::request_rec>;
 
 
 impl<'a> Request<'a> {
-   pub fn pool(&self) -> Result<Pool, ()> {
-      Wrapper::from_raw_ptr(self.raw.pool)
+   pub fn pool(&self) -> Option<Pool> {
+      Pool::from_raw(self.raw.pool)
    }
 
-   pub fn connection(&self) -> Result<Conn, ()> {
-      Wrapper::from_raw_ptr(self.raw.connection)
+   pub fn connection(&self) -> Option<Conn> {
+      Conn::from_raw(self.raw.connection)
    }
 
-   pub fn server(&self) -> Result<Server, ()> {
-      Wrapper::from_raw_ptr(self.raw.server)
+   pub fn server(&self) -> Option<Server> {
+      Server::from_raw(self.raw.server)
    }
 
-   pub fn the_request(&self) -> Result<&'a str, ()> {
+   pub fn the_request(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.the_request)
    }
 
@@ -294,11 +294,11 @@ impl<'a> Request<'a> {
       self.raw.header_only = header_only as c_int;
    }
 
-   pub fn protocol(&self) -> Result<&'a str, ()> {
+   pub fn protocol(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.protocol)
    }
 
-   pub fn hostname(&self) -> Result<&'a str, ()> {
+   pub fn hostname(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.hostname)
    }
 
@@ -306,7 +306,7 @@ impl<'a> Request<'a> {
       self.raw.request_time
    }
 
-   pub fn status_line(&self) -> Result<&'a str, ()> {
+   pub fn status_line(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.status_line)
    }
 
@@ -318,7 +318,7 @@ impl<'a> Request<'a> {
       self.raw.status = status.into();
    }
 
-   pub fn method(&self) -> Result<&'a str, ()> {
+   pub fn method(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.method)
    }
 
@@ -333,7 +333,7 @@ impl<'a> Request<'a> {
       }
    }
 
-   pub fn range(&self) -> Result<&'a str, ()> {
+   pub fn range(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.range)
    }
 
@@ -341,27 +341,27 @@ impl<'a> Request<'a> {
       return self.raw.clength
    }
 
-   pub fn headers_in(&self) -> Result<Table, ()> {
-      Wrapper::from_raw_ptr(self.raw.headers_in)
+   pub fn headers_in(&self) -> Option<Table> {
+      Table::from_raw(self.raw.headers_in)
    }
 
-   pub fn headers_out(&self) -> Result<Table, ()> {
-      Wrapper::from_raw_ptr(self.raw.headers_out)
+   pub fn headers_out(&self) -> Option<Table> {
+      Table::from_raw(self.raw.headers_out)
    }
 
-   pub fn err_headers_out(&self) -> Result<Table, ()> {
-      Wrapper::from_raw_ptr(self.raw.err_headers_out)
+   pub fn err_headers_out(&self) -> Option<Table> {
+      Table::from_raw(self.raw.err_headers_out)
    }
 
-   pub fn subprocess_env(&self) -> Result<Table, ()> {
-      Wrapper::from_raw_ptr(self.raw.subprocess_env)
+   pub fn subprocess_env(&self) -> Option<Table> {
+      Table::from_raw(self.raw.subprocess_env)
    }
 
-   pub fn notes(&self) -> Result<Table, ()> {
-      Wrapper::from_raw_ptr(self.raw.notes)
+   pub fn notes(&self) -> Option<Table> {
+      Table::from_raw(self.raw.notes)
    }
 
-   pub fn content_type(&self) -> Result<&'a str, ()> {
+   pub fn content_type(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.content_type)
    }
 
@@ -376,63 +376,63 @@ impl<'a> Request<'a> {
       };
    }
 
-   pub fn handler(&self) -> Result<&'a str, ()> {
+   pub fn handler(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.handler)
    }
 
-   pub fn content_encoding(&self) -> Result<&'a str, ()> {
+   pub fn content_encoding(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.content_encoding)
    }
 
-   pub fn vlist_validator(&self) -> Result<&'a str, ()> {
+   pub fn vlist_validator(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.vlist_validator)
    }
 
-   pub fn user(&self) -> Result<&'a str, ()> {
+   pub fn user(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.user)
    }
 
-   pub fn auth_type(&self) -> Result<&'a str, ()> {
+   pub fn auth_type(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.ap_auth_type)
    }
 
-   pub fn unparsed_uri(&self) -> Result<&'a str, ()> {
+   pub fn unparsed_uri(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.unparsed_uri)
    }
 
-   pub fn uri(&self) -> Result<&'a str, ()> {
+   pub fn uri(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.uri)
    }
 
-   pub fn filename(&self) -> Result<&'a str, ()> {
+   pub fn filename(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.filename)
    }
 
-   pub fn canonical_filename(&self) -> Result<&'a str, ()> {
+   pub fn canonical_filename(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.canonical_filename)
    }
 
-   pub fn path_info(&self) -> Result<&'a str, ()> {
+   pub fn path_info(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.path_info)
    }
 
-   pub fn args(&self) -> Result<&'a str, ()> {
+   pub fn args(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.args)
    }
 
-   pub fn per_dir_config(&self) -> Result<ConfVector, ()> {
-      Wrapper::from_raw_ptr(self.raw.per_dir_config)
+   pub fn per_dir_config(&self) -> Option<ConfVector> {
+      ConfVector::from_raw(self.raw.per_dir_config)
    }
 
-   pub fn request_config(&self) -> Result<ConfVector, ()> {
-      Wrapper::from_raw_ptr(self.raw.request_config)
+   pub fn request_config(&self) -> Option<ConfVector> {
+      ConfVector::from_raw(self.raw.request_config)
    }
 
-   pub fn log_id(&self) -> Result<&'a str, ()> {
+   pub fn log_id(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.log_id)
    }
 
-   pub fn useragent_ip(&self) -> Result<&'a str, ()> {
+   pub fn useragent_ip(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.useragent_ip)
    }
 
@@ -470,7 +470,7 @@ impl<'a> Request<'a> {
          )
       };
 
-      from_char_ptr(escaped)
+      from_char_ptr(escaped).ok_or(())
    }
 
    pub fn escape_urlencoded<T: Into<Vec<u8>>>(&self, s: T) -> Result<&'a str, ()> {
@@ -483,7 +483,7 @@ impl<'a> Request<'a> {
          ffi::ap_escape_urlencoded(self.raw.pool, c_str.as_ptr())
       };
 
-      from_char_ptr(escaped)
+      from_char_ptr(escaped).ok_or(())
    }
 
    pub fn unescape_urlencoded<T: Into<Vec<u8>>>(&self, query: T) -> Result<&'a str, ()> {
@@ -497,10 +497,10 @@ impl<'a> Request<'a> {
          return Err(());
       };
 
-      from_char_ptr(c_str)
+      from_char_ptr(c_str).ok_or(())
    }
 
-   pub fn server_name(&self) -> Result<&'a str, ()> {
+   pub fn server_name(&self) -> Option<&'a str> {
       from_char_ptr(
          unsafe { ffi::ap_get_server_name(self.raw) }
       )
@@ -510,19 +510,19 @@ impl<'a> Request<'a> {
       unsafe { ffi::ap_get_server_port(self.raw) }
    }
 
-   pub fn document_root(&self) -> Result<&'a str, ()> {
+   pub fn document_root(&self) -> Option<&'a str> {
       from_char_ptr(
          unsafe { ffi::ap_document_root(self.raw) }
       )
    }
 
-   pub fn auth_name(&self) -> Result<&'a str, ()> {
+   pub fn auth_name(&self) -> Option<&'a str> {
       from_char_ptr(
          unsafe { ffi::ap_auth_name(self.raw) }
       )
    }
 
-   pub fn basic_auth_pw(&self) -> Result<&'a str, ()> {
+   pub fn basic_auth_pw(&self) -> Option<&'a str> {
       let mut pw: *const c_char = ::std::ptr::null_mut();
 
       unsafe {
@@ -533,19 +533,19 @@ impl<'a> Request<'a> {
 
    }
 
-   pub fn context_document_root(&self) -> Result<&'a str, ()> {
+   pub fn context_document_root(&self) -> Option<&'a str> {
       from_char_ptr(
          unsafe { ffi::ap_context_document_root(self.raw) }
       )
    }
 
-   pub fn context_prefix(&self) -> Result<&'a str, ()> {
+   pub fn context_prefix(&self) -> Option<&'a str> {
       from_char_ptr(
          unsafe { ffi::ap_context_prefix(self.raw) }
       )
    }
 
-   pub fn http_scheme(&self) -> Result<&'a str, ()> {
+   pub fn http_scheme(&self) -> Option<&'a str> {
       from_char_ptr(
          unsafe { ffi::ap_run_http_scheme(self.raw) }
       )
@@ -563,7 +563,7 @@ impl<'a> Request<'a> {
       unsafe { ffi::ap_some_auth_required(self.raw) == 1 }
    }
 
-   pub fn cookie<T: Into<Vec<u8>>>(&self, name: T) -> Result<&'a str, ()> {
+   pub fn cookie<T: Into<Vec<u8>>>(&self, name: T) -> Option<&'a str> {
       let c_str_name = ffi::strdup(self.raw.pool, name);
       let mut val: *const c_char = ::std::ptr::null_mut();
 
@@ -615,7 +615,7 @@ impl<'a> Request<'a> {
          return Err(());
       };
 
-      from_char_ptr(encoded)
+      from_char_ptr(encoded).ok_or(())
    }
 
    pub fn base64_decode<T: Into<Vec<u8>>>(&self, encoded: T) -> Result<&'a str, ()> {
@@ -644,7 +644,7 @@ impl<'a> Request<'a> {
          return Err(());
       };
 
-      from_char_ptr(plain)
+      from_char_ptr(plain).ok_or(())
    }
 
    pub fn rfc822_date(&self, t: i64) -> Result<&'a str, ()> {
@@ -656,7 +656,7 @@ impl<'a> Request<'a> {
          ffi::apr_rfc822_date(date, t);
       }
 
-      from_char_ptr(date)
+      from_char_ptr(date).ok_or(())
    }
 }
 
@@ -664,27 +664,27 @@ pub type Conn<'a> = Wrapper<'a, ffi::conn_rec>;
 
 
 impl<'a> Conn<'a> {
-   pub fn client_ip(&self) -> Result<&'a str, ()> {
+   pub fn client_ip(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.client_ip)
    }
 
-   pub fn remote_host(&self) -> Result<&'a str, ()> {
+   pub fn remote_host(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.remote_host)
    }
 
-   pub fn remote_logname(&self) -> Result<&'a str, ()> {
+   pub fn remote_logname(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.remote_logname)
    }
 
-   pub fn local_ip(&self) -> Result<&'a str, ()> {
+   pub fn local_ip(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.local_ip)
    }
 
-   pub fn local_host(&self) -> Result<&'a str, ()> {
+   pub fn local_host(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.local_host)
    }
 
-   pub fn log_id(&self) -> Result<&'a str, ()> {
+   pub fn log_id(&self) -> Option<&'a str> {
       from_char_ptr(self.raw.log_id)
    }
 }
@@ -694,8 +694,8 @@ pub type Server<'a> = Wrapper<'a, ffi::server_rec>;
 
 
 impl<'a> Server<'a> {
-   pub fn module_config(&self) -> Result<ConfVector, ()> {
-      Wrapper::from_raw_ptr(self.raw.module_config)
+   pub fn module_config(&self) -> Option<ConfVector> {
+      ConfVector::from_raw(self.raw.module_config)
    }
 }
 
@@ -704,12 +704,12 @@ pub type CmdParms<'a> = Wrapper<'a, ffi::cmd_parms>;
 
 
 impl<'a> CmdParms<'a> {
-   pub fn server(&self) -> Result<Server, ()> {
-      Wrapper::from_raw_ptr(self.raw.server)
+   pub fn server(&self) -> Option<Server> {
+      Server::from_raw(self.raw.server)
    }
 
-   pub fn pool(&self) -> Result<Pool, ()> {
-      Wrapper::from_raw_ptr(self.raw.pool)
+   pub fn pool(&self) -> Option<Pool> {
+      Pool::from_raw(self.raw.pool)
    }
 }
 
@@ -720,25 +720,25 @@ pub type Module<'a> = Wrapper<'a, ffi::module>;
 pub type ConfVector<'a> = Wrapper<'a, ffi::ap_conf_vector_t>;
 
 
-pub fn server_banner<'a>() -> Result<&'a str, ()> {
+pub fn server_banner<'a>() -> Option<&'a str> {
    from_char_ptr(
       unsafe { ffi::ap_get_server_banner() }
    )
 }
 
-pub fn server_description<'a>() -> Result<&'a str, ()> {
+pub fn server_description<'a>() -> Option<&'a str> {
    from_char_ptr(
       unsafe { ffi::ap_get_server_description() }
    )
 }
 
-pub fn server_built<'a>() -> Result<&'a str, ()> {
+pub fn server_built<'a>() -> Option<&'a str> {
    from_char_ptr(
       unsafe { ffi::ap_get_server_built() }
    )
 }
 
-pub fn show_mpm<'a>() -> Result<&'a str, ()> {
+pub fn show_mpm<'a>() -> Option<&'a str> {
    from_char_ptr(
       unsafe { ffi::ap_show_mpm() }
    )
