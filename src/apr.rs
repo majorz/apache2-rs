@@ -28,10 +28,10 @@ impl Into<::libc::c_int> for HookOrder {
 }
 
 
-pub type AprTable<'a> = Wrapper<'a, ffi::apr_table_t>;
+pub type Table<'a> = Wrapper<'a, ffi::apr_table_t>;
 
 
-impl<'a> AprTable<'a> {
+impl<'a> Table<'a> {
    pub fn get<T: Into<Vec<u8>>>(&self, key: T) -> Result<&'a str, ()> {
       let key = match CString::new(key) {
          Ok(s) => s,
@@ -87,25 +87,25 @@ impl<'a> AprTable<'a> {
       Ok(())
    }
 
-   pub fn iter(&self) -> AprTableIter {
+   pub fn iter(&self) -> TableIter {
       let ptr = unsafe { ffi::apr_table_elts(self.raw) };
       let raw: &ffi::apr_array_header_t = unsafe { &*ptr };
 
-      AprTableIter {
+      TableIter {
          array_header: raw,
          next_idx: 0
       }
    }
 }
 
-pub type AprPool<'a> = Wrapper<'a, ffi::apr_pool_t>;
+pub type Pool<'a> = Wrapper<'a, ffi::apr_pool_t>;
 
-pub struct AprTableIter<'a> {
+pub struct TableIter<'a> {
    array_header: &'a ffi::apr_array_header_t,
    next_idx: usize,
 }
 
-impl<'a> Iterator for AprTableIter<'a> {
+impl<'a> Iterator for TableIter<'a> {
    type Item = (&'a str, Result<&'a str, ()>);
 
    fn next(&mut self) -> Option<(&'a str, Result<&'a str, ()>)> {

@@ -8,7 +8,7 @@ use std::fmt;
 
 use wrapper::{Wrapper, from_char_ptr};
 
-use apr::{AprTable, AprPool};
+use apr::{Table, Pool};
 use cookie::Cookie;
 
 
@@ -262,7 +262,7 @@ pub type Request<'a> = Wrapper<'a, ffi::request_rec>;
 
 
 impl<'a> Request<'a> {
-   pub fn pool(&self) -> Result<AprPool, ()> {
+   pub fn pool(&self) -> Result<Pool, ()> {
       Wrapper::from_raw_ptr(self.raw.pool)
    }
 
@@ -341,23 +341,23 @@ impl<'a> Request<'a> {
       return self.raw.clength
    }
 
-   pub fn headers_in(&self) -> Result<AprTable, ()> {
+   pub fn headers_in(&self) -> Result<Table, ()> {
       Wrapper::from_raw_ptr(self.raw.headers_in)
    }
 
-   pub fn headers_out(&self) -> Result<AprTable, ()> {
+   pub fn headers_out(&self) -> Result<Table, ()> {
       Wrapper::from_raw_ptr(self.raw.headers_out)
    }
 
-   pub fn err_headers_out(&self) -> Result<AprTable, ()> {
+   pub fn err_headers_out(&self) -> Result<Table, ()> {
       Wrapper::from_raw_ptr(self.raw.err_headers_out)
    }
 
-   pub fn subprocess_env(&self) -> Result<AprTable, ()> {
+   pub fn subprocess_env(&self) -> Result<Table, ()> {
       Wrapper::from_raw_ptr(self.raw.subprocess_env)
    }
 
-   pub fn notes(&self) -> Result<AprTable, ()> {
+   pub fn notes(&self) -> Result<Table, ()> {
       Wrapper::from_raw_ptr(self.raw.notes)
    }
 
@@ -708,7 +708,7 @@ impl<'a> CmdParms<'a> {
       Wrapper::from_raw_ptr(self.raw.server)
    }
 
-   pub fn pool(&self) -> Result<AprPool, ()> {
+   pub fn pool(&self) -> Result<Pool, ()> {
       Wrapper::from_raw_ptr(self.raw.pool)
    }
 }
