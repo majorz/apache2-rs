@@ -156,7 +156,11 @@ macro_rules! _declare_config_struct_from_server {
    ($name:ident, { $config_struct:ident $fields:tt, $create_server_config:ident }) => {
       _declare_config_struct_impl!($name, $config_struct $fields);
 
-      _declare_get_module_config!($name, $config_struct, get_server_config);
+      _declare_get_config!($name, $config_struct, get_server_config);
+
+      _declare_get_server_config_from_parms!($config_struct);
+
+      _declare_get_server_config_from_request!($config_struct);
    };
 
    ($name:ident, { $config_struct:ident $fields:tt, $create_server_config:ident, $merge_server_config:ident }) => {
@@ -170,7 +174,9 @@ macro_rules! _declare_config_struct_from_directory {
    ($name:ident, { $config_struct:ident $fields:tt, $create_dir_config:ident }) => {
       _declare_config_struct_impl!($name, $config_struct $fields);
 
-      _declare_get_module_config!($name, $config_struct, get_dir_config);
+      _declare_get_config!($name, $config_struct, get_dir_config);
+
+      _declare_get_dir_config_from_request!($config_struct);
    };
 
    ($name:ident, { $config_struct:ident $fields:tt, $create_dir_config:ident, $merge_dir_config:ident }) => {
@@ -240,7 +246,7 @@ macro_rules! _declare_config_struct_impl {
 
 
 #[macro_export]
-macro_rules! _declare_get_module_config {
+macro_rules! _declare_get_config {
    ($name:ident, $struct_name:ident, $get_config_fn:ident) => {
       interpolate_idents! {
          pub fn $get_config_fn<'a>(
@@ -253,6 +259,45 @@ macro_rules! _declare_get_module_config {
 
             $struct_name::from_raw(pool, config).unwrap()
          }
+      }
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_get_server_config_from_parms {
+   ($struct_name:ident) => {
+      pub fn get_server_config_from_parms<'a>(parms: &mut $crate::CmdParms) -> $struct_name<'a> {
+         get_server_config(
+            &mut parms.pool().unwrap(),
+            &parms.server().unwrap().module_config().unwrap()
+         )
+      }
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_get_server_config_from_request {
+   ($struct_name:ident) => {
+      pub fn get_server_config_from_request<'a>(r: &mut $crate::Request) -> $struct_name<'a> {
+         get_server_config(
+            &mut r.pool().unwrap(),
+            &r.server().unwrap().module_config().unwrap()
+         )
+      }
+   }
+}
+
+
+#[macro_export]
+macro_rules! _declare_get_dir_config_from_request {
+   ($struct_name:ident) => {
+      pub fn get_dir_config_from_request<'a>(r: &mut $crate::Request) -> $struct_name<'a> {
+         get_dir_config(
+            &mut r.pool().unwrap(),
+            &r.per_dir_config().unwrap()
+         )
       }
    }
 }

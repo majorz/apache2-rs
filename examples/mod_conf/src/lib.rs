@@ -77,7 +77,7 @@ fn merge_dir_config<'a>(pool: &mut Pool, base_conf: &'a DirectoryConfig, new_con
 
 
 fn enabled_var(parms: &mut CmdParms, _: Option<DirectoryConfig>, on: bool) -> Result<(), ()> {
-   let mut config = _get_server_config_from_parms(parms);
+   let mut config = get_server_config_from_parms(parms);
 
    config.set_enabled(on);
 
@@ -86,19 +86,11 @@ fn enabled_var(parms: &mut CmdParms, _: Option<DirectoryConfig>, on: bool) -> Re
 
 
 fn string_var<'a>(parms: &mut CmdParms, _: Option<DirectoryConfig>, w: &'a str) -> Result<(), ()> {
-   let mut config = _get_server_config_from_parms(parms);
+   let mut config = get_server_config_from_parms(parms);
 
    config.set_string_var(w);
 
    Ok(())
-}
-
-
-fn _get_server_config_from_parms<'a>(parms: &mut CmdParms) -> ServerConfig<'a> {
-   get_server_config(
-      &mut parms.pool().unwrap(),
-      &parms.server().unwrap().module_config().unwrap()
-   )
 }
 
 
@@ -121,10 +113,7 @@ fn conf_handler(r: &mut Request) -> Result<Status, ()> {
       return Ok(Status::DECLINED)
    }
 
-   let server_config = get_server_config(
-      &mut get!(r.pool()),
-      &get!(get!(r.server()).module_config())
-   );
+   let server_config = get_server_config_from_request(r);
 
    r.set_content_type("text/plain; charset=utf-8");
 
@@ -134,10 +123,7 @@ fn conf_handler(r: &mut Request) -> Result<Status, ()> {
    let string_var = unwrap_str(server_config.string_var());
    try!(r.write(format!("StringVar: {}\n", string_var)));
 
-   let dir_config = get_dir_config(
-      &mut get!(r.pool()),
-      &get!(r.per_dir_config())
-   );
+   let dir_config = get_dir_config_from_request(r);
 
    let dir_var = unwrap_str(dir_config.dir_var());
    try!(r.write(format!("DirVar: {}\n", dir_var)));
