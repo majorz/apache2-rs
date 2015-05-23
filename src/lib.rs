@@ -499,7 +499,6 @@ macro_rules! _declare_server_config_wrappers_from_server {
 #[macro_export]
 macro_rules! _declare_create_server_config {
    ($name:ident, $config_struct:ident, $create_server_config:ident) => {
-      #[no_mangle]
       interpolate_idents! {
          extern "C" fn [c_ $create_server_config](
             p: *mut $crate::ffi::apr_pool_t,
@@ -533,7 +532,6 @@ macro_rules! _declare_dir_config_wrappers_from_directory {
 #[macro_export]
 macro_rules! _declare_create_dir_config {
    ($name:ident, $config_struct:ident, $create_dir_config:ident) => {
-      #[no_mangle]
       interpolate_idents! {
          extern "C" fn [c_ $create_dir_config](
             p: *mut $crate::ffi::apr_pool_t,
@@ -554,7 +552,6 @@ macro_rules! _declare_create_dir_config {
 #[macro_export]
 macro_rules! _declare_merge_config {
    ($name:ident, $config_struct:ident, $merge_config:ident) => {
-      #[no_mangle]
       interpolate_idents! {
          extern "C" fn [c_ $merge_config](
             p: *mut $crate::ffi::apr_pool_t,
@@ -581,8 +578,7 @@ macro_rules! _declare_directive_array {
    };
 
    ($directives_name:ident, [ ]) => {
-      #[no_mangle]
-      pub static mut $directives_name: [$crate::ffi::command_rec; 1] = [
+      static mut $directives_name: [$crate::ffi::command_rec; 1] = [
          _null_command_rec!()
       ];
    };
@@ -620,8 +616,7 @@ macro_rules! _declare_directive_array {
    };
 
    ($directives_name:ident, $cmd_count:expr, [ $($cmd:tt),* ]) => {
-      #[no_mangle]
-      pub static mut $directives_name: [$crate::ffi::command_rec; $cmd_count] = [
+      static mut $directives_name: [$crate::ffi::command_rec; $cmd_count] = [
          $( _declare_command_rec!($cmd) ),*,
          _null_command_rec!()
       ];
@@ -676,39 +671,46 @@ macro_rules! _declare_directive_wrappers {
 
 #[macro_export]
 macro_rules! _declare_directive_c_wrapper {
-   (FLAG, $func:ident, $directory:tt) => {
-      #[no_mangle]
+   ($args_how:ident, $func:ident, $directory:tt) => {
       interpolate_idents! {
-         extern "C" fn [c_ $func](
-            parms: *mut $crate::ffi::cmd_parms,
-            mconfig: *mut $crate::c_void,
-            on: $crate::c_int
-         ) -> *const $crate::c_char {
-            let mut wrapper = CmdParms::from_raw(parms).unwrap();
-            let mut pool = Pool::from_raw(unsafe { (*parms).pool }).unwrap();
+         _declare_directive_c_wrapper_impl!($args_how, $func, [c_ $func], $directory);
+      }
+   }
+}
 
-            _call_config_wrapper!($func, &mut wrapper, &mut pool, mconfig, on != 0, $directory).unwrap();
+#[macro_export]
+macro_rules! _declare_directive_c_wrapper_impl {
+   (FLAG, $func:ident, $c_func:ident, $directory:tt) => {
+      #[allow(unused_variables)]
+      #[allow(unused_mut)]
+      extern "C" fn $c_func(
+         parms: *mut $crate::ffi::cmd_parms,
+         mconfig: *mut $crate::c_void,
+         on: $crate::c_int
+      ) -> *const $crate::c_char {
+         let mut wrapper = CmdParms::from_raw(parms).unwrap();
+         let mut pool = Pool::from_raw(unsafe { (*parms).pool }).unwrap();
 
-            std::ptr::null()
-         }
+         _call_config_wrapper!($func, &mut wrapper, &mut pool, mconfig, on != 0, $directory).unwrap();
+
+         std::ptr::null()
       }
    };
 
-   (TAKE1, $func:ident, $directory:tt) => {
-      #[no_mangle]
-      interpolate_idents! {
-         extern "C" fn [c_ $func](
-            parms: *mut $crate::ffi::cmd_parms,
-            mconfig: *mut $crate::c_void,
-            w: *const $crate::c_char
-         ) -> *const $crate::c_char {
-            let mut wrapper = CmdParms::from_raw(parms).unwrap();
-            let mut pool = Pool::from_raw(unsafe { (*parms).pool }).unwrap();
+   (TAKE1, $func:ident, $c_func:ident, $directory:tt) => {
+      #[allow(unused_variables)]
+      #[allow(unused_mut)]
+      extern "C" fn $c_func(
+         parms: *mut $crate::ffi::cmd_parms,
+         mconfig: *mut $crate::c_void,
+         w: *const $crate::c_char
+      ) -> *const $crate::c_char {
+         let mut wrapper = CmdParms::from_raw(parms).unwrap();
+         let mut pool = Pool::from_raw(unsafe { (*parms).pool }).unwrap();
 
-            _call_config_wrapper!($func, &mut wrapper, &mut pool, mconfig, $crate::from_char_ptr(w).unwrap(), $directory).unwrap();
+         _call_config_wrapper!($func, &mut wrapper, &mut pool, mconfig, $crate::from_char_ptr(w).unwrap(), $directory).unwrap();
 
-            std::ptr::null()
-         }
+         std::ptr::null()
       }
    }
 }
@@ -797,9 +799,8 @@ macro_rules! _declare_single_handler_wrapper {
 #[macro_export]
 macro_rules! _declare_hook_handler_wrapper {
    ($handler:ident, $order:expr) => {
-      #[no_mangle]
       interpolate_idents! {
-         pub extern "C" fn [c_ $handler](r: *mut $crate::ffi::request_rec) -> $crate::c_int {
+         extern "C" fn [c_ $handler](r: *mut $crate::ffi::request_rec) -> $crate::c_int {
             match $crate::httpd::Request::from_raw(r) {
                None => $crate::httpd::Status::DECLINED.into(),
                Some(mut request) => match $handler(&mut request) {
@@ -816,9 +817,8 @@ macro_rules! _declare_hook_handler_wrapper {
 #[macro_export]
 macro_rules! _declare_hook_post_config_wrapper {
    ($handler:ident, $order:expr) => {
-      #[no_mangle]
       interpolate_idents! {
-         pub extern "C" fn [c_ $handler](conf: *mut $crate::ffi::apr_pool_t, log: *mut $crate::ffi::apr_pool_t, temp: *mut $crate::ffi::apr_pool_t, s: *mut $crate::ffi::server_rec) -> $crate::c_int {
+         extern "C" fn [c_ $handler](conf: *mut $crate::ffi::apr_pool_t, log: *mut $crate::ffi::apr_pool_t, temp: *mut $crate::ffi::apr_pool_t, s: *mut $crate::ffi::server_rec) -> $crate::c_int {
             let conf = $crate::Pool::from_raw(conf);
             let log = $crate::Pool::from_raw(log);
             let temp = $crate::Pool::from_raw(temp);
@@ -827,7 +827,7 @@ macro_rules! _declare_hook_post_config_wrapper {
             if conf.is_none() || log.is_none() || temp.is_none() || s.is_none() {
                $crate::httpd::Status::DECLINED.into()
             } else {
-               match $handler(conf.unwrap(), log.unwrap(), temp.unwrap(), s.unwrap()) {
+               match $handler(&mut conf.unwrap(), &mut log.unwrap(), &mut temp.unwrap(), &mut s.unwrap()) {
                   Ok(status) => status,
                   Err(_) => $crate::Status::HTTP_INTERNAL_SERVER_ERROR
                }.into()
