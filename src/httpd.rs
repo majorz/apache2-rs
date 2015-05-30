@@ -692,13 +692,12 @@ impl ListProviderGroups {
    str_getter!(provider_version);
 }
 
-pub fn list_provider_groups<'a>(pool: &mut Pool) -> ArrayHeaderIter<'a, ListProviderGroups> {
+pub fn list_provider_groups(pool: &mut Pool) -> ArrayHeaderIter<ListProviderGroups> {
    let ptr = unsafe { ffi::ap_list_provider_groups(pool.ptr) };
-   let raw: &ffi::apr_array_header_t = unsafe { &*ptr };
 
    ArrayHeaderIter::<ListProviderGroups> {
       phantom: PhantomData,
-      array_header: raw,
+      array_header: ptr,
       next_idx: 0
    }
 }
