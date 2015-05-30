@@ -28,12 +28,12 @@ impl<T: Copy + Clone> FromRaw<*mut T> for Wrapper<T> {
    }
 }
 
-pub trait CType {
-   type c_type;
+pub trait WrappedType {
+   type wrapped_type;
 }
 
-impl<T: Copy + Clone> CType for Wrapper<T> {
-   type c_type = T;
+impl<T: Copy + Clone> WrappedType for Wrapper<T> {
+   type wrapped_type = T;
 }
 
 #[inline]

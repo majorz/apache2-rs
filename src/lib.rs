@@ -18,7 +18,7 @@ pub use apr::{apr_version_string, apu_version_string, HookOrder, Pool, time_now}
 
 pub use cookie::Cookie;
 
-pub use wrapper::{CType, from_char_ptr, FromRaw};
+pub use wrapper::{WrappedType, from_char_ptr, FromRaw};
 
 pub use ffi::{OR_NONE, OR_LIMIT, OR_OPTIONS, OR_FILEINFO, OR_AUTHCFG, OR_INDEXES, OR_UNSET,
    ACCESS_CONF, RSRC_CONF, EXEC_ON_READ, NONFATAL_OVERRIDE, NONFATAL_UNKNOWN, NONFATAL_ALL, OR_ALL,
@@ -198,7 +198,7 @@ macro_rules! _declare_config_struct_impl {
       }
 
       pub struct $struct_name<'a> {
-         pub raw: &'a mut <$struct_name<'a> as $crate::CType>::c_type,
+         pub raw: &'a mut <$struct_name<'a> as $crate::WrappedType>::wrapped_type,
          pub pool: *mut $crate::ffi::apr_pool_t
       }
 
@@ -207,8 +207,8 @@ macro_rules! _declare_config_struct_impl {
             let c_config = unsafe {
                $crate::ffi::apr_pcalloc(
                   pool.ptr,
-                  std::mem::size_of::<<$struct_name<'a> as $crate::CType>::c_type>() as $crate::ffi::apr_size_t
-               ) as *mut <$struct_name<'a> as $crate::CType>::c_type
+                  std::mem::size_of::<<$struct_name<'a> as $crate::WrappedType>::wrapped_type>() as $crate::ffi::apr_size_t
+               ) as *mut <$struct_name<'a> as $crate::WrappedType>::wrapped_type
             };
 
             $struct_name::from_raw(pool, c_config)
@@ -216,12 +216,12 @@ macro_rules! _declare_config_struct_impl {
 
          pub fn from_raw(
             pool: &mut Pool,
-            ptr: *mut <$struct_name<'a> as $crate::CType>::c_type
+            ptr: *mut <$struct_name<'a> as $crate::WrappedType>::wrapped_type
          ) -> Option<Self> {
             if ptr.is_null() {
                None
             } else {
-               let raw: &mut <$struct_name<'a> as $crate::CType>::c_type = unsafe { &mut *ptr };
+               let raw: &mut <$struct_name<'a> as $crate::WrappedType>::wrapped_type = unsafe { &mut *ptr };
                Some(
                   $struct_name {
                      raw: raw,
@@ -237,8 +237,8 @@ macro_rules! _declare_config_struct_impl {
       }
 
       interpolate_idents! {
-         impl<'a> $crate::CType for $struct_name<'a> {
-            type c_type = [C $struct_name];
+         impl<'a> $crate::WrappedType for $struct_name<'a> {
+            type wrapped_type = [C $struct_name];
          }
       }
    }

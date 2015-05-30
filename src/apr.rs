@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 
 use ffi;
 
-use wrapper::{Wrapper, from_char_ptr, CType, FromRaw};
+use wrapper::{Wrapper, from_char_ptr, WrappedType, FromRaw};
 
 
 pub enum HookOrder {
@@ -137,17 +137,17 @@ pub struct ArrayHeaderIter<'a, T> {
    pub next_idx: usize,
 }
 
-impl<'a, T: Copy + CType + FromRaw<*mut <T as CType>::c_type>> Iterator for ArrayHeaderIter<'a, T> {
+impl<'a, T: Copy + WrappedType + FromRaw<*mut <T as WrappedType>::wrapped_type>> Iterator for ArrayHeaderIter<'a, T> {
    type Item = T;
 
    fn next(&mut self) -> Option<Self::Item> {
       if self.next_idx != self.array_header.nelts as usize {
-         let mut elt = self.array_header.elts as *const T::c_type;
+         let mut elt = self.array_header.elts as *const T::wrapped_type;
 
          elt = unsafe { elt.offset(self.next_idx as isize)};
          self.next_idx += 1;
 
-         T::from_raw(elt as *mut <T as CType>::c_type)
+         T::from_raw(elt as *mut <T as WrappedType>::wrapped_type)
       } else {
          None
       }
