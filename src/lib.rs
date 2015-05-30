@@ -12,7 +12,7 @@ pub mod cookie;
 pub use libc::{c_void, c_char, c_int};
 
 pub use httpd::{Request, Status, ProxyReq, CmdParms, Server, server_banner, server_description,
-   server_built, show_mpm, ConfVector};
+   server_built, show_mpm, ConfVector, list_provider_groups};
 
 pub use apr::{apr_version_string, apu_version_string, HookOrder, Pool, time_now};
 
@@ -206,7 +206,7 @@ macro_rules! _declare_config_struct_impl {
          pub fn new(pool: &mut Pool) -> Option<Self> {
             let c_config = unsafe {
                $crate::ffi::apr_pcalloc(
-                  pool.raw,
+                  pool.ptr,
                   std::mem::size_of::<<$struct_name<'a> as $crate::CType>::c_type>() as $crate::ffi::apr_size_t
                ) as *mut <$struct_name<'a> as $crate::CType>::c_type
             };
@@ -225,7 +225,7 @@ macro_rules! _declare_config_struct_impl {
                Some(
                   $struct_name {
                      raw: raw,
-                     pool: pool.raw
+                     pool: pool.ptr
                   }
                )
             }
@@ -254,7 +254,7 @@ macro_rules! _declare_get_config {
             conf_vector: &$crate::ConfVector
          ) -> $struct_name<'a> {
             let config = unsafe {
-               $crate::ffi::ap_get_module_config(conf_vector.raw, &[$name _module]) as *mut [C $struct_name]
+               $crate::ffi::ap_get_module_config(conf_vector.ptr, &[$name _module]) as *mut [C $struct_name]
             };
 
             $struct_name::from_raw(pool, config).unwrap()

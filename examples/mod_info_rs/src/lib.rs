@@ -76,7 +76,7 @@ fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
    let http_scheme = unwrap_str(r.http_scheme());
    try!(r.write(format!("<p>HTTP Scheme: {}</p>", http_scheme)));
 
-   try!(r.write(format!("<p>HTTP/0.9: {:?}</p>", r.http09())));
+   try!(r.write(format!("<p>HTTP/0.9: {:?}</p>", r.assbackwards())));
 
    let method = unwrap_str(r.method());
    try!(r.write(format!("<p>Method: {}</p>", method)));
@@ -135,8 +135,8 @@ fn info_rs_handler(r: &mut Request) -> Result<Status, ()> {
 
    try!(r.write(format!("<p>Some Auth Required: {}</p>", r.some_auth_required())));
 
-   let auth_type = unwrap_str(r.auth_type());
-   try!(r.write(format!("<p>Auth Type: {}</p>", auth_type)));
+   let ap_auth_type = unwrap_str(r.ap_auth_type());
+   try!(r.write(format!("<p>Auth Type: {}</p>", ap_auth_type)));
 
    let auth_name = unwrap_str(r.auth_name());
    try!(r.write(format!("<p>Auth Name: {}</p>", auth_name)));

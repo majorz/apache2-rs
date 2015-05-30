@@ -1,3 +1,4 @@
+#![allow(raw_pointer_derive)]
 #![allow(non_camel_case_types)]
 
 use std::mem;
@@ -40,6 +41,7 @@ pub type apr_interval_time_t = apr_int64_t;
 pub type apr_port_t = apr_uint16_t;
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct apr_array_header_t {
    pub pool: *mut apr_pool_t,
    pub elt_size: c_int,
@@ -49,6 +51,7 @@ pub struct apr_array_header_t {
 }
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct apr_table_entry_t {
    pub key: *mut c_char,
    pub val: *mut c_char,
@@ -56,27 +59,37 @@ pub struct apr_table_entry_t {
 }
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct apr_bucket_brigade;
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct apr_finfo_t;
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct apr_sockaddr_t;
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct apr_uri_t;
 
+#[derive(Copy, Clone)]
 pub enum apr_bucket_alloc_t { }
 
+#[derive(Copy, Clone)]
 pub enum apr_pool_t { }
 
+#[derive(Copy, Clone)]
 pub enum apr_table_t { }
 
+#[derive(Copy, Clone)]
 pub enum apr_thread_mutex_t { }
 
+#[derive(Copy, Clone)]
 pub enum apr_thread_t { }
 
+#[derive(Copy, Clone)]
 pub enum apr_file_t { }
 
 extern "C" {
@@ -91,7 +104,7 @@ extern "C" {
 
    pub fn apr_pstrmemdup(p: *mut apr_pool_t, s: *const c_char, n: apr_size_t) -> *mut c_char;
    pub fn apr_palloc(p: *mut apr_pool_t, size: apr_size_t) -> *mut c_void;
-   pub fn apr_pcalloc(p: *mut apr_pool_t, size: apr_size_t) -> *mut ::libc::c_void;
+   pub fn apr_pcalloc(p: *mut apr_pool_t, size: apr_size_t) -> *mut c_void;
 
    pub fn apr_base64_encode_len(len: c_int) -> c_int;
    pub fn apr_base64_encode(coded_dst: *mut c_char, plain_src: *const c_char, len_plain_src: c_int) -> c_int;
@@ -220,6 +233,7 @@ pub const NONFATAL_ALL:       c_int = NONFATAL_OVERRIDE | NONFATAL_UNKNOWN;
 pub const OR_ALL:             c_int = OR_LIMIT | OR_OPTIONS | OR_FILEINFO | OR_AUTHCFG | OR_INDEXES;
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct request_rec {
    pub pool: *mut apr_pool_t,
    pub connection: *mut conn_rec,
@@ -296,6 +310,7 @@ pub struct request_rec {
 }
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct conn_rec {
    pub pool: *mut apr_pool_t,
    pub base_server: *mut server_rec,
@@ -328,6 +343,7 @@ pub struct conn_rec {
 }
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct server_rec {
    pub process: *mut process_rec,
    pub next: *mut server_rec,
@@ -359,12 +375,14 @@ pub struct server_rec {
 }
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct ap_logconf {
    pub module_levels: *mut c_char,
    pub level: c_int,
 }
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct module {
    pub version: c_int,
    pub minor_version: c_int,
@@ -383,6 +401,7 @@ pub struct module {
 }
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct cmd_func {
    pub _bindgen_data_: [u64; 1usize],
 }
@@ -417,6 +436,7 @@ impl cmd_func {
 }
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct command_rec {
    pub name: *const c_char,
    pub func: cmd_func,
@@ -428,6 +448,7 @@ pub struct command_rec {
 
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct cmd_parms {
    pub info: *mut c_void,
    pub _override: c_int,
@@ -448,28 +469,50 @@ pub struct cmd_parms {
 }
 
 #[repr(C)]
+#[derive(Copy, Clone)]
+pub struct ap_list_provider_names_t {
+   pub provider_name: *const c_char,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct ap_list_provider_groups_t {
+   pub provider_group: *const c_char,
+   pub provider_version: *const c_char,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
 pub struct ap_method_list_t;
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct ap_configfile_t;
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct ap_directive_t;
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct conn_state_t;
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct htaccess_result;
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct process_rec;
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct server_addr_rec;
 
+#[derive(Copy, Clone)]
 pub enum ap_filter_t { }
 
+#[derive(Copy, Clone)]
 pub enum ap_conf_vector_t { }
 
 pub type cmd_how = c_uint;
@@ -540,6 +583,11 @@ extern "C" {
 
    pub fn ap_get_module_config(cv: *const ap_conf_vector_t, m: *const module) -> *mut c_void;
    pub fn ap_set_module_config(cv: *mut ap_conf_vector_t, m: *const module, val: *mut c_void) -> ();
+
+   pub fn ap_register_provider(pool: *mut apr_pool_t, provider_group: *const c_char, provider_name: *const c_char, provider_version: *const c_char, provider: *const c_void) -> apr_status_t;
+   pub fn ap_lookup_provider(provider_group: *const c_char, provider_name: *const c_char, provider_version: *const c_char) -> *mut c_void;
+   pub fn ap_list_provider_names(pool: *mut apr_pool_t, provider_group: *const c_char, provider_version: *const c_char) -> *mut apr_array_header_t;
+   pub fn ap_list_provider_groups(pool: *mut apr_pool_t) -> *mut apr_array_header_t;
 
    pub fn ap_hook_handler(f: Option<hook_handler_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);
    pub fn ap_hook_pre_config(f: Option<hook_pre_config_fn>, pre: *const *const c_char, succ: *const *const c_char, order: c_int);

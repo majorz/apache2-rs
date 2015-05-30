@@ -1,25 +1,27 @@
+#![allow(raw_pointer_derive)]
+
 use std::str;
 use std::ffi::CStr;
 use libc::c_char;
 
 
 pub trait FromRaw<T> {
-    fn from_raw(T) -> Option<Self>;
+   fn from_raw(T) -> Option<Self>;
 }
 
-pub struct Wrapper<'a, T: 'a> {
-   pub raw: &'a mut T
+#[derive(Copy, Clone)]
+pub struct Wrapper<T: Copy + Clone> {
+   pub ptr: *mut T
 }
 
-impl<'a, T> FromRaw<*mut T> for Wrapper<'a, T> {
-   fn from_raw(ptr: *mut T) -> Option<Wrapper<'a, T>> {
+impl<T: Copy + Clone> FromRaw<*mut T> for Wrapper<T> {
+   fn from_raw(ptr: *mut T) -> Option<Wrapper<T>> {
       if ptr.is_null() {
          None
       } else {
-         let raw: &mut T = unsafe { &mut *ptr };
          Some(
             Wrapper::<T> {
-               raw: raw
+               ptr: ptr
             }
          )
       }
@@ -30,7 +32,7 @@ pub trait CType {
    type c_type;
 }
 
-impl<'a, T> CType for Wrapper<'a, T> {
+impl<T: Copy + Clone> CType for Wrapper<T> {
    type c_type = T;
 }
 

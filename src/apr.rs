@@ -1,10 +1,11 @@
 #![allow(non_camel_case_types)]
 
 use std::ffi::CString;
+use std::marker::PhantomData;
 
 use ffi;
 
-use wrapper::{Wrapper, from_char_ptr};
+use wrapper::{Wrapper, from_char_ptr, CType, FromRaw};
 
 
 pub enum HookOrder {
@@ -28,18 +29,18 @@ impl Into<::libc::c_int> for HookOrder {
 }
 
 
-pub type Table<'a> = Wrapper<'a, ffi::apr_table_t>;
+pub type Table = Wrapper<ffi::apr_table_t>;
 
 
-impl<'a> Table<'a> {
-   pub fn get<T: Into<Vec<u8>>>(&self, key: T) -> Option<&'a str> {
+impl Table {
+   pub fn get<'a, T: Into<Vec<u8>>>(&self, key: T) -> Option<&'a str> {
       let key = match CString::new(key) {
          Ok(s) => s,
          Err(_) => return None
       };
 
       from_char_ptr(
-         unsafe { ffi::apr_table_get(self.raw, key.as_ptr()) }
+         unsafe { ffi::apr_table_get(self.ptr, key.as_ptr()) }
       )
    }
 
@@ -56,7 +57,7 @@ impl<'a> Table<'a> {
 
       unsafe {
          ffi::apr_table_set(
-            self.raw,
+            self.ptr,
             key.as_ptr(),
             val.as_ptr()
          )
@@ -78,7 +79,7 @@ impl<'a> Table<'a> {
 
       unsafe {
          ffi::apr_table_add(
-            self.raw,
+            self.ptr,
             key.as_ptr(),
             val.as_ptr()
          )
@@ -88,7 +89,7 @@ impl<'a> Table<'a> {
    }
 
    pub fn iter(&self) -> TableIter {
-      let ptr = unsafe { ffi::apr_table_elts(self.raw) };
+      let ptr = unsafe { ffi::apr_table_elts(self.ptr) };
       let raw: &ffi::apr_array_header_t = unsafe { &*ptr };
 
       TableIter {
@@ -98,11 +99,11 @@ impl<'a> Table<'a> {
    }
 }
 
-pub type Pool<'a> = Wrapper<'a, ffi::apr_pool_t>;
+pub type Pool = Wrapper<ffi::apr_pool_t>;
 
 pub struct TableIter<'a> {
-   array_header: &'a ffi::apr_array_header_t,
-   next_idx: usize,
+   pub array_header: &'a ffi::apr_array_header_t,
+   pub next_idx: usize,
 }
 
 impl<'a> Iterator for TableIter<'a> {
@@ -129,6 +130,35 @@ impl<'a> Iterator for TableIter<'a> {
       (rem, Some(rem))
    }
 }
+
+pub struct ArrayHeaderIter<'a, T> {
+   pub phantom: PhantomData<T>,
+   pub array_header: &'a ffi::apr_array_header_t,
+   pub next_idx: usize,
+}
+
+impl<'a, T: Copy + CType + FromRaw<*mut <T as CType>::c_type>> Iterator for ArrayHeaderIter<'a, T> {
+   type Item = T;
+
+   fn next(&mut self) -> Option<Self::Item> {
+      if self.next_idx != self.array_header.nelts as usize {
+         let mut elt = self.array_header.elts as *const T::c_type;
+
+         elt = unsafe { elt.offset(self.next_idx as isize)};
+         self.next_idx += 1;
+
+         T::from_raw(elt as *mut <T as CType>::c_type)
+      } else {
+         None
+      }
+   }
+
+   fn size_hint(&self) -> (usize, Option<usize>) {
+      let rem = self.array_header.nelts as usize - self.next_idx;
+      (rem, Some(rem))
+   }
+}
+
 
 pub fn apr_version_string<'a>() -> Option<&'a str> {
    from_char_ptr(
