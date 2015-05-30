@@ -131,18 +131,22 @@ impl<'a> Iterator for TableIter<'a> {
    }
 }
 
-pub struct ArrayHeaderIter<'a, T> {
+pub struct ArrayHeaderIter<T> {
    pub phantom: PhantomData<T>,
-   pub array_header: &'a ffi::apr_array_header_t,
+   pub array_header: *mut ffi::apr_array_header_t,
    pub next_idx: usize,
 }
 
-impl<'a, T: Copy + WrappedType + FromRaw<*mut <T as WrappedType>::wrapped_type>> Iterator for ArrayHeaderIter<'a, T> {
+impl<T: Copy + WrappedType + FromRaw<*mut <T as WrappedType>::wrapped_type>> Iterator for ArrayHeaderIter<T> {
    type Item = T;
 
    fn next(&mut self) -> Option<Self::Item> {
-      if self.next_idx != self.array_header.nelts as usize {
-         let mut elt = self.array_header.elts as *const T::wrapped_type;
+      if self.array_header.is_null() {
+         return None;
+      }
+      let array_header: &ffi::apr_array_header_t = unsafe { &*self.array_header };
+      if self.next_idx != array_header.nelts as usize {
+         let mut elt = array_header.elts as *const T::wrapped_type;
 
          elt = unsafe { elt.offset(self.next_idx as isize)};
          self.next_idx += 1;
@@ -154,7 +158,11 @@ impl<'a, T: Copy + WrappedType + FromRaw<*mut <T as WrappedType>::wrapped_type>>
    }
 
    fn size_hint(&self) -> (usize, Option<usize>) {
-      let rem = self.array_header.nelts as usize - self.next_idx;
+      if self.array_header.is_null() {
+         return (0, None);
+      }
+      let array_header: &ffi::apr_array_header_t = unsafe { &*self.array_header };
+      let rem = array_header.nelts as usize - self.next_idx;
       (rem, Some(rem))
    }
 }
