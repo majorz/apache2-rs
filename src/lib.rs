@@ -12,7 +12,7 @@ pub mod cookie;
 pub use libc::{c_void, c_char, c_int};
 
 pub use httpd::{Request, Status, ProxyReq, CmdParms, Server, server_banner, server_description,
-   server_built, show_mpm, ConfVector, list_provider_groups};
+   server_built, show_mpm, ConfVector, list_provider_groups, list_provider_names};
 
 pub use apr::{apr_version_string, apu_version_string, HookOrder, Pool, time_now};
 
