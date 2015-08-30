@@ -1,7 +1,7 @@
 #![allow(non_camel_case_types)]
 #![allow(unused_unsafe)]
 
-use libc::{c_void, c_int, c_char};
+use libc::{c_void, c_int, c_uint, c_char, c_uchar, strlen};
 
 use std::{fmt, ptr};
 use std::ffi::CString;
@@ -9,7 +9,7 @@ use std::marker::PhantomData;
 
 use ffi;
 
-use wrapper::{Wrapper, from_char_ptr, FromRaw};
+use wrapper::{Wrapper, from_char_ptr, FromRaw, WrappedType};
 
 use apr::{Table, Pool, ArrayHeaderIter};
 use cookie::Cookie;
@@ -701,6 +701,85 @@ impl ListProviderName {
 }
 
 
+pub type SOCacheInstance = Wrapper<ffi::ap_socache_instance_t>;
+
+
+pub type SOCacheProvider = Wrapper<ffi::ap_socache_provider_t>;
+
+
+impl SOCacheProvider {
+   str_getter!(name);
+
+   pub fn create<'a, T: Into<Vec<u8>>>(&mut self, arg: Option<T>, tmp: &mut Pool, p: &mut Pool) -> Result<SOCacheInstance, &'a str> {
+      let arg: *const c_char = match arg {
+         None => ptr::null(),
+         Some(s) => ffi::strdup(tmp.ptr, s)
+      };
+
+      let mut instance: *mut ffi::ap_socache_instance_t = ptr::null_mut();
+
+      match from_char_ptr(
+         field!(self, create).unwrap()(&mut instance, arg, tmp.ptr, p.ptr)
+      ) {
+         None => SOCacheInstance::from_raw(instance).ok_or(""),
+         Some(res) => Err(res)
+      }
+   }
+
+   pub fn init<'a, T: Into<Vec<u8>>>(&mut self, instance: &mut SOCacheInstance, cname: T, s: &Server, pool: &mut Pool) {
+      let cname = ffi::strdup(pool.ptr, cname);
+
+      unsafe {
+         field!(self, init).unwrap()(instance.ptr, cname, ptr::null(), s.ptr, pool.ptr);
+      }
+
+      //extern "C" fn(instance: *mut ap_socache_instance_t, cname: *const c_char, hints: *const ap_socache_hints, s: *mut server_rec, pool: *mut apr_pool_t) -> apr_status_t;
+   }
+
+   pub fn store<'a, T: Into<Vec<u8>>>(&mut self, instance: &mut SOCacheInstance, s: &Server, id: T, data: T, pool: &mut Pool) {
+      let id = ffi::strdup(pool.ptr, id);
+      let data = ffi::strdup(pool.ptr, data);
+
+      unsafe {
+         field!(self, store).unwrap()(instance.ptr, s.ptr, id as *const c_uchar, strlen(id) as c_uint, ffi::apr_time_now() + 10000000000, data as *mut c_uchar, (strlen(data) + 1) as c_uint, pool.ptr);
+      }
+
+      //extern "C" fn(instance: *mut ap_socache_instance_t, s: *mut server_rec, id: *const c_uchar, idlen: c_uint, expiry: apr_time_t, data: *mut c_uchar, datalen: c_uint, pool: *mut apr_pool_t) -> apr_status_t;
+
+   }
+
+   pub fn retrieve<'a, T: Into<Vec<u8>>>(&mut self, instance: &mut SOCacheInstance, s: &Server, id: T, pool: &mut Pool) -> Option<&'a str> {
+      let id = ffi::strdup(pool.ptr, id);
+
+      let mut datalen: c_uint = 100;
+
+      let data: *mut c_char = unsafe {
+         ffi::apr_palloc(pool.ptr, datalen as ffi::apr_size_t) as *mut c_char
+      };
+
+      unsafe {
+         field!(self, retrieve).unwrap()(instance.ptr, s.ptr, id as *const c_uchar, strlen(id) as c_uint, data as *mut c_uchar, &mut datalen, pool.ptr);
+      }
+
+      from_char_ptr(data)
+      //pub type socache_provider_retrieve_fn = extern "C" fn(instance: *mut ap_socache_instance_t, s: *mut server_rec, id: *const c_uchar, idlen: c_uint, data: *mut c_uchar, datalen: *mut c_uint, pool: *mut apr_pool_t) -> apr_status_t;
+   }
+
+}
+
+
+pub fn lookup_provider<P: Copy + WrappedType + FromRaw<*mut <P as WrappedType>::wrapped_type>, T: Into<Vec<u8>>, U: Into<Vec<u8>>, V: Into<Vec<u8>>>(pool: &mut Pool, provider_group: T, provider_name: U, provider_version: V) -> Option<P> {
+   let provider_group = ffi::strdup(pool.ptr, provider_group);
+   let provider_name = ffi::strdup(pool.ptr, provider_name);
+   let provider_version = ffi::strdup(pool.ptr, provider_version);
+
+   P::from_raw(
+      unsafe {
+         ffi::ap_lookup_provider(provider_group, provider_name, provider_version)
+      } as *mut <P as WrappedType>::wrapped_type
+   )
+}
+
 pub fn list_provider_groups(pool: &mut Pool) -> ArrayHeaderIter<ListProviderGroup> {
    let ptr = unsafe { ffi::ap_list_provider_groups(pool.ptr) };
 
@@ -711,7 +790,7 @@ pub fn list_provider_groups(pool: &mut Pool) -> ArrayHeaderIter<ListProviderGrou
    }
 }
 
-pub fn list_provider_names<T: Into<Vec<u8>>>(pool: &mut Pool, provider_group: T, provider_version: T) -> ArrayHeaderIter<ListProviderName> {
+pub fn list_provider_names<T: Into<Vec<u8>>, U: Into<Vec<u8>>>(pool: &mut Pool, provider_group: T, provider_version: U) -> ArrayHeaderIter<ListProviderName> {
    let provider_group = ffi::strdup(pool.ptr, provider_group);
    let provider_version = ffi::strdup(pool.ptr, provider_version);
 

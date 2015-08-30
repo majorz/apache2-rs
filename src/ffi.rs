@@ -232,6 +232,13 @@ pub const NONFATAL_UNKNOWN:   c_int = 1024;
 pub const NONFATAL_ALL:       c_int = NONFATAL_OVERRIDE | NONFATAL_UNKNOWN;
 pub const OR_ALL:             c_int = OR_LIMIT | OR_OPTIONS | OR_FILEINFO | OR_AUTHCFG | OR_INDEXES;
 
+/** The provider group used to register socache providers. */
+pub const SOCACHE_PROVIDER_GROUP: &'static str = "socache";
+/** The provider version used to register socache providers. */
+pub const SOCACHE_PROVIDER_VERSION: &'static str = "0";
+/** Default provider name. */
+pub const SOCACHE_DEFAULT_PROVIDER: &'static str = "default";
+
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct request_rec {
@@ -483,6 +490,29 @@ pub struct ap_list_provider_groups_t {
 
 #[repr(C)]
 #[derive(Copy, Clone)]
+pub struct ap_socache_provider_t {
+   pub name: *const c_char,
+   pub flags: c_uint,
+   pub create: Option<socache_provider_create_fn>,
+   pub init: Option<socache_provider_init_fn>,
+   pub destroy: Option<socache_provider_destroy_fn>,
+   pub store: Option<socache_provider_store_fn>,
+   pub retrieve: Option<socache_provider_retrieve_fn>,
+   pub remove: Option<socache_provider_remove_fn>,
+   pub status: Option<socache_provider_status_fn>,
+   pub iterate: Option<socache_provider_iterate_fn>,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct ap_socache_hints {
+    pub avg_id_len: apr_size_t,
+    pub avg_obj_size: apr_size_t,
+    pub expiry_interval: apr_interval_time_t,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
 pub struct ap_method_list_t;
 
 #[repr(C)]
@@ -515,13 +545,14 @@ pub enum ap_filter_t { }
 #[derive(Copy, Clone)]
 pub enum ap_conf_vector_t { }
 
+#[derive(Copy, Clone)]
+pub enum ap_socache_instance_t { }
+
 pub type cmd_how = c_uint;
 
 pub type ap_conn_keepalive_e = c_uint;
 
-pub type rewrite_args_fn = extern "C" fn(
-   process: *mut process_rec
-);
+pub type rewrite_args_fn = extern "C" fn(process: *mut process_rec);
 
 pub type create_dir_config_fn = extern "C" fn(p: *mut apr_pool_t, dir: *mut c_char) -> *mut c_void;
 pub type merge_config_fn = extern "C" fn(p: *mut apr_pool_t, base_conf: *mut c_void, new_conf: *mut c_void) -> *mut c_void;
@@ -543,6 +574,16 @@ pub type hook_check_config_fn = extern "C" fn(conf: *mut apr_pool_t, log: *mut a
 pub type hook_test_config_fn = extern "C" fn(conf: *mut apr_pool_t, s: *mut server_rec) -> c_int;
 pub type hook_post_config_fn = extern "C" fn(conf: *mut apr_pool_t, log: *mut apr_pool_t, temp: *mut apr_pool_t, s: *mut server_rec) -> c_int;
 
+pub type socache_provider_create_fn = extern "C" fn(instance: *mut *mut ap_socache_instance_t, arg: *const c_char, tmp: *mut apr_pool_t, p: *mut apr_pool_t) -> *const c_char;
+pub type socache_provider_init_fn = extern "C" fn(instance: *mut ap_socache_instance_t, cname: *const c_char, hints: *const ap_socache_hints, s: *mut server_rec, pool: *mut apr_pool_t) -> apr_status_t;
+pub type socache_provider_destroy_fn = extern "C" fn(instance: *mut ap_socache_instance_t, s: *mut server_rec) -> ();
+pub type socache_provider_store_fn = extern "C" fn(instance: *mut ap_socache_instance_t, s: *mut server_rec, id: *const c_uchar, idlen: c_uint, expiry: apr_time_t, data: *mut c_uchar, datalen: c_uint, pool: *mut apr_pool_t) -> apr_status_t;
+pub type socache_provider_retrieve_fn = extern "C" fn(instance: *mut ap_socache_instance_t, s: *mut server_rec, id: *const c_uchar, idlen: c_uint, data: *mut c_uchar, datalen: *mut c_uint, pool: *mut apr_pool_t) -> apr_status_t;
+pub type socache_provider_remove_fn = extern "C" fn(instance: *mut ap_socache_instance_t, s: *mut server_rec, id: *const c_uchar, idlen: c_uint, pool: *mut apr_pool_t) -> apr_status_t;
+pub type socache_provider_status_fn = extern "C" fn(instance: *mut ap_socache_instance_t, r: *mut request_rec, flags: c_int) -> ();
+pub type socache_provider_iterate_fn = extern "C" fn(instance: *mut ap_socache_instance_t, s: *mut server_rec, userctx: *mut c_void, iterator: *mut ap_socache_iterator_t, pool: *mut apr_pool_t) -> apr_status_t;
+
+pub type ap_socache_iterator_t = extern "C" fn(instance: *mut ap_socache_instance_t, s: *mut server_rec, userctx: *mut c_void, id: *const c_uchar, idlen: c_uint, data: *const c_uchar, datalen: c_uint, pool: *mut apr_pool_t) -> c_int;
 
 extern "C" {
    pub fn ap_get_server_banner() -> *const c_char;

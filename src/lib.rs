@@ -12,7 +12,8 @@ pub mod cookie;
 pub use libc::{c_void, c_char, c_int};
 
 pub use httpd::{Request, Status, ProxyReq, CmdParms, Server, server_banner, server_description,
-   server_built, show_mpm, ConfVector, list_provider_groups, list_provider_names};
+   server_built, show_mpm, ConfVector, lookup_provider, list_provider_groups, list_provider_names,
+   SOCacheProvider, SOCacheInstance};
 
 pub use apr::{apr_version_string, apu_version_string, HookOrder, Pool, time_now};
 
@@ -23,7 +24,7 @@ pub use wrapper::{WrappedType, from_char_ptr, FromRaw};
 pub use ffi::{OR_NONE, OR_LIMIT, OR_OPTIONS, OR_FILEINFO, OR_AUTHCFG, OR_INDEXES, OR_UNSET,
    ACCESS_CONF, RSRC_CONF, EXEC_ON_READ, NONFATAL_OVERRIDE, NONFATAL_UNKNOWN, NONFATAL_ALL, OR_ALL,
    RAW_ARGS, TAKE1, TAKE2, ITERATE, ITERATE2, FLAG, NO_ARGS, TAKE12, TAKE3, TAKE23, TAKE123,
-   TAKE13, TAKE_ARGV};
+   TAKE13, TAKE_ARGV, SOCACHE_PROVIDER_GROUP, SOCACHE_PROVIDER_VERSION, SOCACHE_DEFAULT_PROVIDER};
 
 
 pub type StringType<'a> = &'a str;
