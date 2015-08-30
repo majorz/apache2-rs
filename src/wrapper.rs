@@ -5,7 +5,7 @@ use std::ffi::CStr;
 use libc::c_char;
 
 
-pub trait FromRaw<T> {
+pub trait FromRaw<T>: Sized {
    fn from_raw(T) -> Option<Self>;
 }
 
