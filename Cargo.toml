@@ -5,4 +5,4 @@ version = "0.0.2"
 
 [dependencies]
 libc = "*"
-interpolate_idents = "*"
+interpolate_idents = "0.0.4"
