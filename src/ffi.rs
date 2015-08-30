@@ -21,6 +21,11 @@ pub const APR_HOOK_LAST:          c_int = 20;
 // run this hook last, after EVERYTHING
 pub const APR_HOOK_REALLY_LAST:   c_int = 30;
 
+pub type sockaddr_in = c_void;
+pub type sockaddr_in6 = c_void;
+pub type sockaddr_storage = c_void;
+pub type conn_state_t = c_void;
+
 pub type apr_byte_t = c_uchar;
 pub type apr_int16_t = c_short;
 pub type apr_uint16_t = c_ushort;
@@ -36,6 +41,13 @@ pub type apr_ino_t = c_ulong;
 pub type apr_uintptr_t = apr_uint64_t;
 pub type apr_status_t = c_int;
 pub type apr_signum_t = c_int;
+pub type apr_read_type_e = c_uint;
+pub type apr_bucket_is_metadata_t = c_uint;
+pub type apr_filetype_e = c_uint;
+pub type apr_uid_t = c_uint;
+pub type apr_gid_t = c_uint;
+pub type apr_dev_t = c_ulong;
+pub type apr_fileperms_t = apr_int32_t;
 pub type apr_time_t = apr_int64_t;
 pub type apr_interval_time_t = apr_int64_t;
 pub type apr_port_t = apr_uint16_t;
@@ -60,19 +72,142 @@ pub struct apr_table_entry_t {
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct apr_bucket_brigade;
+pub struct apr_bucket_brigade {
+   pub p: *mut apr_pool_t,
+   pub list: apr_bucket_list,
+   pub bucket_alloc: *mut apr_bucket_alloc_t,
+}
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct apr_finfo_t;
+pub struct apr_bucket_list {
+   pub next: *mut apr_bucket,
+   pub prev: *mut apr_bucket,
+}
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct apr_sockaddr_t;
+pub struct apr_bucket {
+   pub link: apr_bucket_list,
+   pub _type: *const apr_bucket_type_t,
+   pub length: apr_size_t,
+   pub start: apr_off_t,
+   pub data: *mut c_void,
+   pub free: Option<extern "C" fn(e: *mut c_void) -> ()>,
+   pub list: *mut apr_bucket_alloc_t,
+}
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct apr_uri_t;
+pub struct apr_bucket_type_t {
+   pub name: *const c_char,
+   pub num_func: c_int,
+   pub is_metadata: apr_bucket_is_metadata_t,
+
+   pub destroy: Option<extern "C" fn(
+      data: *mut c_void
+   ) -> ()>,
+
+   pub read: Option<extern "C" fn(
+      b: *mut apr_bucket,
+      str: *mut *const c_char,
+      len: *mut apr_size_t,
+      block: apr_read_type_e
+   ) -> apr_status_t>,
+
+   pub setaside: Option<extern "C" fn(
+      e: *mut apr_bucket,
+      pool: *mut apr_pool_t
+   ) -> apr_status_t>,
+
+   pub split: Option<extern "C" fn(
+      e: *mut apr_bucket,
+      point: apr_size_t
+   ) -> apr_status_t>,
+
+   pub copy: Option<extern "C" fn(
+      e: *mut apr_bucket,
+      c: *mut *mut apr_bucket
+   ) -> apr_status_t>,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct apr_uri_t {
+   pub scheme: *mut c_char,
+   pub hostinfo: *mut c_char,
+   pub user: *mut c_char,
+   pub password: *mut c_char,
+   pub hostname: *mut c_char,
+   pub port_str: *mut c_char,
+   pub path: *mut c_char,
+   pub query: *mut c_char,
+   pub fragment: *mut c_char,
+   pub hostent: *mut hostent,
+   pub port: apr_port_t,
+   pub _bindgen_bitfield_1_: c_uint,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct apr_sockaddr_t {
+   pub pool: *mut apr_pool_t,
+   pub hostname: *mut c_char,
+   pub servname: *mut c_char,
+   pub port: apr_port_t,
+   pub family: apr_int32_t,
+   pub salen: apr_socklen_t,
+   pub ipaddr_len: c_int,
+   pub addr_str_len: c_int,
+   pub ipaddr_ptr: *mut c_void,
+   pub next: *mut apr_sockaddr_t,
+   pub sa: apr_sockaddr_sa_t,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct apr_sockaddr_sa_t {
+    pub _bindgen_data_: [u64; 16usize],
+}
+impl apr_sockaddr_sa_t {
+   pub unsafe fn sin(&mut self) -> *mut sockaddr_in {
+      let raw: *mut u8 = mem::transmute(&self._bindgen_data_);
+      mem::transmute(raw.offset(0))
+   }
+   pub unsafe fn sin6(&mut self) -> *mut sockaddr_in6 {
+      let raw: *mut u8 = mem::transmute(&self._bindgen_data_);
+      mem::transmute(raw.offset(0))
+   }
+   pub unsafe fn sas(&mut self) -> *mut sockaddr_storage {
+      let raw: *mut u8 = mem::transmute(&self._bindgen_data_);
+      mem::transmute(raw.offset(0))
+   }
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct apr_finfo_t {
+   pub pool: *mut apr_pool_t,
+   pub valid: apr_int32_t,
+   pub protection: apr_fileperms_t,
+   pub filetype: apr_filetype_e,
+   pub user: apr_uid_t,
+   pub group: apr_gid_t,
+   pub inode: apr_ino_t,
+   pub device: apr_dev_t,
+   pub nlink: apr_int32_t,
+   pub size: apr_off_t,
+   pub csize: apr_off_t,
+   pub atime: apr_time_t,
+   pub mtime: apr_time_t,
+   pub ctime: apr_time_t,
+   pub fname: *const c_char,
+   pub name: *const c_char,
+   pub filehand: *mut apr_file_t,
+}
+
+#[derive(Copy, Clone)]
+pub enum hostent { }
 
 #[derive(Copy, Clone)]
 pub enum apr_bucket_alloc_t { }
@@ -483,41 +618,143 @@ pub struct ap_list_provider_groups_t {
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct ap_method_list_t;
+pub struct ap_method_list_t {
+   pub method_mask: apr_int64_t,
+   pub method_list: *mut apr_array_header_t,
+}
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct ap_configfile_t;
+pub struct ap_configfile_t {
+   pub getch: Option<extern "C" fn(
+      ch: *mut c_char,
+      param: *mut c_void
+   ) -> apr_status_t>,
+
+   pub getstr: Option<extern "C" fn(
+      buf: *mut c_void,
+      bufsiz: apr_size_t,
+      param: *mut c_void
+   ) -> apr_status_t>,
+
+   pub close: Option<extern "C" fn(param: *mut c_void) -> apr_status_t>,
+
+   pub param: *mut c_void,
+   pub name: *const c_char,
+   pub line_number: c_uint,
+}
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct ap_directive_t;
+pub struct ap_directive_t {
+   pub directive: *const c_char,
+   pub args: *const c_char,
+   pub next: *mut ap_directive_t,
+   pub first_child: *mut ap_directive_t,
+   pub parent: *mut ap_directive_t,
+   pub data: *mut c_void,
+   pub filename: *const c_char,
+   pub line_num: c_int,
+   pub last: *mut ap_directive_t,
+}
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct conn_state_t;
+pub struct htaccess_result {
+   pub dir: *const c_char,
+   pub _override: c_int,
+   pub override_opts: c_int,
+   pub override_list: *mut apr_table_t,
+   pub htaccess: *mut ap_conf_vector_t,
+   pub next: *const htaccess_result,
+}
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct htaccess_result;
+pub struct process_rec {
+   pub pool: *mut apr_pool_t,
+   pub pconf: *mut apr_pool_t,
+   pub short_name: *const c_char,
+   pub argv: *const *const c_char,
+   pub argc: c_int,
+}
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct process_rec;
+pub struct server_addr_rec {
+   pub next: *mut server_addr_rec,
+   pub virthost: *mut c_char,
+   pub host_addr: *mut apr_sockaddr_t,
+   pub host_port: apr_port_t,
+}
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct server_addr_rec;
+pub struct ap_filter_t {
+   pub frec: *mut ap_filter_rec_t,
+   pub ctx: *mut c_void,
+   pub next: *mut ap_filter_t,
+   pub r: *mut request_rec,
+   pub c: *mut conn_rec,
+}
 
+#[repr(C)]
 #[derive(Copy, Clone)]
-pub enum ap_filter_t { }
+pub struct ap_filter_rec_t {
+   pub name: *const c_char,
+   pub filter_func: ap_filter_func,
+   pub filter_init_func: Option<ap_init_filter_func>,
+   pub next: *mut ap_filter_rec_t,
+   pub providers: *mut ap_filter_provider_t,
+   pub ftype: ap_filter_type,
+   pub debug: c_int,
+   pub proto_flags: c_uint,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct ap_filter_func {
+    pub _bindgen_data_: [u64; 1usize],
+}
+impl ap_filter_func {
+   pub unsafe fn out_func(&mut self) -> *mut Option<ap_out_filter_func> {
+      let raw: *mut u8 = mem::transmute(&self._bindgen_data_);
+      mem::transmute(raw.offset(0))
+   }
+   pub unsafe fn in_func(&mut self) -> *mut Option<ap_in_filter_func> {
+      let raw: *mut u8 = mem::transmute(&self._bindgen_data_);
+      mem::transmute(raw.offset(0))
+   }
+}
 
 #[derive(Copy, Clone)]
 pub enum ap_conf_vector_t { }
 
+#[derive(Copy, Clone)]
+pub enum ap_filter_provider_t { }
+
 pub type cmd_how = c_uint;
 
 pub type ap_conn_keepalive_e = c_uint;
+
+pub type ap_filter_type = c_uint;
+
+pub type ap_input_mode_t = c_uint;
+
+pub type ap_init_filter_func = extern "C" fn(f: *mut ap_filter_t) -> c_int;
+
+pub type ap_out_filter_func = extern "C" fn(
+   f: *mut ap_filter_t,
+   b: *mut apr_bucket_brigade
+) -> apr_status_t;
+
+pub type ap_in_filter_func = extern "C" fn(
+   f: *mut ap_filter_t,
+   b: *mut apr_bucket_brigade,
+   mode: ap_input_mode_t,
+   block: apr_read_type_e,
+   readbytes: apr_off_t
+) -> apr_status_t;
 
 pub type rewrite_args_fn = extern "C" fn(
    process: *mut process_rec
